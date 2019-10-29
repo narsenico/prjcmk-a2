@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/separator"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="@dimen/item_margin_double"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/divider_vertical"
+        android:backgroundTint="@color/colorItemBackgroundLighter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/item_margin_default"
+        android:layout_marginTop="@dimen/item_margin_double"
+        android:layout_marginBottom="@dimen/item_margin_default"
+        android:paddingStart="@dimen/item_padding_half"
+        android:paddingEnd="@dimen/item_padding_half"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/txt_info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/separator"
+        tools:text="Da comprare" />
+
+    <TextView
+        android:id="@+id/txt_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/item_margin_double"
+        android:layout_marginEnd="@dimen/item_margin_default"
+        android:layout_marginBottom="@dimen/item_margin_default"
+        android:paddingStart="@dimen/item_padding_half"
+        android:paddingEnd="@dimen/item_padding_half"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/separator"
+        tools:text="1/2" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,17 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionModeStyle">@style/WindowActionMode</item>
+        <item name="android:textColorPrimary">@color/colorText</item>
+    </style>
+
+    <style name="WindowActionMode" parent="Widget.AppCompat.ActionMode">
+        <item name="background">?attr/colorPrimaryDark</item>
+    </style>
+
+</resources>

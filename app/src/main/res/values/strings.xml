@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Comikku_v2</string>
+
+    <string name="menu_releases">Releases</string>
+    <string name="menu_comics">Comics</string>
+    <string name="menu_comics_detail">Comics detail</string>
+    <string name="menu_comics_edit">Edit comics</string>
+    <string name="menu_comics_save">Save comics</string>
+    <string name="menu_delete">Remove</string>
+
+    <string name="title_releases">Comikku - Releaes</string>
+    <string name="title_comics">Comikku - Comics</string>
+    <string name="title_selected">Selected %d</string>
+
+    <string name="comics_name">Name</string>
+    <string name="comics_publisher">Publisher</string>
+    <string name="comics_authors">Authors</string>
+    <string name="comics_series">Series</string>
+    <string name="comics_price">Price</string>
+    <string name="comics_periodicity">Periodicity</string>
+    <string name="comics_notes">Notes</string>
+
+    <string-array name="comics_periodicity_entries">
+        <item>None/irregular</item>
+        <item>Weekly</item>
+        <item>Every two weeks</item>
+        <item>Monthly</item>
+        <item>Every two months</item>
+        <item>Annual</item>
+    </string-array>
+
+    <string name="release_last_none">Last: none</string>
+    <string name="release_last">Last: #%d</string>
+    <string name="release_next_none">Next: none</string>
+    <string name="release_next">Next: #%d</string>
+    <string name="release_missing">Missing: %d</string>
+
+</resources>

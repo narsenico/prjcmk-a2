@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- come id usare lo stesso id dei fragment o di action riportate in nav_graph.xml -->
+
+    <item
+        android:id="@+id/releasesFragment"
+        android:icon="@drawable/ic_release"
+        android:title="@string/menu_releases" />
+
+    <item
+        android:id="@+id/comicsFragment"
+        android:icon="@drawable/ic_comics"
+        android:title="@string/menu_comics" />
+
+</menu>
