@@ -21,4 +21,8 @@ public class LogHelper {
     public static void w(String message, Object... args) {
         Log.w(TAG, String.format(message, args));
     }
+
+    public static void e(String message, Exception error) {
+        Log.e(TAG, message, error);
+    }
 }

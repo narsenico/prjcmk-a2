@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.Comics;
@@ -34,7 +35,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         return new ComicsItemDetails(getAdapterPosition(), mId);
     }
 
-    void bind(ComicsWithReleases comics, boolean selected) {
+    void bind(@NonNull ComicsWithReleases comics, boolean selected) {
         itemView.setActivated(selected);
         mId = comics.comics.id;
         mInitial.setText(comics.comics.name.substring(0, 1));

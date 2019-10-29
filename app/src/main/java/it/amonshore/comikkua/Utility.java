@@ -1,5 +1,6 @@
 package it.amonshore.comikkua;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,5 +19,4 @@ public class Utility {
     public static Long[] toArray(@NonNull Iterable<Long> iterable) {
         return toList(iterable).toArray(new Long[0]);
     }
-
 }

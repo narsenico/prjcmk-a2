@@ -38,11 +38,26 @@ public class ComicsWithReleases {
     @Ignore
     public int getMissingReleaseCount() {
         int count = 0;
-        for (Release release : this.releases) {
-            if ((release.flags & Release.FLAG_PURCHASED) == 0) {
-                ++count;
+        if (this.releases != null) {
+            for (Release release : this.releases) {
+                if ((release.flags & Release.FLAG_PURCHASED) == 0) {
+                    ++count;
+                }
             }
         }
         return count;
+    }
+
+    /**
+     * Crea una nuova istanza con {@link ComicsWithReleases#comics} inizializzato.
+     * Mentre {@link ComicsWithReleases#comics} è null.
+     *
+     * @return nuova istanza vuota
+     */
+    public static ComicsWithReleases createNew() {
+        final ComicsWithReleases cwr = new ComicsWithReleases();
+        cwr.comics = new Comics();
+        // cwr.releases => lo lascio null
+        return cwr;
     }
 }

@@ -48,6 +48,10 @@ public interface ComicsDao {
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleases();
 
+    @Query("SELECT * from tComics ORDER BY name ASC")
+    @Transaction
+    List<ComicsWithReleases> getRawComicsWithReleases();
+
     @Query("SELECT * from tComics where name = :name")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleasesByName(String name);
@@ -55,8 +59,4 @@ public interface ComicsDao {
     @Query("SELECT * from tComics where id = :id ORDER BY name ASC")
     @Transaction
     LiveData<ComicsWithReleases> getComicsWithReleases(long id);
-
-    @Query("SELECT * from tComics ORDER BY name ASC")
-    @Transaction
-    List<ComicsWithReleases> getRawComicsWithReleases();
 }
