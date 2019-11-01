@@ -53,6 +53,10 @@ public interface ComicsDao {
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases();
 
+    @Query("SELECT * from tComics where name like :likeName ORDER BY name COLLATE NOCASE ASC")
+    @Transaction
+    DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases(String likeName);
+
     @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     List<ComicsWithReleases> getRawComicsWithReleases();

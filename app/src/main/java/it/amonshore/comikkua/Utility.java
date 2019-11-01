@@ -1,5 +1,11 @@
 package it.amonshore.comikkua;
 
+import android.app.Activity;
+import android.content.Context;
+import android.view.View;
+import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,5 +36,17 @@ public class Utility {
             }
         }
         return -1;
+    }
+
+    /**
+     * Nasconde la tasteriera.
+     * <p>
+     * Da una activity può essere chiamata con {@link Activity#getWindow()} => {@link Window#getDecorView()}
+     *
+     * @param view vista di riferimento per recuperare {@link View#getWindowToken()}
+     */
+    public static void hideKeyboard(@NonNull View view) {
+        final InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }

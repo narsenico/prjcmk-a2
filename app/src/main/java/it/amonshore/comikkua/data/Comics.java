@@ -31,6 +31,7 @@ public class Comics {
     public String reserved;
     public String notes;
     public String image;
+    public long lastUpdate;
 
     public String getInitial() {
         if (TextUtils.isEmpty(name)) {

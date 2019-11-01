@@ -19,6 +19,7 @@ import com.tiper.MaterialSpinner;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -221,6 +222,10 @@ class ComicsEditFragmentHelper {
             mComics.comics.price = 0;
         }
 
+        // aggiornando questo campo segnalo che i dati sono cambiati
+        // (in questo modo il sistema di paging sa che qualcosa è cambiato)
+        // non è il massimo perché effettivamente potrebbe non essere cambiato nulla, ma tant'è!
+        mComics.comics.lastUpdate = new Date().getTime();
         return mComics;
     }
 

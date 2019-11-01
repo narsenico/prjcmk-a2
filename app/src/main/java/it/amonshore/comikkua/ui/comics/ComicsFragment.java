@@ -5,7 +5,10 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
@@ -123,6 +126,9 @@ public class ComicsFragment extends Fragment {
         // ripristino la selezione salvata in onSaveInstanceState
         mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
 
+        // la prima volta carico tutti i dati
+        mComicsViewModel.search.setValue(null);
+
         return view;
     }
 
@@ -155,6 +161,33 @@ public class ComicsFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_comics_fragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        final ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
+        final SearchView searchView = new SearchView(actionBar == null ? requireContext() : actionBar.getThemedContext());
+        final MenuItem searchItem = menu.findItem(R.id.searchComics);
+        searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        searchItem.setActionView(searchView);
+
+        // TODO: problemi con la ricerca
+        // - onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
+        // - la query vuota la posso intercettare da onQueryTextChange ma ha bisogno di un debounce per essere performante
+        // - al cambio di configurazione (es orientamento) la query viene persa
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                LogHelper.d("search for " + query);
+//                mComicsViewModel.search.setValue("%" + query + "%");
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                LogHelper.d("search change " + newText);
+                mComicsViewModel.search.setValue("%" + newText + "%"); // TODO: ok ma aggiungere debounce
+                return false;
+            }
+        });
     }
 
     @Override

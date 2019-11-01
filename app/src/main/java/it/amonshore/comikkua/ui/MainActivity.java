@@ -24,6 +24,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 
 public class MainActivity extends AppCompatActivity implements
         OnNavigationFragmentListener,
@@ -93,7 +94,9 @@ public class MainActivity extends AppCompatActivity implements
     public void onDestinationChanged(@NonNull NavController controller,
                                      @NonNull NavDestination destination,
                                      @Nullable Bundle arguments) {
-        LogHelper.d("onDestinationChanged " + destination.getLabel());
+        LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.getLabel());
+        // chiudo sempre la tasteira eventualmente aperta
+        Utility.hideKeyboard(getWindow().getDecorView());
         // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment
         if (mActionMode != null) {
             mActionMode.finish();

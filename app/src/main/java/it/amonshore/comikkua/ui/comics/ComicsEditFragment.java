@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.ComicsViewModel;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;

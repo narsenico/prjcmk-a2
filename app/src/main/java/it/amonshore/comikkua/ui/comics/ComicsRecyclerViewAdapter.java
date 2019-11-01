@@ -193,7 +193,11 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
                 @Override
                 public boolean areContentsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
                                                   @NonNull ComicsWithReleases newComicsWithReleases) {
-                    return oldComicsWithReleases.equals(newComicsWithReleases);
+
+                    // TODO: devo controllare la data di modifica anche di tutte le release?
+
+                    return oldComicsWithReleases.equals(newComicsWithReleases) &&
+                            oldComicsWithReleases.comics.lastUpdate == newComicsWithReleases.comics.lastUpdate;
                 }
             };
 

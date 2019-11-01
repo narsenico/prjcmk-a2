@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 import it.amonshore.comikkua.Utility;
 
@@ -20,11 +21,13 @@ public class ComicsViewModel extends AndroidViewModel {
 
     private ComicsRepository mRepository;
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
+    public final MutableLiveData<String> search;
 
     public ComicsViewModel (Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
         comicsWithReleasesList = mRepository.comicsWithReleasesList;
+        search = mRepository.search;
     }
 
     public LiveData<List<Comics>> getComics() { return mRepository.getComics(); }
