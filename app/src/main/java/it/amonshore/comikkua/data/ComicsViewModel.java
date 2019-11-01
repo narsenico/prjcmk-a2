@@ -13,15 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
 import it.amonshore.comikkua.Utility;
 
 public class ComicsViewModel extends AndroidViewModel {
 
     private ComicsRepository mRepository;
+    public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
     public ComicsViewModel (Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
+        comicsWithReleasesList = mRepository.comicsWithReleasesList;
     }
 
     public LiveData<List<Comics>> getComics() { return mRepository.getComics(); }
@@ -41,4 +44,6 @@ public class ComicsViewModel extends AndroidViewModel {
     public void delete(Iterable<Long> ids) {
         mRepository.delete(Utility.toArray(ids));
     }
+
+    public void deleteAll() { mRepository.deleteAll(); }
 }

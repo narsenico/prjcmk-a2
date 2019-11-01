@@ -1,70 +1,60 @@
 package it.amonshore.comikkua.ui.comics;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
 import java.util.Iterator;
-import java.util.List;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
 
-public class ComicsRecyclerViewAdapter extends RecyclerView.Adapter<ComicsViewHolder> {
+public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
-    private final LayoutInflater mLayoutInflater;
-    private List<ComicsWithReleases> mComicsList;
     private SelectionTracker<Long> mSelectionTracker;
 
-    private ComicsRecyclerViewAdapter(@NonNull Context context) {
-        mLayoutInflater = LayoutInflater.from(context);
+    private ComicsRecyclerViewAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ComicsViewHolder holder, int position) {
-        if (mComicsList != null) {
-            final ComicsWithReleases comics = mComicsList.get(position);
+        final ComicsWithReleases comics = getItem(position);
+        if (comics != null) {
             holder.bind(comics, mSelectionTracker.isSelected(comics.comics.id));
         } else {
-            // TODO: bind empty comics
-            LogHelper.w("comics list null!!!");
+            holder.clear();
         }
     }
 
     @NonNull
     @Override
     public ComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ComicsViewHolder(mLayoutInflater.inflate(R.layout.listitem_comics, parent, false));
+        return new ComicsViewHolder(LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.listitem_comics, parent, false));
     }
 
     @Override
     public long getItemId(int position) {
-        return mComicsList == null || mComicsList.size() < position ? RecyclerView.NO_ID : mComicsList.get(position).comics.id;
-    }
-
-    @Override
-    public int getItemCount() {
-        return mComicsList == null ? 0 : mComicsList.size();
-    }
-
-    public void setComics(List<ComicsWithReleases> comicsList) {
-        mComicsList = comicsList;
-        notifyDataSetChanged();
+        final ComicsWithReleases item = getItem(position);
+        if (item == null) {
+            return RecyclerView.NO_ID;
+        } else {
+            return item.comics.id;
+        }
     }
 
     SelectionTracker<Long> getSelectionTracker() {
@@ -84,15 +74,13 @@ public class ComicsRecyclerViewAdapter extends RecyclerView.Adapter<ComicsViewHo
     }
 
     static class Builder {
-        private final Context mContext;
         private final RecyclerView mRecyclerView;
         private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         private ActionModeControllerCallback mActionModeControllerCallback;
         private int actionModeMenuRes;
 
-        Builder(@NonNull Context context, @NonNull RecyclerView recyclerView) {
-            mContext = context;
+        Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
 
@@ -117,7 +105,7 @@ public class ComicsRecyclerViewAdapter extends RecyclerView.Adapter<ComicsViewHo
         }
 
         ComicsRecyclerViewAdapter build() {
-            final ComicsRecyclerViewAdapter adapter = new ComicsRecyclerViewAdapter(mContext);
+            final ComicsRecyclerViewAdapter adapter = new ComicsRecyclerViewAdapter();
             // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
@@ -191,5 +179,22 @@ public class ComicsRecyclerViewAdapter extends RecyclerView.Adapter<ComicsViewHo
             return viewHolder == null ? RecyclerView.NO_POSITION : viewHolder.getLayoutPosition();
         }
     }
+
+    private static DiffUtil.ItemCallback<ComicsWithReleases> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ComicsWithReleases>() {
+                // ComicsWithReleases details may have changed if reloaded from the database,
+                // but ID is fixed.
+                @Override
+                public boolean areItemsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
+                                               @NonNull ComicsWithReleases newComicsWithReleases) {
+                    return oldComicsWithReleases.comics.id == newComicsWithReleases.comics.id;
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
+                                                  @NonNull ComicsWithReleases newComicsWithReleases) {
+                    return oldComicsWithReleases.equals(newComicsWithReleases);
+                }
+            };
 
 }

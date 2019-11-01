@@ -2,6 +2,8 @@ package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.DigitsKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +30,7 @@ import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.data.Periodicity;
 import it.amonshore.comikkua.data.Release;
+import it.amonshore.comikkua.ui.TextWatcherAdapter;
 
 /**
  * Helper per il binding delle view di {@link ComicsEditFragment}.
@@ -37,7 +40,7 @@ class ComicsEditFragmentHelper {
     static ComicsEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container) {
         final View view = inflater.inflate(R.layout.fragment_comics_edit, container, false);
         final ComicsEditFragmentHelper helper = new ComicsEditFragmentHelper();
-        helper.numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
+        helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
         helper.bind((view));
         return helper;
     }
@@ -84,13 +87,6 @@ class ComicsEditFragmentHelper {
         editor.series = ((TextInputLayout)view.findViewById(R.id.til_series)).getEditText();
         editor.authors = ((TextInputLayout)view.findViewById(R.id.til_authors)).getEditText();
         editor.price = ((TextInputLayout)view.findViewById(R.id.til_price)).getEditText();
-
-        // TODO: NON VA BENE! perché è possibile scrivere cose del tipo 10,50,12
-        //  usare NumberFormat con locale USA e vaffaculo
-
-        assert editor.price != null;
-        editor.price.setKeyListener(DigitsKeyListener.getInstance("0123456789" + DecimalFormatSymbols.getInstance(Locale.getDefault()).getDecimalSeparator()));
-
         editor.notes = ((TextInputLayout)view.findViewById(R.id.til_notes)).getEditText();
         editor.periodicity = view.findViewById(R.id.til_periodicity);
 
@@ -101,6 +97,34 @@ class ComicsEditFragmentHelper {
         periodicityArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         editor.periodicity.setAdapter(periodicityArrayAdapter);
         editor.periodicity.setSelection(0);
+
+        // la modifica di una proprietà del comics si riflette immediatamente sulla preview
+        editor.name.addTextChangedListener(new TextWatcherAdapter() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                final String value = s.toString().trim();
+                preview.name.setText(value);
+                preview.initial.setText(value.length() > 0 ? value.substring(0, 1) : "");
+            }
+        });
+        editor.publisher.addTextChangedListener(new TextWatcherAdapter() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                preview.publisher.setText(s.toString().trim());
+            }
+        });
+        editor.authors.addTextChangedListener(new TextWatcherAdapter() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                preview.authors.setText(s.toString().trim());
+            }
+        });
+        editor.notes.addTextChangedListener(new TextWatcherAdapter() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                preview.notes.setText(s.toString().trim());
+            }
+        });
     }
 
     @NonNull

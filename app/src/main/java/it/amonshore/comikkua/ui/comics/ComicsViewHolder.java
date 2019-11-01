@@ -58,4 +58,17 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mMissing.setText(context.getString(R.string.release_missing, missingCount));
     }
 
+    void clear() {
+        itemView.setActivated(false);
+        mId = Comics.NO_COMICS_ID;
+        mInitial.setText("");
+        mName.setText("");
+        mPublisher.setText("");
+        mAuthors.setText("");
+        mNotes.setText("");
+        mLast.setText("");
+        mNext.setText("");
+        mMissing.setText("");
+    }
+
 }

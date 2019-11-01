@@ -64,6 +64,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$rootProject.archLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-common-java8:$rootProject.archLifecycleVersion"
 
+    // Paging
+    implementation "androidx.paging:paging-runtime:$rootProject.pagingVersion"
+    testImplementation "androidx.paging:paging-common:$rootProject.pagingVersion"
+
     // UI
     implementation "com.google.android.material:material:$rootProject.materialVersion"
 

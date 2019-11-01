@@ -83,7 +83,7 @@ public class ComicsFragment extends Fragment {
         // PROBLEMI:
         // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
 
-        mAdapter = new ComicsRecyclerViewAdapter.Builder(context, recyclerView)
+        mAdapter = new ComicsRecyclerViewAdapter.Builder(recyclerView)
                 .withOnItemSelectedListener((keys, size) -> {
                     if (mListener != null) {
                         if (size == 0) {
@@ -115,9 +115,9 @@ public class ComicsFragment extends Fragment {
         mComicsViewModel = new ViewModelProvider(this)
                 .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        mComicsViewModel.getComicsWithReleases().observe(getViewLifecycleOwner(), comics -> {
+        mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
             LogHelper.d("viewmodel data changed");
-            mAdapter.setComics(comics);
+            mAdapter.submitList(data);
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -162,6 +162,7 @@ public class ComicsFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.deleteAllComics:
                 LogHelper.d("delete all comics");
+                // TODO: chiedere prima conferma mComicsViewModel.deleteAll();
                 return true;
             case R.id.createNewComics:
                 final NavDirections directions = ComicsFragmentDirections

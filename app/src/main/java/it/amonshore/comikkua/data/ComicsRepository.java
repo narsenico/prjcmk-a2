@@ -7,14 +7,25 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 
 public class ComicsRepository {
 
     private ComicsDao mComicsDao;
+    public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
     ComicsRepository(Application application) {
         ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
         mComicsDao = db.comicsDao();
+        comicsWithReleasesList = new LivePagedListBuilder<>(
+                mComicsDao.comicsWithReleases(),
+                new PagedList.Config.Builder()
+                        .setInitialLoadSizeHint(20)
+                        .setPageSize(20)
+                        .setEnablePlaceholders(true)
+                        .build()
+        ).build();
     }
 
     LiveData<List<Comics>> getComics() {
@@ -47,6 +58,10 @@ public class ComicsRepository {
 
     public void delete(Long... id) {
         new deleteAsyncTask(mComicsDao).execute(id);
+    }
+
+    public void deleteAll() {
+        new deleteAllAsyncTask(mComicsDao).execute();
     }
 
     private static class insertAsyncTask extends AsyncTask<Comics, Void, Void> {
@@ -90,6 +105,21 @@ public class ComicsRepository {
         @Override
         protected Void doInBackground(final Long... params) {
             mAsyncTaskDao.delete(params);
+            return null;
+        }
+    }
+
+    private static class deleteAllAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        private ComicsDao mAsyncTaskDao;
+
+        deleteAllAsyncTask(ComicsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            mAsyncTaskDao.deleteAll();
             return null;
         }
     }

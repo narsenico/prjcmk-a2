@@ -3,6 +3,7 @@ package it.amonshore.comikkua.data;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
+import androidx.paging.DataSource;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -47,6 +48,10 @@ public interface ComicsDao {
     @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleases();
+
+    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Transaction
+    DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases();
 
     @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction

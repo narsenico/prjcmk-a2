@@ -16,6 +16,7 @@ import androidx.room.Relation;
         indices = {@Index("name")})
 public class Comics {
 
+    public final static long NO_COMICS_ID = -1;
     public final static long NEW_COMICS_ID = 0;
 
     @PrimaryKey(autoGenerate = true)

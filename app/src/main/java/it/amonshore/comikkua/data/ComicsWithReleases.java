@@ -2,6 +2,7 @@ package it.amonshore.comikkua.data;
 
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -32,7 +33,6 @@ public class ComicsWithReleases {
     }
 
     /**
-     *
      * @return numero di uscite non ancora acquistate
      */
     @Ignore
@@ -46,6 +46,18 @@ public class ComicsWithReleases {
             }
         }
         return count;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == this) return true;
+
+        if (obj instanceof ComicsWithReleases) {
+            final ComicsWithReleases other = (ComicsWithReleases) obj;
+            return other.comics.id == this.comics.id;
+        } else {
+            return false;
+        }
     }
 
     /**

@@ -133,63 +133,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!--<LinearLayout
-                android:id="@+id/til_periodicity"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/item_margin_half"
-                android:layout_marginTop="@dimen/item_margin_default"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintTop_toBottomOf="@id/til_authors">
-
-                <TextView
-                    style="@style/Widget.Design.TextInputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="@dimen/item_padding_half"
-                    android:paddingEnd="@dimen/item_padding_half"
-                    android:text="@string/comics_periodicity"
-                    android:textColor="@color/colorAccent" />
-
-                <android.support.v7.widget.AppCompatSpinner
-                    android:id="@+id/cmb_periodicity"
-                    style="@style/Widget.AppCompat.Spinner.Underlined"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/comics_periodicity_entries"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:imeOptions="actionNext"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    android:spinnerMode="dialog" />
-
-            </LinearLayout>-->
-
-            <!--<com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_periodicity"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/item_margin_half"
-                android:layout_marginTop="@dimen/item_margin_default"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintTop_toBottomOf="@id/til_authors">
-
-                <it.amonshore.comikkua.ui.TextInputAutoCompleteTextView
-                    app:entries="@array/comics_periodicity_entries"
-                    app:keys="@array/comics_periodicity_keys"
-                    app:spinnerMode="true"
-                    android:id="@+id/txt_periodicity"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/comics_periodicity"
-                    android:inputType="text" />
-
-            </com.google.android.material.textfield.TextInputLayout>-->
-
             <com.tiper.MaterialSpinner
                 android:id="@+id/til_periodicity"
                 android:hint="@string/comics_periodicity"
@@ -197,6 +140,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/item_margin_half"
                 android:layout_marginTop="@dimen/item_margin_default"
+                android:imeOptions="actionNext"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/guideline"
                 app:layout_constraintTop_toBottomOf="@id/til_authors" />
@@ -213,6 +157,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
                     android:hint="@string/comics_notes"
                     android:inputType="text" />
 
