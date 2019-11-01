@@ -8,6 +8,7 @@
     <string name="menu_comics_edit">Edit comics</string>
     <string name="menu_comics_save">Save comics</string>
     <string name="menu_delete">Remove</string>
+    <string name="menu_create">Create new</string>
 
     <string name="title_releases">Comikku - Releaes</string>
     <string name="title_comics">Comikku - Comics</string>
@@ -21,6 +22,14 @@
     <string name="comics_periodicity">Periodicity</string>
     <string name="comics_notes">Notes</string>
 
+    <string-array name="comics_periodicity_keys">
+        <item></item>
+        <item>W1</item>
+        <item>W2</item>
+        <item>M1</item>
+        <item>M2</item>
+        <item>Y1</item>
+    </string-array>
     <string-array name="comics_periodicity_entries">
         <item>None/irregular</item>
         <item>Weekly</item>

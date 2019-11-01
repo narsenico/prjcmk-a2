@@ -1,26 +1,32 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.method.DigitsKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputLayout;
+import com.tiper.MaterialSpinner;
 
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsWithReleases;
+import it.amonshore.comikkua.data.Periodicity;
 import it.amonshore.comikkua.data.Release;
 
 /**
@@ -45,17 +51,20 @@ class ComicsEditFragmentHelper {
     final class Editor {
         TextInputLayout nameLayout;
         EditText name, publisher, series, authors, price,
-                notes, periodicity;
+                notes;
+        MaterialSpinner periodicity;
     }
 
-    View rootView;
-    Preview preview;
-    Editor editor;
+    private View mRootView;
+    private Preview preview;
+    private Editor editor;
+    @NonNull
     private ComicsWithReleases mComics;
     private NumberFormat numberFormat;
+    private List<Periodicity> mPeriodicityList;
 
     private void bind(@NonNull View view) {
-        rootView = view;
+        mRootView = view;
 
         preview = new Preview();
         preview.initial = view.findViewById(R.id.txt_comics_initial);
@@ -83,22 +92,78 @@ class ComicsEditFragmentHelper {
         editor.price.setKeyListener(DigitsKeyListener.getInstance("0123456789" + DecimalFormatSymbols.getInstance(Locale.getDefault()).getDecimalSeparator()));
 
         editor.notes = ((TextInputLayout)view.findViewById(R.id.til_notes)).getEditText();
-        editor.periodicity = ((TextInputLayout)view.findViewById(R.id.til_periodicity)).getEditText();
+        editor.periodicity = view.findViewById(R.id.til_periodicity);
+
+        mPeriodicityList = Periodicity.createList(mRootView.getContext());
+
+        final ArrayAdapter<Periodicity> periodicityArrayAdapter =
+                new ArrayAdapter<>(mRootView.getContext(), android.R.layout.simple_spinner_item, mPeriodicityList);
+        periodicityArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editor.periodicity.setAdapter(periodicityArrayAdapter);
+        editor.periodicity.setSelection(0);
     }
 
-    void setComics(@NonNull Context context, @Nullable ComicsWithReleases comics) {
+    @NonNull
+    private String getSelectedPeriodicityKey() {
+        final int pos = editor.periodicity.getSelection();
+        if (pos >= 0) {
+            return mPeriodicityList.get(pos).key;
+        } else {
+            return mPeriodicityList.get(0).key; // none/irregular
+        }
+    }
+
+    @NonNull
+    View getRootView() {
+        return mRootView;
+    }
+
+    @NonNull
+    ComicsWithReleases getComics() {
+        return mComics;
+    }
+
+    boolean isNew() {
+        return mComics.comics.id == Comics.NEW_COMICS_ID;
+    }
+
+    void setComics(@NonNull Context context, @Nullable ComicsWithReleases comics, Bundle savedInstanceState) {
         if (comics == null) {
             mComics = ComicsWithReleases.createNew();
         } else {
             mComics = comics;
         }
 
-        preview.initial.setText(mComics.comics.name.substring(0, 1));
-        preview.name.setText(mComics.comics.name);
-        preview.publisher.setText(mComics.comics.publisher);
-        preview.authors.setText(mComics.comics.authors);
-        preview.notes.setText(mComics.comics.notes);
+        if (savedInstanceState != null) {
+            final String name = savedInstanceState.getString("name");
+            preview.initial.setText(name == null || name.length() == 0 ? "" : name.substring(0, 1));
+            preview.name.setText(savedInstanceState.getString("name"));
+            preview.publisher.setText(savedInstanceState.getString("publisher"));
+            preview.authors.setText(savedInstanceState.getString("authors"));
+            preview.notes.setText(savedInstanceState.getString("notes"));
+            editor.name.setText(savedInstanceState.getString("name"));
+            editor.publisher.setText(savedInstanceState.getString("publisher"));
+            editor.series.setText(savedInstanceState.getString("series"));
+            editor.authors.setText(savedInstanceState.getString("authors"));
+            editor.price.setText(savedInstanceState.getString("price"));
+            editor.notes.setText(savedInstanceState.getString("notes"));
+            editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, savedInstanceState.getString("periodicity")));
+        } else {
+            preview.initial.setText(mComics.comics.getInitial());
+            preview.name.setText(mComics.comics.name);
+            preview.publisher.setText(mComics.comics.publisher);
+            preview.authors.setText(mComics.comics.authors);
+            preview.notes.setText(mComics.comics.notes);
+            editor.name.setText(mComics.comics.name);
+            editor.publisher.setText(mComics.comics.publisher);
+            editor.series.setText(mComics.comics.series);
+            editor.authors.setText(mComics.comics.authors);
+            editor.price.setText(numberFormat.format(mComics.comics.price));
+            editor.notes.setText(mComics.comics.notes);
+            editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, mComics.comics.periodicity));
+        }
 
+        // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
         final Release lastRelease = mComics.getLastPurchasedRelease();
         preview.last.setText(lastRelease == null ? context.getString(R.string.release_last_none):
                 context.getString(R.string.release_last, lastRelease.number));
@@ -111,22 +176,15 @@ class ComicsEditFragmentHelper {
         preview.missing.setText(context.getString(R.string.release_missing, missingCount));
 
         preview.comicsMenu.setVisibility(View.GONE);
-
-        editor.name.setText(mComics.comics.name);
-        editor.publisher.setText(mComics.comics.publisher);
-        editor.series.setText(mComics.comics.series);
-        editor.authors.setText(mComics.comics.authors);
-        editor.price.setText(numberFormat.format(mComics.comics.price));
-        editor.notes.setText(mComics.comics.notes);
-        editor.periodicity.setText(mComics.comics.periodicity);
     }
 
     ComicsWithReleases writeComics() {
-        mComics.comics.name = editor.name.getText().toString();
-        mComics.comics.publisher = editor.publisher.getText().toString();
-        mComics.comics.series = editor.series.getText().toString();
-        mComics.comics.authors = editor.authors.getText().toString();
-        mComics.comics.notes = editor.authors.getText().toString();
+        mComics.comics.name = editor.name.getText().toString().trim();
+        mComics.comics.publisher = editor.publisher.getText().toString().trim();
+        mComics.comics.series = editor.series.getText().toString().trim();
+        mComics.comics.authors = editor.authors.getText().toString().trim();
+        mComics.comics.notes = editor.notes.getText().toString().trim();
+        mComics.comics.periodicity = getSelectedPeriodicityKey();
 
         if (editor.price.length() > 0) {
             try {
@@ -139,9 +197,17 @@ class ComicsEditFragmentHelper {
             mComics.comics.price = 0;
         }
 
-        // TODO: periodicy
-
         return mComics;
+    }
+
+    void saveInstanceState(@NonNull Bundle outState) {
+        outState.putString("name", editor.name.getText().toString());
+        outState.putString("publisher", editor.publisher.getText().toString());
+        outState.putString("series", editor.series.getText().toString());
+        outState.putString("authors", editor.authors.getText().toString());
+        outState.putString("notes", editor.notes.getText().toString());
+        outState.putString("price", editor.price.getText().toString());
+        outState.putString("periodicity", getSelectedPeriodicityKey());
     }
 
     boolean isValid() {

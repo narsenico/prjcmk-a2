@@ -72,7 +72,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
         protected Void doInBackground(final Void... params) {
             mReleaseDao.deleteAll();
             mComicsDao.deleteAll();
-            Comics[] list = new Comics[100];
+            Comics[] list = new Comics[20];
             for (int ii=0; ii<list.length; ii++) {
                 list[ii] = Comics.create(String.format("Comics #%s", ii+1));
             }

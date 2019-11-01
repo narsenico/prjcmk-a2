@@ -56,7 +56,7 @@ public class ComicsWithReleases {
      */
     public static ComicsWithReleases createNew() {
         final ComicsWithReleases cwr = new ComicsWithReleases();
-        cwr.comics = new Comics();
+        cwr.comics = Comics.create("");
         // cwr.releases => lo lascio null
         return cwr;
     }

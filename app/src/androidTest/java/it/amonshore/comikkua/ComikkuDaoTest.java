@@ -43,26 +43,28 @@ public class ComikkuDaoTest {
 
     @Before
     public void init() {
+        LogHelper.setTag("CMKTEST");
+
         final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDatabase = Room.inMemoryDatabaseBuilder(appContext, ComikkuDatabase.class).build();
 
         mReleaseDao = mDatabase.releaseDao();
         mComicsDao = mDatabase.comicsDao();
 
-        mReleaseDao.deleteAll();
-        mComicsDao.deleteAll();
-        Comics[] list = new Comics[100];
-        for (int ii=0; ii<list.length; ii++) {
-            list[ii] = Comics.create(String.format("Comics #%s", ii+1));
-        }
-        mComicsDao.insert(list);
-
-        List<Comics> comics = mComicsDao.getRawComics();
-        Release[] releases = new Release[comics.size()];
-        for (int ii=0; ii<releases.length; ii++) {
-            releases[ii] = Release.create(comics.get(ii).id, (int)(Math.random() * 10));
-        }
-        mReleaseDao.insert(releases);
+//        mReleaseDao.deleteAll();
+//        mComicsDao.deleteAll();
+//        Comics[] list = new Comics[100];
+//        for (int ii=0; ii<list.length; ii++) {
+//            list[ii] = Comics.create(String.format("Comics #%s", ii+1));
+//        }
+//        mComicsDao.insert(list);
+//
+//        List<Comics> comics = mComicsDao.getRawComics();
+//        Release[] releases = new Release[comics.size()];
+//        for (int ii=0; ii<releases.length; ii++) {
+//            releases[ii] = Release.create(comics.get(ii).id, (int)(Math.random() * 10));
+//        }
+//        mReleaseDao.insert(releases);
     }
 
     @After
@@ -133,5 +135,28 @@ public class ComikkuDaoTest {
 
         latch.await(2, TimeUnit.SECONDS);
         ld.removeObserver(observer);
+    }
+
+    @Test
+    public void testOrder() throws InterruptedException {
+        LogHelper.d("start");
+        LiveData<List<ComicsWithReleases>> ld = mComicsDao.getComicsWithReleases();
+        CountDownLatch latch = new CountDownLatch(3);
+        Observer<List<ComicsWithReleases>> observer;
+        ld.observeForever(observer = new Observer<List<ComicsWithReleases>>() {
+            @Override
+            public void onChanged(List<ComicsWithReleases> comicsWithReleases) {
+                for (ComicsWithReleases cwr : comicsWithReleases) {
+                    LogHelper.d("%d) %s [id=%d]", latch.getCount(), cwr.comics.name, cwr.comics.id);
+                }
+                latch.countDown();
+            }
+        });
+        mComicsDao.insert(Comics.create("b"));
+        mComicsDao.insert(Comics.create("A"));
+        mComicsDao.insert(Comics.create("C"));
+        latch.await(4, TimeUnit.SECONDS);
+        ld.removeObserver(observer);
+        LogHelper.d("end");
     }
 }

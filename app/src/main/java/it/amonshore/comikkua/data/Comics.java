@@ -1,5 +1,7 @@
 package it.amonshore.comikkua.data;
 
+import android.text.TextUtils;
+
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,8 @@ import androidx.room.Relation;
         indices = {@Index("name")})
 public class Comics {
 
+    public final static long NEW_COMICS_ID = 0;
+
     @PrimaryKey(autoGenerate = true)
     public long id;
     @NonNull
@@ -26,6 +30,14 @@ public class Comics {
     public String reserved;
     public String notes;
     public String image;
+
+    public String getInitial() {
+        if (TextUtils.isEmpty(name)) {
+            return "";
+        } else {
+            return name.substring(0, 1);
+        }
+    }
 
     public static Comics create(@NonNull String name) {
         final Comics comics = new Comics();

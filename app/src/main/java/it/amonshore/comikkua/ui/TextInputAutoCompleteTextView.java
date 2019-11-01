@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import androidx.annotation.ArrayRes;
 import com.google.android.material.textfield.TextInputLayout;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
 import android.util.AttributeSet;
 import android.view.ViewParent;
@@ -12,8 +14,12 @@ import android.view.inputmethod.InputConnection;
 import android.widget.ArrayAdapter;
 
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 
 public class TextInputAutoCompleteTextView extends AppCompatAutoCompleteTextView {
+
+    private String[] mKeys;
+    private String[] mEntries;
 
     public TextInputAutoCompleteTextView(Context context) {
         super(context);
@@ -33,11 +39,15 @@ public class TextInputAutoCompleteTextView extends AppCompatAutoCompleteTextView
         final TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs,
                 R.styleable.TextInputAutoCompleteTextView, 0, 0);
         try {
+            int keys = typedArray.getResourceId(R.styleable.TextInputAutoCompleteTextView_keys, 0);
+            if (keys > 0) {
+                setKeys(keys);
+            }
             int entries = typedArray.getResourceId(R.styleable.TextInputAutoCompleteTextView_entries, 0);
             if (entries > 0) {
                 setEntries(entries);
             }
-            if (typedArray.getBoolean(R.styleable.TextInputAutoCompleteTextView_spinnerMode, false)) {
+            if (typedArray.getBoolean(R.styleable.TextInputAutoCompleteTextView_isSpinner, false)) {
                 spinnerMode();
             }
         } finally {
@@ -59,15 +69,57 @@ public class TextInputAutoCompleteTextView extends AppCompatAutoCompleteTextView
         return ic;
     }
 
+    public void setKeys(@ArrayRes int resId) {
+        final String[] array = getResources().getStringArray(resId);
+        setKeys(array);
+    }
+
+    public void setKeys(String[] keys) {
+        mKeys = keys;
+    }
+
     public void setEntries(@ArrayRes int resId) {
         final String[] array = getResources().getStringArray(resId);
         setEntries(array);
     }
 
     public void setEntries(String[] entries) {
+        mEntries = entries;
+
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_dropdown_item_1line, entries);
         setAdapter(adapter);
+    }
+
+    public int getSelectedIndex() {
+        if (mEntries != null && mKeys != null) {
+            final int pos = Utility.indexOf(mEntries, getText().toString());
+            if (pos >= 0 && pos < mKeys.length) {
+                return pos;
+            } else {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    @Nullable
+    public String getSelectedKey() {
+        final int index = getSelectedIndex();
+        return index < 0 ? null : mKeys[index];
+    }
+
+    public void setSelectedKey(String key) {
+        if (mEntries != null && mKeys != null) {
+            final int pos = Utility.indexOf(mKeys, key);
+            if (pos >= 0 && pos < mEntries.length) {
+                setText(mEntries[pos]);
+            } else {
+                setText("");
+            }
+        } else {
+            setText("");
+        }
     }
 
     public void spinnerMode() {

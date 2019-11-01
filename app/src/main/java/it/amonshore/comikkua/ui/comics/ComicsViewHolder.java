@@ -38,7 +38,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     void bind(@NonNull ComicsWithReleases comics, boolean selected) {
         itemView.setActivated(selected);
         mId = comics.comics.id;
-        mInitial.setText(comics.comics.name.substring(0, 1));
+        mInitial.setText(comics.comics.getInitial());
         mName.setText(comics.comics.name);
         mPublisher.setText(comics.comics.publisher);
         mAuthors.setText(comics.comics.authors);

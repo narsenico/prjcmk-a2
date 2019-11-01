@@ -25,9 +25,12 @@ import android.view.ViewGroup;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+
+import static it.amonshore.comikkua.data.Comics.NEW_COMICS_ID;
 
 
 public class ComicsFragment extends Fragment {
@@ -143,7 +146,9 @@ public class ComicsFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        mAdapter.getSelectionTracker().onSaveInstanceState(outState);
+        if (mAdapter != null) {
+            mAdapter.getSelectionTracker().onSaveInstanceState(outState);
+        }
     }
 
     @Override
@@ -157,6 +162,14 @@ public class ComicsFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.deleteAllComics:
                 LogHelper.d("delete all comics");
+                return true;
+            case R.id.createNewComics:
+                final NavDirections directions = ComicsFragmentDirections
+                        .actionDestComicsFragmentToComicsEditFragment()
+                        .setComicsId(NEW_COMICS_ID);
+
+                Navigation.findNavController(getView()).navigate(directions);
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -3,9 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/createNewComics"
+        android:icon="@drawable/ic_add"
+        android:title="@string/menu_create"
+        android:orderInCategory="10"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/deleteAllComics"
         android:icon="@drawable/ic_delete"
         android:title="@string/menu_delete"
+        android:orderInCategory="20"
         app:showAsAction="ifRoom" />
 
 </menu>
