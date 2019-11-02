@@ -1,137 +1,192 @@
 package it.amonshore.comikkua.ui.releases;
 
-import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
+import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.XRelease;
-import it.amonshore.comikkua.data.ReleaseHeader;
-import it.amonshore.comikkua.data.ReleaseItem;
+import java.util.Iterator;
 
-public class ReleasesRecyclerViewAdapter extends RecyclerView.Adapter<ReleasesRecyclerViewAdapter.ItemViewHolder> {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.selection.ItemKeyProvider;
+import androidx.recyclerview.selection.OnItemActivatedListener;
+import androidx.recyclerview.selection.Selection;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StorageStrategy;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
+import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.data.ComicsRelease;
+import it.amonshore.comikkua.ui.ActionModeController;
+import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
-    private final ReleaseItem[] mItemList;
-    private final LayoutInflater mLayoutInflater;
+public class ReleasesRecyclerViewAdapter extends PagedListAdapter<ComicsRelease, ReleaseViewHolder> {
+    private SelectionTracker<Long> mSelectionTracker;
 
-    public ReleasesRecyclerViewAdapter(Context context, ReleaseItem[] itemList) {
-        mLayoutInflater = LayoutInflater.from(context);
-        mItemList = itemList;
+    private ReleasesRecyclerViewAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return mItemList[position].Type;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
-        holder.bind(mItemList[position], position);
+    public void onBindViewHolder(@NonNull ReleaseViewHolder holder, int position) {
+        final ComicsRelease item = getItem(position);
+        if (item != null) {
+            // mostro l'instestazione (che fa parte del ViewHolder) solo se l'elemento precedente è "tipo" diverso
+            //  cioè è stato estratto con una query diversa
+            boolean showHeader;
+            if (position == 0) {
+                showHeader = true;
+            } else {
+                final ComicsRelease previous = getItem(position - 1);
+                if (previous == null) {
+                    showHeader = true;
+                } else {
+                    showHeader = previous.type != item.type;
+                }
+            }
+            holder.bind(item, mSelectionTracker.isSelected(item.release.id), showHeader, position == 0);
+        } else {
+            holder.clear();
+        }
     }
 
     @NonNull
     @Override
-    public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == 0) {
-            return new HeaderViewHolder(mLayoutInflater.inflate(R.layout.listitem_release_header, parent, false));
-        } else {
-            return new ReleaseViewHolder(mLayoutInflater.inflate(R.layout.listitem_release, parent, false));
-        }
+    public ReleaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
     }
 
     @Override
-    public int getItemCount() {
-        return mItemList.length;
+    public long getItemId(int position) {
+        final ComicsRelease item = getItem(position);
+        if (item == null) {
+            return RecyclerView.NO_ID;
+        } else {
+            return item.release.id;
+        }
     }
 
-    static abstract class ItemViewHolder extends RecyclerView.ViewHolder {
-        ItemViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        abstract void bind(ReleaseItem item, int position);
+    SelectionTracker<Long> getSelectionTracker() {
+        return mSelectionTracker;
     }
 
-    static class ReleaseViewHolder extends ItemViewHolder {
-        private final TextView
-                mTitle,
-                mNumbers,
-                mDate,
-                mInfo,
-                mNotes;
-        private final ImageView
-                mPurchased,
-                mOrdered;
+    interface OnItemSelectedListener {
 
-        ReleaseViewHolder(View itemView) {
-            super(itemView);
-            mTitle = itemView.findViewById(R.id.txt_release_title);
-            mNumbers = itemView.findViewById(R.id.txt_release_numbers);
-            mDate = itemView.findViewById(R.id.txt_release_date);
-            mInfo = itemView.findViewById(R.id.txt_release_info);
-            mNotes = itemView.findViewById(R.id.txt_release_notes);
-            mPurchased = itemView.findViewById(R.id.img_release_purchased);
-            mOrdered = itemView.findViewById(R.id.img_release_ordered);
+        void onSelectionChanged(@Nullable Iterator<Long> keys, int size);
+    }
+
+    interface ActionModeControllerCallback {
+
+        void onActionModeControllerCreated(ActionModeController controller);
+
+        void onActionModeMenuItemSelected(MenuItem item);
+    }
+
+    static class Builder {
+        private final RecyclerView mRecyclerView;
+        private OnItemActivatedListener<Long> mOnItemActivatedListener;
+        private OnItemSelectedListener mOnItemSelectedListener;
+        private ActionModeControllerCallback mActionModeControllerCallback;
+        private int actionModeMenuRes;
+
+        Builder(@NonNull RecyclerView recyclerView) {
+            mRecyclerView = recyclerView;
         }
 
-        @Override
-        void bind(ReleaseItem item, int position) {
-            bind((XRelease)item.Value, position);
+        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
+            mOnItemActivatedListener = listener;
+            return this;
         }
 
-        void bind(XRelease release, int position) {
-            mTitle.setText(release.Title);
-            mNumbers.setText(release.Numbers);
-            mDate.setText(release.Date);
-            mInfo.setText(release.Info);
-            mNotes.setText(release.Notes);
-            mOrdered.setVisibility(release.Ordered.equals("S") ? View.VISIBLE : View.INVISIBLE);
+        Builder withOnItemSelectedListener(OnItemSelectedListener listener) {
+            mOnItemSelectedListener = listener;
+            return this;
+        }
 
-            if (release.Purchased.equals("S")) {
-                itemView.setElevation(0);
-                ((CardView) itemView).setCardBackgroundColor(itemView.getResources().getColor(R.color.colorItemBackgroundLighter));
-                mPurchased.setVisibility(View.VISIBLE);
-                mNumbers.setBackgroundColor(itemView.getResources().getColor(R.color.colorItemBackgroundAlt));
-            } else {
-                itemView.setElevation(5.25f);
-                ((CardView) itemView).setCardBackgroundColor(itemView.getResources().getColor(R.color.colorItemBackgroundLight));
-                mPurchased.setVisibility(View.INVISIBLE);
-                mNumbers.setBackgroundColor(itemView.getResources().getColor(R.color.colorItemBackgroundAltVivid));
+        Builder withActionModeControllerCallback(int menuRes, ActionModeControllerCallback callback) {
+            // TODO: dovrebbe essere usato con withOnItemSelectedListener... altrimenti non funziona
+            //  quindi gestire da qua la creazione di ActionMode.Callback,
+            //  e al chiamante si passa la notifica della creazione e la selezione di un tasto del menu
+            //  in modo che possa aggiornare la toolbar dell'activity
+            actionModeMenuRes = menuRes;
+            mActionModeControllerCallback = callback;
+            return this;
+        }
+
+        ReleasesRecyclerViewAdapter build() {
+            final ReleasesRecyclerViewAdapter adapter = new ReleasesRecyclerViewAdapter();
+            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
+            adapter.setHasStableIds(true);
+            mRecyclerView.setAdapter(adapter);
+
+            final SelectionTracker.Builder<Long> builder = new SelectionTracker.Builder<>(
+                    "comics-selection",
+                    mRecyclerView,
+                    new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
+                    new ReleaseItemDetailsLookup(mRecyclerView),
+                    StorageStrategy.createLongStorage());
+
+            if (mOnItemActivatedListener != null) {
+                builder.withOnItemActivatedListener(mOnItemActivatedListener);
             }
-        }
-    }
 
-    static class HeaderViewHolder extends ItemViewHolder {
-        private final TextView
-                mTitle,
-                mInfo;
+            adapter.mSelectionTracker = builder.build();
 
-        HeaderViewHolder(View itemView) {
-            super(itemView);
-            mTitle = itemView.findViewById(R.id.txt_title);
-            mInfo = itemView.findViewById(R.id.txt_info);
-        }
+            if (mOnItemSelectedListener != null) {
+                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+                    @Override
+                    public void onSelectionChanged() {
+                        if (adapter.mSelectionTracker.hasSelection()) {
+                            final Selection<Long> selection = adapter.getSelectionTracker().getSelection();
+                            mOnItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
+                        } else {
+                            mOnItemSelectedListener.onSelectionChanged(null, 0);
+                        }
+                    }
 
-        @Override
-        void bind(ReleaseItem item, int position) {
-            bind((ReleaseHeader)item.Value, position);
-        }
-
-        void bind(ReleaseHeader header, int position) {
-            mTitle.setText(header.Title);
-            mInfo.setText(header.Info);
-
-            if (position == 0) {
-                itemView.findViewById(R.id.separator).setVisibility(View.GONE);
-            } else {
-                itemView.findViewById(R.id.separator).setVisibility(View.VISIBLE);
+                    @Override
+                    public void onSelectionRestored() {
+                        LogHelper.d("fire selection changed onSelectionRestored");
+                        if (adapter.mSelectionTracker.hasSelection()) {
+                            final Selection<Long> selection = adapter.getSelectionTracker().getSelection();
+                            mOnItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
+                        } else {
+                            mOnItemSelectedListener.onSelectionChanged(null, 0);
+                        }
+                        super.onSelectionRestored();
+                    }
+                });
             }
+
+//            // appena un item viene inserito mi sposto sulla sua posizione
+//            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+//                @Override
+//                public void onItemRangeInserted(int positionStart, int itemCount) {
+//                    mRecyclerView.scrollToPosition(positionStart);
+//                }
+//            });
+
+            return adapter;
         }
     }
+
+    private static DiffUtil.ItemCallback<ComicsRelease> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ComicsRelease>() {
+                // ComicsWithReleases details may have changed if reloaded from the database,
+                // but ID is fixed.
+                @Override
+                public boolean areItemsTheSame(@NonNull ComicsRelease oldComicsRelease,
+                                               @NonNull ComicsRelease newComicsRelease) {
+                    return oldComicsRelease.release.id == newComicsRelease.release.id;
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull ComicsRelease oldComicsRelease,
+                                                  @NonNull ComicsRelease newComicsRelease) {
+                    return oldComicsRelease.equals(newComicsRelease) &&
+                            oldComicsRelease.comics.lastUpdate == newComicsRelease.comics.lastUpdate &&
+                            oldComicsRelease.release.lastUpdate == newComicsRelease.release.lastUpdate;
+                }
+            };
 }

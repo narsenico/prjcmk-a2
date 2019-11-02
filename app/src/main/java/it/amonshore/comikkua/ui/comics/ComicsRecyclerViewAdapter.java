@@ -18,9 +18,9 @@ import android.view.ViewGroup;
 import java.util.Iterator;
 
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
+import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
 public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
@@ -32,9 +32,9 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
 
     @Override
     public void onBindViewHolder(@NonNull ComicsViewHolder holder, int position) {
-        final ComicsWithReleases comics = getItem(position);
-        if (comics != null) {
-            holder.bind(comics, mSelectionTracker.isSelected(comics.comics.id));
+        final ComicsWithReleases item = getItem(position);
+        if (item != null) {
+            holder.bind(item, mSelectionTracker.isSelected(item.comics.id));
         } else {
             holder.clear();
         }
@@ -43,8 +43,7 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
     @NonNull
     @Override
     public ComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ComicsViewHolder(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.listitem_comics, parent, false));
+        return ComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
     }
 
     @Override
@@ -149,34 +148,15 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
                 });
             }
 
+            // appena un item viene inserito mi sposto sulla sua posizione
+            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onItemRangeInserted(int positionStart, int itemCount) {
+                    mRecyclerView.scrollToPosition(positionStart);
+                }
+            });
+
             return adapter;
-        }
-    }
-
-    /**
-     * Non posso usare {@link androidx.recyclerview.selection.StableIdKeyProvider} perché fa casino
-     * se elimino elementi dall'adapter.
-     */
-    static class CustomItemKeyProvider extends ItemKeyProvider<Long> {
-        private RecyclerView mRecyclerView;
-        private RecyclerView.Adapter mAdapter;
-
-        CustomItemKeyProvider(@NonNull RecyclerView recyclerView, int scope) {
-            super(scope);
-            mRecyclerView = recyclerView;
-            mAdapter = recyclerView.getAdapter();
-        }
-
-        @Nullable
-        @Override
-        public Long getKey(int position) {
-            return mAdapter == null ? RecyclerView.NO_ID : mAdapter.getItemId(position);
-        }
-
-        @Override
-        public int getPosition(@NonNull Long key) {
-            final RecyclerView.ViewHolder viewHolder = mRecyclerView.findViewHolderForItemId(key);
-            return viewHolder == null ? RecyclerView.NO_POSITION : viewHolder.getLayoutPosition();
         }
     }
 

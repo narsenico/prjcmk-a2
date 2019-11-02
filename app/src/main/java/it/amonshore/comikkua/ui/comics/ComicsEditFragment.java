@@ -46,8 +46,14 @@ public class ComicsEditFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // recupero il ViewModel per l'accesso ai dati
+        mComicsViewModel = new ViewModelProvider(this)
+                .get(ComicsViewModel.class);
+
         // helper per bindare le view
-        mHelper = ComicsEditFragmentHelper.init(inflater, container);
+        mHelper = ComicsEditFragmentHelper.init(inflater, container,
+                mComicsViewModel,
+                getViewLifecycleOwner());
 
         // id del comics da editra, può essere NEW_COMICS_ID per la creazione di un nuovo comics
         mComicsId = ComicsDetailFragmentArgs.fromBundle(getArguments()).getComicsId();
@@ -55,10 +61,6 @@ public class ComicsEditFragment extends Fragment {
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
         mHelper.getRootView().findViewById(R.id.comics).setTransitionName("comics_tx_" + mComicsId);
-
-        // recupero il ViewModel per l'accesso ai dati
-        mComicsViewModel = new ViewModelProvider(this)
-                .get(ComicsViewModel.class);
 
         if (mComicsId == NEW_COMICS_ID) {
             mHelper.setComics(requireContext(), null, savedInstanceState);
@@ -112,18 +114,19 @@ public class ComicsEditFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.saveComics:
-                // TODO: controllare se esistono altri comics con lo stesso nome
-
                 // inserisco o aggiorno il comics e torno subito indietro
-                if (mHelper.isValid()) {
-                    if (mHelper.isNew()) {
-                        mComicsViewModel.insert(mHelper.writeComics().comics);
-                    } else {
-                        mComicsViewModel.update(mHelper.writeComics().comics);
+                mHelper.isValid(valid -> {
+                    if (valid) {
+                        if (mHelper.isNew()) {
+                            mComicsViewModel.insert(mHelper.writeComics().comics);
+                        } else {
+                            mComicsViewModel.update(mHelper.writeComics().comics);
+                        }
+                        Navigation.findNavController(mHelper.getRootView())
+                                .navigateUp();
                     }
-                    Navigation.findNavController(mHelper.getRootView())
-                            .navigateUp();
-                }
+                });
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

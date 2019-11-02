@@ -8,6 +8,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +24,8 @@ import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsDao;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.data.ComikkuDatabase;
+import it.amonshore.comikkua.data.LostRelease;
+import it.amonshore.comikkua.data.MissingRelease;
 import it.amonshore.comikkua.data.Release;
 import it.amonshore.comikkua.data.ReleaseDao;
 
@@ -51,20 +55,28 @@ public class ComikkuDaoTest {
         mReleaseDao = mDatabase.releaseDao();
         mComicsDao = mDatabase.comicsDao();
 
-//        mReleaseDao.deleteAll();
-//        mComicsDao.deleteAll();
-//        Comics[] list = new Comics[100];
-//        for (int ii=0; ii<list.length; ii++) {
-//            list[ii] = Comics.create(String.format("Comics #%s", ii+1));
-//        }
-//        mComicsDao.insert(list);
-//
-//        List<Comics> comics = mComicsDao.getRawComics();
-//        Release[] releases = new Release[comics.size()];
-//        for (int ii=0; ii<releases.length; ii++) {
-//            releases[ii] = Release.create(comics.get(ii).id, (int)(Math.random() * 10));
-//        }
-//        mReleaseDao.insert(releases);
+        mReleaseDao.deleteAll();
+        mComicsDao.deleteAll();
+        Comics[] list = new Comics[20];
+        for (int ii = 0; ii < list.length; ii++) {
+            list[ii] = Comics.create(String.format("Comics #%s", ii + 1));
+        }
+        mComicsDao.insert(list);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance();
+
+        List<Comics> comics = mComicsDao.getRawComics();
+        Release[] releases = new Release[comics.size() * 2];
+        for (int ii = 0, jj = 0; ii < comics.size(); ii++) {
+            // senza data (missing)
+            releases[jj++] = Release.create(comics.get(ii).id, (int) (Math.random() * 10));
+            // con data (lost)
+            releases[jj++] = Release.create(comics.get(ii).id, (int) (Math.random() * 10), sdf.format(calendar.getTime()));
+
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        mReleaseDao.insert(releases);
     }
 
     @After
@@ -158,5 +170,46 @@ public class ComikkuDaoTest {
         latch.await(4, TimeUnit.SECONDS);
         ld.removeObserver(observer);
         LogHelper.d("end");
+    }
+
+    @Test
+    public void readMissingReleases() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        LiveData<List<MissingRelease>> ldMissing = mReleaseDao.getMissingReleases();
+        ldMissing.observeForever(new Observer<List<MissingRelease>>() {
+            @Override
+            public void onChanged(List<MissingRelease> missingReleases) {
+                LogHelper.d("Missing:");
+                for (MissingRelease ms : missingReleases) {
+                    LogHelper.d("%s: #%d (date=%s, flags=%s)",
+                            ms.comics.name, ms.release.number, ms.release.date, ms.release.flags);
+                }
+                LogHelper.d("===");
+                ldMissing.removeObserver(this);
+                latch.countDown();
+            }
+        });
+        latch.await(2, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void readLostReleases() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        LiveData<List<LostRelease>> ldLost = mReleaseDao.getLostReleases("20191111", "20191115");
+        ldLost.observeForever(new Observer<List<LostRelease>>() {
+            @Override
+            public void onChanged(List<LostRelease> lostReleases) {
+                LogHelper.d("Lost:");
+                for (LostRelease ms : lostReleases) {
+                    LogHelper.d("%s: #%d (date=%s, flags=%s)",
+                            ms.comics.name, ms.release.number, ms.release.date, ms.release.flags);
+                }
+                LogHelper.d("===");
+                ldLost.removeObserver(this);
+                latch.countDown();
+                assertEquals(5, lostReleases.size());
+            }
+        });
+        latch.await(2, TimeUnit.SECONDS);
     }
 }

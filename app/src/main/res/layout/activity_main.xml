@@ -35,7 +35,7 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorItemBackgroundLight"
+        android:background="@color/colorItemBackgroundSecondary"
         app:itemIconSize="34dp"
         app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"

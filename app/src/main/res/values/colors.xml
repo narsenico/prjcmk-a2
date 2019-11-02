@@ -15,4 +15,32 @@
     <color name="colorItemBackgroundAltVivid">#acdfd0</color>
     <color name="colorItemForeground">#fafafa</color>
     <color name="colorItemSelected">#03A9F4</color>
+
+    <color name="colorItemBackgroundA">#EF5350</color>
+    <color name="colorItemBackgroundB">#F44336</color>
+    <color name="colorItemBackgroundC">#EC407A</color>
+    <color name="colorItemBackgroundD">#E91E63</color>
+    <color name="colorItemBackgroundE">#AB47BC</color>
+    <color name="colorItemBackgroundF">#9C27B0</color>
+    <color name="colorItemBackgroundG">#7E57C2</color>
+    <color name="colorItemBackgroundH">#673AB7</color>
+    <color name="colorItemBackgroundI">#5C6BC0</color>
+    <color name="colorItemBackgroundJ">#3F51B5</color>
+    <color name="colorItemBackgroundK">#42A5F5</color>
+    <color name="colorItemBackgroundL">#2196F3</color>
+    <color name="colorItemBackgroundM">#29B6F6</color>
+    <color name="colorItemBackgroundN">#03A9F4</color>
+    <color name="colorItemBackgroundO">#26C6DA</color>
+    <color name="colorItemBackgroundP">#00BCD4</color>
+    <color name="colorItemBackgroundQ">#009688</color>
+    <color name="colorItemBackgroundR">#00897B</color>
+    <color name="colorItemBackgroundS">#66BB6A</color>
+    <color name="colorItemBackgroundT">#4CAF50</color>
+    <color name="colorItemBackgroundU">#9CCC65</color>
+    <color name="colorItemBackgroundV">#8BC34A</color>
+    <color name="colorItemBackgroundW">#CDDC39</color>
+    <color name="colorItemBackgroundX">#C0CA33</color>
+    <color name="colorItemBackgroundY">#FFEE58</color>
+    <color name="colorItemBackgroundZ">#FFEB3B</color>
+    <color name="colorItemBackground_">#8D6E63</color>
 </resources>

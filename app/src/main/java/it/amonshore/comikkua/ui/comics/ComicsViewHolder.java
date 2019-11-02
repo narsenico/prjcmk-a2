@@ -1,16 +1,18 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.data.Release;
-import it.amonshore.comikkua.data.XComics;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
@@ -18,7 +20,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
             mLast, mNext, mMissing;
     private long mId;
 
-    ComicsViewHolder(View itemView) {
+    private ComicsViewHolder(View itemView) {
         super(itemView);
         mInitial = itemView.findViewById(R.id.txt_comics_initial);
         mName = itemView.findViewById(R.id.txt_comics_name);
@@ -47,7 +49,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         final Context context = itemView.getContext();
 
         final Release lastRelease = comics.getLastPurchasedRelease();
-        mLast.setText(lastRelease == null ? context.getString(R.string.release_last_none):
+        mLast.setText(lastRelease == null ? context.getString(R.string.release_last_none) :
                 context.getString(R.string.release_last, lastRelease.number));
 
         final Release nextRelease = comics.getNextToPurchaseRelease();
@@ -56,6 +58,16 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 
         final int missingCount = comics.getMissingReleaseCount();
         mMissing.setText(context.getString(R.string.release_missing, missingCount));
+
+//        // cambio il colore dello sfondo dell'iniziale in base al suo valore
+//        final LayerDrawable layerDrawable = (LayerDrawable) ContextCompat.getDrawable(itemView.getContext(), R.drawable.background_comics_initial);
+//        if (layerDrawable != null) {
+//            final GradientDrawable drawable = (GradientDrawable) layerDrawable.findDrawableByLayerId(R.id.background);
+//            if (drawable != null) {
+//                drawable.setColor(ContextCompat.getColor(itemView.getContext(),
+//                        getInitialColor(comics.comics.getInitial().toUpperCase().charAt(0))));
+//            }
+//        }
     }
 
     void clear() {
@@ -69,6 +81,72 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mLast.setText("");
         mNext.setText("");
         mMissing.setText("");
+    }
+
+    @ColorRes
+    int getInitialColor(char initial) {
+        switch (initial) {
+            case 'A':
+                return R.color.colorItemBackgroundA;
+            case 'B':
+                return R.color.colorItemBackgroundB;
+            case 'C':
+                return R.color.colorItemBackgroundC;
+            case 'D':
+                return R.color.colorItemBackgroundD;
+            case 'E':
+                return R.color.colorItemBackgroundE;
+            case 'F':
+                return R.color.colorItemBackgroundF;
+            case 'G':
+                return R.color.colorItemBackgroundG;
+            case 'H':
+                return R.color.colorItemBackgroundH;
+            case 'I':
+                return R.color.colorItemBackgroundI;
+            case 'J':
+                return R.color.colorItemBackgroundJ;
+            case 'K':
+                return R.color.colorItemBackgroundK;
+            case 'L':
+                return R.color.colorItemBackgroundL;
+            case 'M':
+                return R.color.colorItemBackgroundM;
+            case 'N':
+                return R.color.colorItemBackgroundN;
+            case 'O':
+                return R.color.colorItemBackgroundO;
+            case 'P':
+                return R.color.colorItemBackgroundP;
+            case 'Q':
+                return R.color.colorItemBackgroundQ;
+            case 'R':
+                return R.color.colorItemBackgroundR;
+            case 'S':
+                return R.color.colorItemBackgroundS;
+            case 'T':
+                return R.color.colorItemBackgroundT;
+            case 'U':
+                return R.color.colorItemBackgroundU;
+            case 'V':
+                return R.color.colorItemBackgroundV;
+            case 'W':
+                return R.color.colorItemBackgroundW;
+            case 'X':
+                return R.color.colorItemBackgroundX;
+            case 'Y':
+                return R.color.colorItemBackgroundY;
+            case 'Z':
+                return R.color.colorItemBackgroundZ;
+            case '_':
+                return R.color.colorItemBackground_;
+            default:
+                return R.color.colorItemBackgroundAlt;
+        }
+    }
+
+    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
+        return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false));
     }
 
 }

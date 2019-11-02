@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import java.util.List;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
@@ -17,7 +16,11 @@ public class ComicsRepository {
 
     private ComicsDao mComicsDao;
     final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
-    final MutableLiveData<String> search = new MutableLiveData<>();
+    /**
+     * Usata per cercare/filtrare i comics in base al nome.
+     * Ogni volta che il suo valore cambia viene aggiornato comicsWithReleasesList con un nuovo LivePagedListBuilder.
+     */
+    final MutableLiveData<String> filterName = new MutableLiveData<>();
 
     ComicsRepository(Application application) {
         ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
@@ -29,19 +32,16 @@ public class ComicsRepository {
                 .setEnablePlaceholders(true)
                 .build();
 
-        comicsWithReleasesList = Transformations.switchMap(search, input -> {
+        // è eccitato dal MutableLiveData filterName
+        // se il suo valore è vuoto, oppure %%, viene ritornato l'intero set di comics
+        // oppure solo quelli che matchano il nome (like)
+        comicsWithReleasesList = Transformations.switchMap(filterName, input -> {
            if (TextUtils.isEmpty(input) || input.equals("%%")) {
                return new LivePagedListBuilder<>(mComicsDao.comicsWithReleases(), config).build();
            } else {
                return new LivePagedListBuilder<>(mComicsDao.comicsWithReleases(input), config).build();
            }
         });
-
-//        comicsWithReleasesList = new LivePagedListBuilder<>(
-//                mComicsDao.comicsWithReleases(), config)
-//                .build();
-
-
     }
 
     LiveData<List<Comics>> getComics() {
@@ -52,12 +52,20 @@ public class ComicsRepository {
         return mComicsDao.getComics(id);
     }
 
+    LiveData<Comics> getComics(String name) {
+        return mComicsDao.getComics(name);
+    }
+
     LiveData<List<ComicsWithReleases>> getComicsWithReleases() {
         return mComicsDao.getComicsWithReleases();
     }
 
     LiveData<ComicsWithReleases> getComicsWithReleases(long id) {
         return mComicsDao.getComicsWithReleases(id);
+    }
+
+    LiveData<List<String>> getPublishers() {
+        return mComicsDao.getPublishers();
     }
 
     public void insert(Comics comics) {

@@ -29,43 +29,49 @@ public interface ComicsDao {
     @Query("DELETE FROM tComics")
     void deleteAll();
 
-    @Query("DELETE FROM tComics where id = :id")
+    @Query("DELETE FROM tComics WHERE id = :id")
     void delete(long id);
 
-    @Query("DELETE FROM tComics where id in (:id)")
+    @Query("DELETE FROM tComics WHERE id in (:id)")
     @Transaction
     void delete(Long... id);
 
-    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     LiveData<List<Comics>> getComics();
 
-    @Query("SELECT * from tComics where id = :id")
+    @Query("SELECT * FROM tComics WHERE id = :id")
     LiveData<Comics> getComics(long id);
 
-    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE name = :name")
+    LiveData<Comics> getComics(String name);
+
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     List<Comics> getRawComics();
 
-    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleases();
 
-    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases();
 
-    @Query("SELECT * from tComics where name like :likeName ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE name like :likeName ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases(String likeName);
 
-    @Query("SELECT * from tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     List<ComicsWithReleases> getRawComicsWithReleases();
 
-    @Query("SELECT * from tComics where name = :name")
+    @Query("SELECT * FROM tComics WHERE name = :name")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleasesByName(String name);
 
-    @Query("SELECT * from tComics where id = :id")
+    @Query("SELECT * FROM tComics WHERE id = :id")
     @Transaction
     LiveData<ComicsWithReleases> getComicsWithReleases(long id);
+
+    @Query("SELECT distinct(publisher) FROM tComics WHERE publisher <> '' ORDER BY publisher")
+    LiveData<List<String>> getPublishers();
 }

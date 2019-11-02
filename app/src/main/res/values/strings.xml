@@ -46,5 +46,6 @@
     <string name="release_missing">Missing: %d</string>
 
     <string name="comics_name_empty_error">Name cannot be empty</string>
+    <string name="comics_name_notunique_error">Name already used</string>
 
 </resources>

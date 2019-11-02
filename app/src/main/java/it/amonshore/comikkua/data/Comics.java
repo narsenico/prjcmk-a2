@@ -2,15 +2,10 @@ package it.amonshore.comikkua.data;
 
 import android.text.TextUtils;
 
-import java.util.List;
-
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
-import androidx.room.Relation;
 
 @Entity(tableName = "tComics",
         indices = {@Index("name")})
@@ -33,6 +28,7 @@ public class Comics {
     public String image;
     public long lastUpdate;
 
+    @NonNull
     public String getInitial() {
         if (TextUtils.isEmpty(name)) {
             return "";

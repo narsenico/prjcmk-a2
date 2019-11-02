@@ -13,12 +13,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.FragmentNavigator;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,7 +26,6 @@ import android.view.ViewGroup;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.Comics;
 import it.amonshore.comikkua.data.ComicsViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
@@ -127,7 +124,7 @@ public class ComicsFragment extends Fragment {
         mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
 
         // la prima volta carico tutti i dati
-        mComicsViewModel.search.setValue(null);
+        mComicsViewModel.filterName.setValue(null);
 
         return view;
     }
@@ -162,30 +159,24 @@ public class ComicsFragment extends Fragment {
         inflater.inflate(R.menu.menu_comics_fragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
 
-        final ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
-        final SearchView searchView = new SearchView(actionBar == null ? requireContext() : actionBar.getThemedContext());
         final MenuItem searchItem = menu.findItem(R.id.searchComics);
-        searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        searchItem.setActionView(searchView);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
 
-        // TODO: problemi con la ricerca
-        // - onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
-        // - la query vuota la posso intercettare da onQueryTextChange ma ha bisogno di un debounce per essere performante
-        // - al cambio di configurazione (es orientamento) la query viene persa
-
+        // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
+        // TODO: al cambio di configurazione (es orientamento) la query viene persa
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                LogHelper.d("search for " + query);
-//                mComicsViewModel.search.setValue("%" + query + "%");
-                return false;
+                LogHelper.d("filterName for " + query);
+//                mComicsViewModel.filterName.setValue("%" + query + "%");
+                return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                LogHelper.d("search change " + newText);
-                mComicsViewModel.search.setValue("%" + newText + "%"); // TODO: ok ma aggiungere debounce
-                return false;
+                LogHelper.d("filterName change " + newText);
+                mComicsViewModel.filterName.setValue("%" + newText + "%"); // TODO: ok ma aggiungere debounce
+                return true;
             }
         });
     }
@@ -193,10 +184,6 @@ public class ComicsFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.deleteAllComics:
-                LogHelper.d("delete all comics");
-                // TODO: chiedere prima conferma mComicsViewModel.deleteAll();
-                return true;
             case R.id.createNewComics:
                 final NavDirections directions = ComicsFragmentDirections
                         .actionDestComicsFragmentToComicsEditFragment()

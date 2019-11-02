@@ -3,12 +3,11 @@ package it.amonshore.comikkua.ui.comics;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
-import android.text.method.DigitsKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,7 +15,6 @@ import android.widget.TextView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.tiper.MaterialSpinner;
 
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -25,9 +23,13 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.Comics;
+import it.amonshore.comikkua.data.ComicsViewModel;
 import it.amonshore.comikkua.data.ComicsWithReleases;
 import it.amonshore.comikkua.data.Periodicity;
 import it.amonshore.comikkua.data.Release;
@@ -38,11 +40,17 @@ import it.amonshore.comikkua.ui.TextWatcherAdapter;
  */
 class ComicsEditFragmentHelper {
 
-    static ComicsEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container) {
+    interface ValidationCallback {
+        void onValidation(boolean valid);
+    }
+
+    static ComicsEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
+                                         @NonNull ComicsViewModel viewModel,
+                                         @NonNull LifecycleOwner lifecycleOwner) {
         final View view = inflater.inflate(R.layout.fragment_comics_edit, container, false);
         final ComicsEditFragmentHelper helper = new ComicsEditFragmentHelper();
         helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
-        helper.bind((view));
+        helper.bind(view, viewModel, lifecycleOwner);
         return helper;
     }
 
@@ -54,8 +62,9 @@ class ComicsEditFragmentHelper {
 
     final class Editor {
         TextInputLayout nameLayout;
-        EditText name, publisher, series, authors, price,
+        EditText name, series, authors, price,
                 notes;
+        AutoCompleteTextView publisher;
         MaterialSpinner periodicity;
     }
 
@@ -66,9 +75,13 @@ class ComicsEditFragmentHelper {
     private ComicsWithReleases mComics;
     private NumberFormat numberFormat;
     private List<Periodicity> mPeriodicityList;
+    private @NonNull ComicsViewModel mViewModel;
+    private @NonNull LifecycleOwner mLifecycleOwner;
 
-    private void bind(@NonNull View view) {
+    private void bind(@NonNull View view, @NonNull ComicsViewModel viewModel, @NonNull LifecycleOwner lifecycleOwner) {
         mRootView = view;
+        mViewModel = viewModel;
+        mLifecycleOwner = lifecycleOwner;
 
         preview = new Preview();
         preview.initial = view.findViewById(R.id.txt_comics_initial);
@@ -84,7 +97,7 @@ class ComicsEditFragmentHelper {
         editor = new Editor();
         editor.nameLayout = view.findViewById(R.id.til_name);
         editor.name = editor.nameLayout.getEditText();
-        editor.publisher = ((TextInputLayout)view.findViewById(R.id.til_publisher)).getEditText();
+        editor.publisher = (AutoCompleteTextView)((TextInputLayout)view.findViewById(R.id.til_publisher)).getEditText();
         editor.series = ((TextInputLayout)view.findViewById(R.id.til_series)).getEditText();
         editor.authors = ((TextInputLayout)view.findViewById(R.id.til_authors)).getEditText();
         editor.price = ((TextInputLayout)view.findViewById(R.id.til_price)).getEditText();
@@ -124,6 +137,18 @@ class ComicsEditFragmentHelper {
             @Override
             public void afterTextChanged(Editable s) {
                 preview.notes.setText(s.toString().trim());
+            }
+        });
+
+        // passo l'elenco dei publisher all'autocompletamento
+        viewModel.getPublishers().observe(lifecycleOwner, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> strings) {
+                editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+                        android.R.layout.simple_dropdown_item_1line,
+                        strings));
+                // non mi serve più osservare l'elenco dei publisher
+                viewModel.getPublishers().removeObserver(this);
             }
         });
     }
@@ -239,14 +264,32 @@ class ComicsEditFragmentHelper {
         outState.putString("periodicity", getSelectedPeriodicityKey());
     }
 
-    boolean isValid() {
+    void isValid(@NonNull final ValidationCallback callback) {
         boolean valid = true;
-        if (editor.name.getText().toString().trim().length() == 0) {
+        final String name = editor.name.getText().toString().trim();
+        if (name.length() == 0) {
             editor.nameLayout.setError(editor.nameLayout.getContext().getText(R.string.comics_name_empty_error));
-            valid = false;
+            callback.onValidation(false);
         } else {
-            editor.nameLayout.setErrorEnabled(false);
+            // potrei aggiungere la condizione
+            // name.equals(mComics.comics.name)
+            // ma non funzionerebbe nel malaugurato caso di chiamare writeComics prima di isValid
+            final LiveData<Comics> ld = mViewModel.getComics(name);
+            ld.observe(mLifecycleOwner, new Observer<Comics>() {
+                @Override
+                public void onChanged(Comics comics) {
+                    ld.removeObserver(this);
+                    // il nome è valido se non è usato da nessun comics
+                    // oppure quello che usa è lo stesso comics che sto modificando
+                    if (comics == null || comics.id == mComics.comics.id) {
+                        editor.nameLayout.setErrorEnabled(false);
+                        callback.onValidation(true);
+                    } else {
+                        editor.nameLayout.setError(editor.nameLayout.getContext().getText(R.string.comics_name_notunique_error));
+                        callback.onValidation(false);
+                    }
+                }
+            });
         }
-        return valid;
     }
 }
