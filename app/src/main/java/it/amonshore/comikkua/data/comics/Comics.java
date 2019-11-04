@@ -23,10 +23,11 @@ public class Comics {
     public String authors;
     public double price;
     public String periodicity;
-    public String reserved;
+    public boolean reserved;
     public String notes;
     public String image;
     public long lastUpdate;
+    public long refJsonId;
 
     @NonNull
     public String getInitial() {

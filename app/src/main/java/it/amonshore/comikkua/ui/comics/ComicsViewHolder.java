@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
@@ -53,8 +54,17 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
                 context.getString(R.string.release_last, lastRelease.number));
 
         final Release nextRelease = comics.getNextToPurchaseRelease();
-        mNext.setText(nextRelease == null ? context.getString(R.string.release_next_none) :
-                context.getString(R.string.release_next, nextRelease.number));
+        if (nextRelease != null) {
+            if (nextRelease.date != null) {
+                // TODO: non mi piace, dovrei mostrare la data solo se futura e nel formato ddd dd MMM
+                mNext.setText(context.getString(R.string.release_next_dated, nextRelease.number,
+                        DateFormatterHelper.toHumanReadable(itemView.getContext(), nextRelease.date, DateFormatterHelper.STYLE_SHORT)));
+            } else {
+                mNext.setText(context.getString(R.string.release_next, nextRelease.number));
+            }
+        } else {
+            mNext.setText(context.getString(R.string.release_next_none));
+        }
 
         final int missingCount = comics.getNotPurchasedReleaseCount();
         mMissing.setText(context.getString(R.string.release_missing, missingCount));

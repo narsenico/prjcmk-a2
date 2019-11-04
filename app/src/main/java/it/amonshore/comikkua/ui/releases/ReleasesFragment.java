@@ -60,11 +60,14 @@ public class ReleasesFragment extends Fragment {
                 switch (item.getItemId()) {
                     case R.id.purchaseReleases:
                         if (tracker.hasSelection()) {
+                            // TODO: considerare le multi release
                             mReleaseViewModel.togglePurchased(System.currentTimeMillis(), tracker.getSelection());
                         }
                         // mantengo la selezione
                         return true;
+                    case R.id.orderReleases:
                         // TODO: gestire toggle ordered
+                        return true;
                     case R.id.deleteReleases:
                         if (tracker.hasSelection()) {
                             mReleaseViewModel.delete(tracker.getSelection());
@@ -102,6 +105,7 @@ public class ReleasesFragment extends Fragment {
                     // TODO: mi devo fidare del fatto che vengono selezionati solo le release e non gli header
                     final ComicsRelease release = (ComicsRelease) mAdapter.getItemAt(item.getPosition());
                     if (release != null) {
+                        // TODO: considerare le multi release (aprire il dettaglio del comics)
                         final Release clone = Release.create(release.release);
                         clone.purchased = !release.release.purchased;
                         clone.lastUpdate = System.currentTimeMillis();

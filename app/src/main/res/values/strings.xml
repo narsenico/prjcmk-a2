@@ -8,11 +8,15 @@
     <string name="menu_comics_edit">Edit comics</string>
     <string name="menu_comics_save">Save comics</string>
     <string name="menu_delete">Remove</string>
+    <string name="menu_delete_all">Remove all</string>
     <string name="menu_create">Create new</string>
     <string name="menu_purchase">Purchase</string>
+    <string name="menu_ordered">Ordered</string>
 
-    <string name="title_releases">Comikku - Releaes</string>
-    <string name="title_comics">Comikku - Comics</string>
+    <string name="title_releases">Release list</string>
+    <string name="title_comics">Comics list</string>
+    <string name="title_comics_detail">Comics detail</string>
+    <string name="title_comics_edit">Edit comics</string>
     <string name="title_selected">Selected %d</string>
 
     <string name="header_lost">Lost</string>
@@ -51,9 +55,13 @@
     <string name="release_last">Last: #%d</string>
     <string name="release_next_none">Next: none</string>
     <string name="release_next">Next: #%d</string>
+    <string name="release_next_dated">Next: #%d (%s)</string>
     <string name="release_missing">Missing: %d</string>
 
     <string name="comics_name_empty_error">Name cannot be empty</string>
     <string name="comics_name_notunique_error">Name already used</string>
+
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
 
 </resources>

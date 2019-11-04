@@ -23,12 +23,14 @@ public class ReleaseViewModelGroupHelper {
 
         final ArrayList<IReleaseViewModelItem> items = new ArrayList<>();
         ReleaseHeader lastHeader = null;
+        MultiRelease lastMulti = null;
         int lastType = 0;
         int totalCount = 0;
         int purchasedCount = 0;
         long headerCount = 0L;
 
-        for (ComicsRelease cr : releases) {
+        for (int ii = 0; ii < releases.size(); ii++) {
+            final ComicsRelease cr = releases.get(ii);
             if (lastHeader == null || lastType != cr.type) {
                 // la tipologia del dato è cambiata, creo un nuovo header
                 final ReleaseHeader header = new ReleaseHeader(++headerCount, cr.type);
@@ -45,8 +47,30 @@ public class ReleaseViewModelGroupHelper {
                 purchasedCount = 0;
             }
 
-            // TODO: multi relesase
-            items.add(cr);
+            if (ii > 0 && canBeGrouped(releases.get(ii - 1), cr)) {
+                // la release precedente e questa possono essere raggruppate
+                if (lastMulti == null) {
+                    // se non ho ancora creato un multi, lo creo adesso sostituendo in items l'ultimo valore
+                    final ComicsRelease prev = releases.get(ii - 1);
+                    lastMulti = new MultiRelease();
+                    lastMulti.comics = prev.comics;
+                    // la release principale è quella precedente (cioè la prima in ordine)
+                    lastMulti.release = prev.release;
+                    // poi vengono le altre
+                    lastMulti.otherReleases = new ArrayList<>();
+                    lastMulti.otherReleases.add(cr.release);
+                    items.set(items.size() - 1, lastMulti);
+                } else {
+                    // il multi era già creato, aggiungo la release e basta
+                    lastMulti.otherReleases.add(cr.release);
+                }
+            } else {
+                // quella corrente non può essere raggruppata con la precedente
+                // la inserisco così come è e annullo il multi in modo che venga ricreato il prossimo giro se necessario
+                lastMulti = null;
+                items.add(cr);
+            }
+
             ++totalCount;
             if (cr.release.purchased) {
                 ++purchasedCount;
@@ -59,6 +83,12 @@ public class ReleaseViewModelGroupHelper {
         }
 
         return items;
+    }
+
+    private boolean canBeGrouped(ComicsRelease cr1, ComicsRelease cr2) {
+        return cr1.type == MissingRelease.TYPE &&
+                cr2.type == MissingRelease.TYPE &&
+                cr1.comics.id == cr2.comics.id;
     }
 
 }

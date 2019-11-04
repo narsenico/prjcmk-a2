@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/purchaseReleases"
         android:icon="@drawable/ic_check"
-        android:title="@string/menu_purchase"/>
+        android:title="@string/menu_purchase"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/orderReleases"
+        android:icon="@drawable/ic_ordered"
+        android:title="@string/menu_ordered"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/deleteReleases"
         android:icon="@drawable/ic_delete"
-        android:title="@string/menu_delete" />
+        android:title="@string/menu_delete"
+        app:showAsAction="never" />
 
 </menu>

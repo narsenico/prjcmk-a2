@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 
 import java.text.SimpleDateFormat;
@@ -24,7 +25,7 @@ import it.amonshore.comikkua.data.release.ReleaseDao;
 
 @Database(entities = {Comics.class, Release.class},
         views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
-        version = 1)
+        version = 3)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -41,7 +42,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                             ComikkuDatabase.class, "comikku_database")
                             .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
 //                            .addMigrations(MIGRATION_1_2)
-                            .addCallback(sRoomDatabaseCallback)
+                            .addCallback(new DatabaseCallback(context))
                             .build();
                 }
             }
@@ -63,17 +64,24 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 //        }
 //    };
 
-    private static RoomDatabase.Callback sRoomDatabaseCallback =
-            new RoomDatabase.Callback() {
+    private static class DatabaseCallback extends RoomDatabase.Callback {
 
-                @Override
-                public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                    super.onOpen(db);
-                    if (BuildConfig.DEBUG) {
-                        new PopulateDbWithTestAsync(INSTANCE).execute();
-                    }
-                }
-            };
+        Context mContext;
+
+        DatabaseCallback(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        public void onOpen(@NonNull SupportSQLiteDatabase db) {
+            super.onOpen(db);
+            if (BuildConfig.DEBUG) {
+//                new PopulateDbWithTestAsync(INSTANCE).execute();
+//                new ClearDbWithTestAsync(INSTANCE).execute();
+//                new ImportAsyncTask(mContext.getAssets(), INSTANCE).execute("backup.json");
+            }
+        }
+    }
 
     private static class PopulateDbWithTestAsync extends AsyncTask<Void, Void, Void> {
 
@@ -111,6 +119,46 @@ public abstract class ComikkuDatabase extends RoomDatabase {
             }
             mReleaseDao.insert(releases);
             return null;
+        }
+    }
+
+    private static class ClearDbWithTestAsync extends AsyncTask<Void, Void, Void> {
+
+        private final ComicsDao mComicsDao;
+        private final ReleaseDao mReleaseDao;
+
+        ClearDbWithTestAsync(ComikkuDatabase db) {
+            mComicsDao = db.comicsDao();
+            mReleaseDao = db.releaseDao();
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            mReleaseDao.deleteAll();
+            mComicsDao.deleteAll();
+            return null;
+        }
+    }
+
+    private static class ImportAsyncTask extends AsyncTask<String, Void, Integer> {
+
+        private final AssetManager mAssetManager;
+        private final ComicsDao mComicsDao;
+        private final ReleaseDao mReleaseDao;
+
+        ImportAsyncTask(AssetManager assetManager, ComikkuDatabase db) {
+            mAssetManager = assetManager;
+            mComicsDao = db.comicsDao();
+            mReleaseDao = db.releaseDao();
+        }
+
+        @Override
+        protected Integer doInBackground(final String... params) {
+            mReleaseDao.deleteAll();
+            mComicsDao.deleteAll();
+
+            final BackupImporter importer = new BackupImporter(mComicsDao, mReleaseDao);
+            return importer.importFromAssets(mAssetManager, params[0]);
         }
     }
 }

@@ -7,8 +7,12 @@
     <fragment
         android:id="@+id/releasesFragment"
         android:name="it.amonshore.comikkua.ui.releases.ReleasesFragment"
-        android:label="@string/title_releases"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_releases">
+        <argument
+            android:name="subtitle"
+            app:argType="reference"
+            android:defaultValue="@string/title_releases" />
         <action
             android:id="@+id/action_dest_releases_to_dest_comics"
             app:destination="@id/comicsFragment" />
@@ -16,8 +20,12 @@
     <fragment
         android:id="@+id/comicsFragment"
         android:name="it.amonshore.comikkua.ui.comics.ComicsFragment"
-        android:label="@string/title_comics"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_comics">
+        <argument
+            android:name="subtitle"
+            app:argType="reference"
+            android:defaultValue="@string/title_comics" />
         <action
             android:id="@+id/action_dest_comics_to_comicsDetailFragment"
             app:destination="@id/comicsDetailFragment" />
@@ -28,8 +36,12 @@
     <fragment
         android:id="@+id/comicsDetailFragment"
         android:name="it.amonshore.comikkua.ui.comics.ComicsDetailFragment"
-        android:label="@string/menu_comics_detail"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_comics_detail">
+        <argument
+            android:name="subtitle"
+            app:argType="reference"
+            android:defaultValue="@string/title_comics_detail" />
         <argument
             android:name="comicsId"
             android:defaultValue="0L"
@@ -41,8 +53,12 @@
     <fragment
         android:id="@+id/comicsEditFragment"
         android:name="it.amonshore.comikkua.ui.comics.ComicsEditFragment"
-        android:label="@string/menu_comics_edit"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_comics_edit">
+        <argument
+            android:name="subtitle"
+            app:argType="reference"
+            android:defaultValue="@string/title_comics_edit" />
         <argument
             android:name="comicsId"
             android:defaultValue="0L"

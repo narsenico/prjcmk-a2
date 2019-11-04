@@ -29,8 +29,8 @@ import androidx.room.DatabaseView;
                 "tReleases.lastUpdate as rlastUpdate " +
                 "FROM tComics INNER JOIN tReleases " +
                 "ON tComics.id = tReleases.comicsId " +
-                "WHERE (date is null or date = '') " +
-                "ORDER BY name COLLATE NOCASE ASC, number ASC")
+                "WHERE (date is null or date = '')"
+)
 public class MissingRelease extends ComicsRelease {
     public final static int TYPE = 100;
 }

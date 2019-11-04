@@ -21,7 +21,7 @@
         android:id="@+id/deleteComics"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="20"
-        android:title="@string/menu_delete"
-        app:showAsAction="ifRoom" />
+        android:title="@string/menu_delete_all"
+        app:showAsAction="never" />
 
 </menu>

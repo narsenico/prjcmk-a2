@@ -142,17 +142,17 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:textAlignment="center"
-                    android:textSize="@dimen/text_size_medium"
+                    android:textSize="@dimen/text_size_small"
                     tools:text="Last: #999" />
 
                 <TextView
                     android:id="@+id/txt_comics_release_next"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:textAlignment="center"
-                    android:textSize="@dimen/text_size_medium"
-                    tools:text="Next: #999" />
+                    android:textSize="@dimen/text_size_small"
+                    tools:text="Next: #999 (Wed 10 Mar)" />
 
                 <TextView
                     android:id="@+id/txt_comics_release_missing"
@@ -160,7 +160,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:textAlignment="center"
-                    android:textSize="@dimen/text_size_medium"
+                    android:textSize="@dimen/text_size_small"
                     tools:text="Missing: 999" />
 
             </LinearLayout>
@@ -177,6 +177,7 @@
         android:layout_marginTop="@dimen/item_margin_default"
         android:background="@drawable/background_comics_initial"
         android:gravity="center"
+        android:paddingBottom="2dp"
         android:textAllCaps="true"
         android:textColor="@color/colorItemForeground"
         android:textSize="65sp"

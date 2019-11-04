@@ -20,14 +20,37 @@ public class ComicsWithReleases {
     @Relation(parentColumn = "id", entityColumn = "comicsId", entity = Release.class)
     public List<Release> releases;
 
+    @Nullable
     public Release getLastPurchasedRelease() {
-        // TODO: per ora voglio solo controllare in che ordine sono messe le release
-        return this.releases == null || this.releases.size() == 0 ? null : this.releases.get(this.releases.size() - 1);
+        // presumo che siano ordinate per numero
+        if (this.releases == null || this.releases.size() == 0) {
+            return null;
+        } else {
+            Release last = null;
+            for (Release release : this.releases) {
+                if (release.purchased) {
+                    last = release;
+                } else {
+                    break;
+                }
+            }
+            return last;
+        }
     }
 
+    @Nullable
     public Release getNextToPurchaseRelease() {
-        // TODO: per ora voglio solo controllare in che ordine sono messe le release
-        return this.releases == null || this.releases.size() == 0 ? null : this.releases.get(0);
+        // presumo che siano ordinate per numero
+        if (this.releases == null || this.releases.size() == 0) {
+            return null;
+        } else {
+            for (Release release : this.releases) {
+                if (!release.purchased) {
+                    return release;
+                }
+            }
+            return null;
+        }
     }
 
     /**

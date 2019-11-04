@@ -17,6 +17,7 @@ import android.widget.Toolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.view.ActionMode;
+import androidx.navigation.NavArgument;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
@@ -95,12 +96,27 @@ public class MainActivity extends AppCompatActivity implements
                                      @NonNull NavDestination destination,
                                      @Nullable Bundle arguments) {
         LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.getLabel());
+        // imposto il sottotitolo che viene passato come argomento della destinazione
+        getSupportActionBar().setSubtitle(extractSubtitle(destination));
         // chiudo sempre la tasteira eventualmente aperta
         Utility.hideKeyboard(getWindow().getDecorView());
         // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment
         if (mActionMode != null) {
             mActionMode.finish();
         }
+    }
+
+    private String extractSubtitle(@NonNull NavDestination destination) {
+        // visto che non posso impostare il sottotitolo direttamente in nav_graph.xml
+        //  lo passo come argomento, di tpo reference (string)
+        final NavArgument arg = destination.getArguments().get("subtitle");
+        if (arg != null) {
+            final Object value = arg.getDefaultValue();
+            if (value != null) {
+                return getString((Integer) value);
+            }
+        }
+        return null;
     }
 
 }

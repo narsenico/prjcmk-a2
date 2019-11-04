@@ -1,7 +1,13 @@
 package it.amonshore.comikkua.data.release;
 
+import java.util.List;
+
 public class MultiRelease extends ComicsRelease {
 
-    // TODO: deve comprendere una lista di ComicsRelease
+    /**
+     * Contiene le restanti release che fanno gruppo con con {@link ComicsRelease#release}
+     * (esclusa da questo elenco).
+     */
+    public List<Release> otherReleases;
 
 }

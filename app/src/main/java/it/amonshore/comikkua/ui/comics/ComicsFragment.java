@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.data.BackupImporter;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;

@@ -70,7 +70,7 @@ public interface ReleaseDao {
             "SELECT 22 as type, * FROM vDatedReleases WHERE rdate > :refOtherDate " +                             // oltre
             "UNION " +
             "SELECT 100 as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
-            "ORDER BY type")
+            "ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber")
     @Transaction
     LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
                                                  @NonNull @Size(6) String refNextDate,

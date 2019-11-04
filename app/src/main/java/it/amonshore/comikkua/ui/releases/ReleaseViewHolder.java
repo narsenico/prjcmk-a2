@@ -12,10 +12,13 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
+import it.amonshore.comikkua.data.release.MultiRelease;
 
 import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 
@@ -56,14 +59,20 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         bind((ComicsRelease) item, selected);
     }
 
-    public void bind(@NonNull ComicsRelease item, boolean selected) {
+    private void bind(@NonNull ComicsRelease item, boolean selected) {
         itemView.setActivated(selected);
         mComicsId = item.comics.id;
         mId = item.release.id;
-        mNumbers.setText(String.format(Locale.getDefault(), "%d", item.release.number));
-        mDate.setText(item.release.date); // TODO: formattare data relase (oggi, domani, etc.)
+        if (item instanceof MultiRelease) {
+            mNumbers.setText(extractNumbers((MultiRelease) item));
+        } else {
+            mNumbers.setText(String.format(Locale.getDefault(), "%d", item.release.number));
+        }
+        mDate.setText(TextUtils.isEmpty(item.release.date) ?
+                null :
+                DateFormatterHelper.toHumanReadable(itemView.getContext(), item.release.date, DateFormatterHelper.STYLE_FULL));
         mTitle.setText(item.comics.name);
-        mInfo.setText(TextUtils.join(",", new String[] { item.comics.publisher, item.comics.authors }));
+        mInfo.setText(Utility.join(", ", true, item.comics.publisher, item.comics.authors));
         mNotes.setText(TextUtils.isEmpty(item.release.notes) ? item.comics.notes : item.release.notes);
         mOrdered.setVisibility(item.release.ordered ? View.VISIBLE : View.GONE);
         if (item.release.purchased) {
@@ -91,6 +100,15 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         mNotes.setText("");
         mPurchased.setVisibility(View.GONE);
         mOrdered.setVisibility(View.GONE);
+    }
+
+    private String extractNumbers(@NonNull MultiRelease multiRelease) {
+        final int[] numbers = new int[1 + multiRelease.otherReleases.size()];
+        numbers[0] = multiRelease.release.number;
+        for (int ii = 0; ii < multiRelease.otherReleases.size(); ii++) {
+            numbers[ii + 1] = multiRelease.otherReleases.get(ii).number;
+        }
+        return Utility.formatInterval(null, ",", "~", numbers).toString();
     }
 
     static ReleaseViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
