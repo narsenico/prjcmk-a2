@@ -9,6 +9,7 @@
     <string name="menu_comics_save">Save comics</string>
     <string name="menu_delete">Remove</string>
     <string name="menu_create">Create new</string>
+    <string name="menu_purchase">Purchase</string>
 
     <string name="title_releases">Comikku - Releaes</string>
     <string name="title_comics">Comikku - Comics</string>

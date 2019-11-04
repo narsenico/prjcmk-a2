@@ -1,4 +1,10 @@
-package it.amonshore.comikkua.ui.comics;
+package it.amonshore.comikkua.ui.releases;
+
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.ViewGroup;
+
+import java.util.Iterator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,31 +16,36 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.ViewGroup;
-
-import java.util.Iterator;
-
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.data.ComicsWithReleases;
+import it.amonshore.comikkua.data.ComicsRelease;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
-public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
-
+public class PagedListReleaseAdapter extends PagedListAdapter<ComicsRelease, ReleaseViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
 
-    private ComicsRecyclerViewAdapter() {
+    private PagedListReleaseAdapter() {
         super(DIFF_CALLBACK);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ComicsViewHolder holder, int position) {
-        final ComicsWithReleases item = getItem(position);
+    public void onBindViewHolder(@NonNull ReleaseViewHolder holder, int position) {
+        final ComicsRelease item = getItem(position);
         if (item != null) {
-            holder.bind(item, mSelectionTracker.isSelected(item.comics.id));
+            // mostro l'instestazione (che fa parte del ViewHolder) solo se l'elemento precedente è "tipo" diverso
+            //  cioè è stato estratto con una query diversa
+            boolean showHeader;
+            if (position == 0) {
+                showHeader = true;
+            } else {
+                final ComicsRelease previous = getItem(position - 1);
+                if (previous == null) {
+                    showHeader = true;
+                } else {
+                    showHeader = previous.type != item.type;
+                }
+            }
+            holder.bind(item, mSelectionTracker.isSelected(item.release.id), showHeader, position == 0);
         } else {
             holder.clear();
         }
@@ -42,17 +53,17 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
 
     @NonNull
     @Override
-    public ComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return ComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+    public ReleaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
     }
 
     @Override
     public long getItemId(int position) {
-        final ComicsWithReleases item = getItem(position);
+        final ComicsRelease item = getItem(position);
         if (item == null) {
             return RecyclerView.NO_ID;
         } else {
-            return item.comics.id;
+            return item.release.id;
         }
     }
 
@@ -103,8 +114,8 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
             return this;
         }
 
-        ComicsRecyclerViewAdapter build() {
-            final ComicsRecyclerViewAdapter adapter = new ComicsRecyclerViewAdapter();
+        PagedListReleaseAdapter build() {
+            final PagedListReleaseAdapter adapter = new PagedListReleaseAdapter();
             // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
@@ -113,7 +124,7 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
                     "comics-selection",
                     mRecyclerView,
                     new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
-                    new ComicsItemDetailsLookup(mRecyclerView),
+                    new ReleaseItemDetailsLookup(mRecyclerView),
                     StorageStrategy.createLongStorage());
 
             if (mOnItemActivatedListener != null) {
@@ -148,37 +159,34 @@ public class ComicsRecyclerViewAdapter extends PagedListAdapter<ComicsWithReleas
                 });
             }
 
-            // appena un item viene inserito mi sposto sulla sua posizione
-            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                @Override
-                public void onItemRangeInserted(int positionStart, int itemCount) {
-                    mRecyclerView.scrollToPosition(positionStart);
-                }
-            });
+//            // appena un item viene inserito mi sposto sulla sua posizione
+//            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+//                @Override
+//                public void onItemRangeInserted(int positionStart, int itemCount) {
+//                    mRecyclerView.scrollToPosition(positionStart);
+//                }
+//            });
 
             return adapter;
         }
     }
 
-    private static DiffUtil.ItemCallback<ComicsWithReleases> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<ComicsWithReleases>() {
+    private static DiffUtil.ItemCallback<ComicsRelease> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ComicsRelease>() {
                 // ComicsWithReleases details may have changed if reloaded from the database,
                 // but ID is fixed.
                 @Override
-                public boolean areItemsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
-                                               @NonNull ComicsWithReleases newComicsWithReleases) {
-                    return oldComicsWithReleases.comics.id == newComicsWithReleases.comics.id;
+                public boolean areItemsTheSame(@NonNull ComicsRelease oldComicsRelease,
+                                               @NonNull ComicsRelease newComicsRelease) {
+                    return oldComicsRelease.release.id == newComicsRelease.release.id;
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
-                                                  @NonNull ComicsWithReleases newComicsWithReleases) {
-
-                    // TODO: devo controllare la data di modifica anche di tutte le release?
-
-                    return oldComicsWithReleases.equals(newComicsWithReleases) &&
-                            oldComicsWithReleases.comics.lastUpdate == newComicsWithReleases.comics.lastUpdate;
+                public boolean areContentsTheSame(@NonNull ComicsRelease oldComicsRelease,
+                                                  @NonNull ComicsRelease newComicsRelease) {
+                    return oldComicsRelease.equals(newComicsRelease) &&
+                            oldComicsRelease.comics.lastUpdate == newComicsRelease.comics.lastUpdate &&
+                            oldComicsRelease.release.lastUpdate == newComicsRelease.release.lastUpdate;
                 }
             };
-
 }

@@ -2,6 +2,7 @@ package it.amonshore.comikkua.ui.releases;
 
 import android.graphics.Rect;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -24,10 +26,12 @@ import static it.amonshore.comikkua.data.Release.*;
 
 public class ReleaseViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mHeader, mNumbers, mDate, mTitle, mInfo, mNotes;
-    private final View mPurchased, mOrdered, mMenu;
+    private final View mPurchased, mOrdered, mMenu, mMainCard, mBackground;
 
     private long mComicsId;
     private long mId;
+
+    private float mMainCardElevationPx;
 
     private ReleaseViewHolder(View itemView) {
         super(itemView);
@@ -40,6 +44,12 @@ public class ReleaseViewHolder extends IViewHolderWithDetails<Long> {
         mPurchased = itemView.findViewById(R.id.img_release_purchased);
         mOrdered = itemView.findViewById(R.id.img_release_ordered);
         mMenu = itemView.findViewById(R.id.img_release_menu);
+        mMainCard = itemView.findViewById(R.id.release_main_card);
+        mBackground = itemView.findViewById(R.id.release_background);
+
+        mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                2f,
+                itemView.getResources().getDisplayMetrics());
     }
 
     @Override
@@ -56,9 +66,16 @@ public class ReleaseViewHolder extends IViewHolderWithDetails<Long> {
         mTitle.setText(release.comics.name);
         mInfo.setText(TextUtils.join(",", new String[] { release.comics.publisher, release.comics.authors }));
         mNotes.setText(TextUtils.isEmpty(release.release.notes) ? release.comics.notes : release.release.notes);
-
-        mPurchased.setVisibility((release.release.flags & FLAG_PURCHASED) == FLAG_PURCHASED ? View.VISIBLE : View.GONE);
-        mOrdered.setVisibility((release.release.flags & FLAG_ORDERED) == FLAG_ORDERED ? View.VISIBLE : View.GONE);
+        mOrdered.setVisibility(release.release.ordered ? View.VISIBLE : View.GONE);
+        if (release.release.purchased) {
+            mPurchased.setVisibility(View.VISIBLE);
+            mMainCard.setElevation(0);
+            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLighter));
+        } else {
+            mPurchased.setVisibility(View.GONE);
+            mMainCard.setElevation(mMainCardElevationPx);
+            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLight));
+        }
 
         mHeader.setOnClickListener(v -> {
             LogHelper.d(("HEADER CLICK"));

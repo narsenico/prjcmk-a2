@@ -2,6 +2,7 @@ package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.ActionMode;
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +21,8 @@ import android.view.ViewGroup;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.data.ComicsRelease;
+import it.amonshore.comikkua.data.Release;
 import it.amonshore.comikkua.data.ReleasesViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
@@ -27,7 +31,7 @@ import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 public class ReleasesFragment extends Fragment {
 
     private OnNavigationFragmentListener mListener;
-    private ReleasesRecyclerViewAdapter mAdapter;
+    private ReleaseAdapter mAdapter;
     private ReleasesViewModel mReleasesViewModel;
 
     public ReleasesFragment() {
@@ -52,9 +56,15 @@ public class ReleasesFragment extends Fragment {
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
                 switch (item.getItemId()) {
+                    case R.id.purchaseReleases:
+                        if (tracker.hasSelection()) {
+                            // TODO: occorre implementare un update del solo purchase (con query update tReleases set purchased=:purchased, lastUpdate=:lastUpdate where id in :ids
+                        }
+                        tracker.clearSelection();
+                        return true;
                     case R.id.deleteReleases:
-                        final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
                         if (tracker.hasSelection()) {
                             mReleasesViewModel.delete(tracker.getSelection());
                         }
@@ -75,7 +85,7 @@ public class ReleasesFragment extends Fragment {
         // PROBLEMI:
         // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
 
-        mAdapter = new ReleasesRecyclerViewAdapter.Builder(recyclerView)
+        mAdapter = new ReleaseAdapter.Builder(recyclerView)
                 .withOnItemSelectedListener((keys, size) -> {
                     if (mListener != null) {
                         if (size == 0) {
@@ -87,8 +97,20 @@ public class ReleasesFragment extends Fragment {
                     }
                 })
                 .withOnItemActivatedListener((item, e) -> {
-                    // TODO: naviga all'editor della release
+                    // TODO: la lista delle release viene subito aggiornata! quindi le release acquistate vengono subito tolte dalla lista
+
+                    // possibile soluzione:
+                    // - potrei mantenere nel gruppo lost/missing anche quelli acquistati nelle ultime 24 ore, così non sparirebbero subito dalla lista
+
                     LogHelper.d("Release click key=%s hotspot=%s", item.getSelectionKey(), item.inSelectionHotspot(e));
+                    final ComicsRelease release = mAdapter.getItemAt(item.getPosition());
+                    if (release != null) {
+                        final Release clone = Release.create(release.release);
+                        clone.purchased = !release.release.purchased;
+                        clone.lastUpdate = System.currentTimeMillis();
+
+                        mReleasesViewModel.update(clone);
+                    }
                     return false;
                 })
                 .build();
@@ -97,9 +119,13 @@ public class ReleasesFragment extends Fragment {
         mReleasesViewModel = new ViewModelProvider(this)
                 .get(ReleasesViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        mReleasesViewModel.comicsReleaseList.observe(getViewLifecycleOwner(), data -> {
-            LogHelper.d("viewmodel data changed");
-            mAdapter.submitList(data);
+//        mReleasesViewModel.comicsReleaseList.observe(getViewLifecycleOwner(), data -> {
+//            LogHelper.d("release viewmodel data changed: size=%s, lastKey=%s", data.size(), data.getLastKey());
+//            mAdapter.submitList(data);
+//        });
+        mReleasesViewModel.getNotableReleases().observe(getViewLifecycleOwner(), comicsReleases -> {
+            LogHelper.d("release viewmodel data changed size:" + comicsReleases.size());
+            mAdapter.submitList(comicsReleases);
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -141,7 +167,12 @@ public class ReleasesFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // TODO
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.deleteReleases:
+                // TODO
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

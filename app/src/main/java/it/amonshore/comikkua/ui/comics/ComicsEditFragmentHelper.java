@@ -17,7 +17,6 @@ import com.tiper.MaterialSpinner;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -222,7 +221,7 @@ class ComicsEditFragmentHelper {
         preview.next.setText(nextRelease == null ? context.getString(R.string.release_next_none) :
                 context.getString(R.string.release_next, nextRelease.number));
 
-        final int missingCount = mComics.getMissingReleaseCount();
+        final int missingCount = mComics.getNotPurchasedReleaseCount();
         preview.missing.setText(context.getString(R.string.release_missing, missingCount));
 
         preview.comicsMenu.setVisibility(View.GONE);
@@ -250,7 +249,7 @@ class ComicsEditFragmentHelper {
         // aggiornando questo campo segnalo che i dati sono cambiati
         // (in questo modo il sistema di paging sa che qualcosa è cambiato)
         // non è il massimo perché effettivamente potrebbe non essere cambiato nulla, ma tant'è!
-        mComics.comics.lastUpdate = new Date().getTime();
+        mComics.comics.lastUpdate = System.currentTimeMillis();
         return mComics;
     }
 

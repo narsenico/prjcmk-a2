@@ -23,7 +23,7 @@ public class ComicsRepository {
     final MutableLiveData<String> filterName = new MutableLiveData<>();
 
     ComicsRepository(Application application) {
-        ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
+        final ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
         mComicsDao = db.comicsDao();
 
         final PagedList.Config config = new PagedList.Config.Builder()

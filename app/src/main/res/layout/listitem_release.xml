@@ -10,11 +10,11 @@
         android:id="@+id/txt_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:background="@drawable/background_border_up"
-        android:layout_marginTop="@dimen/item_margin_default"
         android:layout_marginStart="@dimen/item_margin_default"
+        android:layout_marginTop="@dimen/item_margin_default"
         android:layout_marginEnd="@dimen/item_margin_default"
+        android:background="@drawable/background_border_up"
+        android:visibility="gone"
         tools:text="Questa settimana"
         tools:visibility="visible" />
 
@@ -24,17 +24,20 @@
         android:background="@drawable/background_selectable_item">
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/release_main_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/item_margin_default"
-            android:layout_marginTop="@dimen/item_margin_half"
+            android:layout_marginTop="@dimen/item_margin_small"
+            android:layout_marginBottom="@dimen/item_margin_small"
             android:layout_marginEnd="@dimen/item_margin_default"
-            android:layout_marginBottom="@dimen/item_margin_half"
-            app:cardBackgroundColor="@color/colorItemBackgroundLight"
+            app:cardCornerRadius="@dimen/item_radius_double"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="true">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/release_background"
+                android:background="@color/colorItemBackgroundLight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 

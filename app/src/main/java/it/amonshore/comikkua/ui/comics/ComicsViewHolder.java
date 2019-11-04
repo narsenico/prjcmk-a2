@@ -56,7 +56,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mNext.setText(nextRelease == null ? context.getString(R.string.release_next_none) :
                 context.getString(R.string.release_next, nextRelease.number));
 
-        final int missingCount = comics.getMissingReleaseCount();
+        final int missingCount = comics.getNotPurchasedReleaseCount();
         mMissing.setText(context.getString(R.string.release_missing, missingCount));
 
 //        // cambio il colore dello sfondo dell'iniziale in base al suo valore

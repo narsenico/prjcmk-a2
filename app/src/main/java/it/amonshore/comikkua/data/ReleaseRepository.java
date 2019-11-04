@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
@@ -12,29 +14,27 @@ import androidx.paging.PagedList;
 public class ReleaseRepository {
 
     private ReleaseDao mReleaseDao;
-    public final LiveData<PagedList<ComicsRelease>> comicsReleaseList;
 
     ReleaseRepository(Application application) {
-        ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
+        final ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
         mReleaseDao = db.releaseDao();
-
-//        final ReleaseDataSourceFactory factory = new ReleaseDataSourceFactory(mReleaseDao);
-        final PagedList.Config config = new PagedList.Config.Builder()
-                .setInitialLoadSizeHint(20)
-                .setPageSize(20)
-                .setEnablePlaceholders(false)
-                .build();
-
-//        comicsReleaseList = new LivePagedListBuilder<>(factory, config).build();
-        comicsReleaseList = new LivePagedListBuilder<>(mReleaseDao.allReleases(), config).build();
     }
 
     LiveData<List<Release>> getReleases(int comicsId) {
         return mReleaseDao.getReleases(comicsId);
     }
 
+    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
+                                                 long retainStart) {
+        return mReleaseDao.getAllReleases(refDate, retainStart);
+    }
+
     public void insert (Release release) {
         new ReleaseRepository.insertAsyncTask(mReleaseDao).execute(release);
+    }
+
+    public void update(Release release) {
+        new updateAsyncTask(mReleaseDao).execute(release);
     }
 
     public void delete(Long... id) {
@@ -52,6 +52,21 @@ public class ReleaseRepository {
         @Override
         protected Void doInBackground(final Release... params) {
             mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class updateAsyncTask extends AsyncTask<Release, Void, Void> {
+
+        private ReleaseDao mAsyncTaskDao;
+
+        updateAsyncTask(ReleaseDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Release... params) {
+            mAsyncTaskDao.update(params);
             return null;
         }
     }

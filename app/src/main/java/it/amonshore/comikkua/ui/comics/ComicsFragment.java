@@ -5,8 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -24,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.regex.Pattern;
+
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.ComicsViewModel;
@@ -36,7 +36,7 @@ import static it.amonshore.comikkua.data.Comics.NEW_COMICS_ID;
 public class ComicsFragment extends Fragment {
 
     private OnNavigationFragmentListener mListener;
-    private ComicsRecyclerViewAdapter mAdapter;
+    private PagedListComicsAdapter mAdapter;
     private ComicsViewModel mComicsViewModel;
 
     public ComicsFragment() { }
@@ -83,7 +83,7 @@ public class ComicsFragment extends Fragment {
         // PROBLEMI:
         // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
 
-        mAdapter = new ComicsRecyclerViewAdapter.Builder(recyclerView)
+        mAdapter = new PagedListComicsAdapter.Builder(recyclerView)
                 .withOnItemSelectedListener((keys, size) -> {
                     if (mListener != null) {
                         if (size == 0) {
@@ -116,7 +116,7 @@ public class ComicsFragment extends Fragment {
                 .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
         mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
-            LogHelper.d("viewmodel data changed");
+            LogHelper.d("comics viewmodel data changed");
             mAdapter.submitList(data);
         });
 
@@ -161,6 +161,7 @@ public class ComicsFragment extends Fragment {
 
         final MenuItem searchItem = menu.findItem(R.id.searchComics);
         final SearchView searchView = (SearchView) searchItem.getActionView();
+//        final Pattern
 
         // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
         // TODO: al cambio di configurazione (es orientamento) la query viene persa
@@ -174,8 +175,9 @@ public class ComicsFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                LogHelper.d("filterName change " + newText);
-                mComicsViewModel.filterName.setValue("%" + newText + "%"); // TODO: ok ma aggiungere debounce
+                final String searchText = newText.replaceAll("\\s+", "%");
+                LogHelper.d("filterName change " + searchText);
+                mComicsViewModel.filterName.setValue("%" + searchText + "%"); // TODO: ok ma aggiungere debounce
                 return true;
             }
         });
@@ -191,6 +193,9 @@ public class ComicsFragment extends Fragment {
 
                 Navigation.findNavController(getView()).navigate(directions);
 
+                return true;
+            case R.id.deleteComics:
+                // TODO
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

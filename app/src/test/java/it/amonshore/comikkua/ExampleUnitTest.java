@@ -3,6 +3,17 @@ package it.amonshore.comikkua;
 import org.junit.Test;
 
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalField;
+import java.time.temporal.WeekFields;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import static org.junit.Assert.*;
@@ -25,5 +36,30 @@ public class ExampleUnitTest {
         String s = format.format(d);
         double d1 = format.parse(s).doubleValue();
         assertEquals(d, d1, 0.001d);
+    }
+
+    @Test
+    public void firstDayOfWeek() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime dt = LocalDateTime.now();
+        TemporalField field = WeekFields.of(Locale.getDefault()).dayOfWeek();
+        dt = dt.with(field, 1);
+
+        String s = dt.format(formatter);
+        System.out.println("first day of week " + s);
+
+        assertTrue(String.format("%s != %s", s, "20191028"), s.equals("20191028"));
+    }
+
+    @Test
+    public void firstDayOfWeekWithCalendar() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+
+        String s = sdf.format(calendar.getTime());
+        System.out.println("first day of week " + s);
+
+        assertTrue(String.format("%s != %s", s, "20191028"), s.equals("20191028"));
     }
 }

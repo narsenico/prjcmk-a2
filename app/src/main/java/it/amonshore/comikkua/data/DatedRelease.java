@@ -3,11 +3,11 @@ package it.amonshore.comikkua.data;
 import androidx.room.DatabaseView;
 
 /**
- * Vista per le uscite senza data non ancora acquistate.
+ * Vista per tutte le release - sia acquistate che non - con una data di uscita.
  */
-@DatabaseView(viewName = "vMissingReleases",
+@DatabaseView(viewName = "vDatedReleases",
         value = "SELECT " +
-                MissingRelease.TYPE + " as type, " +
+                DatedRelease.TYPE + " as type, " +
                 "tComics.id as cid, " +
                 "tComics.name as cname, " +
                 "tComics.series as cseries, " +
@@ -30,8 +30,8 @@ import androidx.room.DatabaseView;
                 "tReleases.lastUpdate as rlastUpdate " +
                 "FROM tComics INNER JOIN tReleases " +
                 "ON tComics.id = tReleases.comicsId " +
-                "WHERE (date is null or date = '') " +
+                "WHERE (date is not null and date <> '') " +
                 "ORDER BY name COLLATE NOCASE ASC, number ASC")
-public class MissingRelease extends ComicsRelease {
-    public final static int TYPE = 100;
+public class DatedRelease extends ComicsRelease {
+    public final static int TYPE = 20;
 }

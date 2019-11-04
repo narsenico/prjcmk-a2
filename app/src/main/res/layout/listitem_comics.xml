@@ -19,7 +19,7 @@
             android:layout_marginBottom="@dimen/item_margin_default"
             android:layout_marginEnd="@dimen/item_margin_default"
             app:cardBackgroundColor="@color/colorItemBackgroundLight"
-            app:cardCornerRadius="@dimen/item_radius_default"
+            app:cardCornerRadius="@dimen/item_radius_emphatic"
             app:cardElevation="3dp"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="true">
@@ -121,7 +121,7 @@
             android:layout_marginEnd="@dimen/item_margin_double"
             android:layout_marginBottom="@dimen/item_margin_default"
             app:cardBackgroundColor="@color/colorItemBackgroundSecondary"
-            app:cardCornerRadius="@dimen/item_radius_default"
+            app:cardCornerRadius="@dimen/item_radius_emphatic"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="true">
 

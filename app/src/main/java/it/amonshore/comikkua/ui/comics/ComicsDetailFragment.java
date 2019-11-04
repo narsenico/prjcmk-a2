@@ -1,16 +1,13 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
-import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.ComicsViewModel;
 import it.amonshore.comikkua.data.Release;
@@ -89,7 +86,7 @@ public class ComicsDetailFragment extends Fragment {
                 mNext.setText(nextRelease == null ? context.getString(R.string.release_next_none) :
                         context.getString(R.string.release_next, nextRelease.number));
 
-                final int missingCount = comics.getMissingReleaseCount();
+                final int missingCount = comics.getNotPurchasedReleaseCount();
                 mMissing.setText(context.getString(R.string.release_missing, missingCount));
 
                 mComicsMenu.setVisibility(View.GONE);

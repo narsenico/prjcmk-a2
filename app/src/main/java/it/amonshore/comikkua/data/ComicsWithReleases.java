@@ -32,11 +32,11 @@ public class ComicsWithReleases {
     /**
      * @return numero di uscite non ancora acquistate
      */
-    public int getMissingReleaseCount() {
+    public int getNotPurchasedReleaseCount() {
         int count = 0;
         if (this.releases != null) {
             for (Release release : this.releases) {
-                if ((release.flags & Release.FLAG_PURCHASED) == 0) {
+                if (!release.purchased) {
                     ++count;
                 }
             }

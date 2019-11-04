@@ -7,6 +7,7 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +37,17 @@ public class Utility {
             }
         }
         return -1;
+    }
+
+    /**
+     * Imposta il calendario con il primo giorno della settimana in cui è settato.
+     *
+     * @param calendar  calendario
+     * @return l'istanza di {@link Calendar} passata in input
+     */
+    public static Calendar gotoFirstDayOfWeek(@NonNull Calendar calendar) {
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        return  calendar;
     }
 
     /**

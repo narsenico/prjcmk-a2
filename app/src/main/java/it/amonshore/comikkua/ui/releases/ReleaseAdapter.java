@@ -4,7 +4,9 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,16 +17,17 @@ import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.ComicsRelease;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
-public class ReleasesRecyclerViewAdapter extends PagedListAdapter<ComicsRelease, ReleaseViewHolder> {
+public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
 
-    private ReleasesRecyclerViewAdapter() {
+    private ReleaseAdapter() {
         super(DIFF_CALLBACK);
     }
 
@@ -65,6 +68,11 @@ public class ReleasesRecyclerViewAdapter extends PagedListAdapter<ComicsRelease,
         } else {
             return item.release.id;
         }
+    }
+
+    @Nullable
+    public ComicsRelease getItemAt(int position) {
+        return getItem(position);
     }
 
     SelectionTracker<Long> getSelectionTracker() {
@@ -114,8 +122,8 @@ public class ReleasesRecyclerViewAdapter extends PagedListAdapter<ComicsRelease,
             return this;
         }
 
-        ReleasesRecyclerViewAdapter build() {
-            final ReleasesRecyclerViewAdapter adapter = new ReleasesRecyclerViewAdapter();
+        ReleaseAdapter build() {
+            final ReleaseAdapter adapter = new ReleaseAdapter();
             // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
@@ -173,7 +181,7 @@ public class ReleasesRecyclerViewAdapter extends PagedListAdapter<ComicsRelease,
 
     private static DiffUtil.ItemCallback<ComicsRelease> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<ComicsRelease>() {
-                // ComicsWithReleases details may have changed if reloaded from the database,
+                // ComicsRelease details may have changed if reloaded from the database,
                 // but ID is fixed.
                 @Override
                 public boolean areItemsTheSame(@NonNull ComicsRelease oldComicsRelease,

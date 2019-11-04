@@ -10,11 +10,12 @@
     <color name="colorItemBackgroundDark">#ed8f8d</color>
     <color name="colorItemBackgroundLight">#cfc9b9</color>
     <color name="colorItemBackgroundLighter">#d9d5c8</color>
+    <color name="colorItemBackgroundLighterX2">#e2dfd5</color>
     <color name="colorItemBackgroundSecondary">#fafafa</color>
     <color name="colorItemBackgroundAlt">#bad6c7</color>
     <color name="colorItemBackgroundAltVivid">#acdfd0</color>
     <color name="colorItemForeground">#fafafa</color>
-    <color name="colorItemSelected">#03A9F4</color>
+    <color name="colorItemSelected">#B86F6C</color>
 
     <color name="colorItemBackgroundA">#EF5350</color>
     <color name="colorItemBackgroundB">#F44336</color>

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 4,
-    "identityHash": "c603c74c7d6f15cdd927a75caf832890",
+    "version": 8,
+    "identityHash": "9a090bc496116522757be11f9b35f572",
     "entities": [
       {
         "tableName": "tComics",
@@ -187,16 +187,20 @@
     "views": [
       {
         "viewName": "vMissingReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS <error>"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT 100 as type, tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is null or date = '') ORDER BY name COLLATE NOCASE ASC, number ASC"
       },
       {
         "viewName": "vLostReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT 10 as type, tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '') and rpurchased == 0 ORDER BY name COLLATE NOCASE ASC, number ASC"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT 10 as type, tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '') ORDER BY name COLLATE NOCASE ASC, number ASC"
+      },
+      {
+        "viewName": "vDatedReleases",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT 20 as type, tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '') ORDER BY name COLLATE NOCASE ASC, number ASC"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c603c74c7d6f15cdd927a75caf832890')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a090bc496116522757be11f9b35f572')"
     ]
   }
 }

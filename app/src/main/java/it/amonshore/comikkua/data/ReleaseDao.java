@@ -3,6 +3,7 @@ package it.amonshore.comikkua.data;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
 import androidx.paging.DataSource;
 import androidx.room.Dao;
@@ -10,6 +11,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
+import androidx.room.Update;
 
 @Dao
 public interface ReleaseDao {
@@ -19,6 +21,16 @@ public interface ReleaseDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Release... release);
+
+    @Update()
+    void update(Release release);
+
+    @Update()
+    void update(Release... releases);
+
+    @Query("UPDATE tReleases SET purchased = :purchased, lastUpdate = :lastUpdate WHERE id IN (:id)")
+    @Transaction
+    void update(boolean purchased, long lastUpdate, Long... id);
 
     @Query("DELETE FROM tReleases")
     void deleteAll();
@@ -33,26 +45,25 @@ public interface ReleaseDao {
     @Query("SELECT * FROM tReleases WHERE comicsId = :comicsId ORDER BY number ASC")
     LiveData<List<Release>> getReleases(long comicsId);
 
-    @Query("SELECT * FROM vMissingReleases")
-    LiveData<List<MissingRelease>> getMissingReleases();
-
-    @Query("SELECT * FROM vLostReleases")
-    LiveData<List<LostRelease>> getLostReleases();
-
-    @Query("SELECT * FROM vLostReleases WHERE rdate BETWEEN :fromDate AND :toDate")
-    LiveData<List<LostRelease>> getLostReleases(@NonNull String fromDate, @NonNull String toDate);
-
-    @Query("SELECT * FROM vLostReleases WHERE rdate >= :fromDate")
-    LiveData<List<LostRelease>> getLostReleasesFrom(@NonNull String fromDate);
-
-    // TODO: passsare come parametro currentWeekStart/End, nextWeekStart/End e aggiungere condizioni
-    //  deve estrarre:
-    //  vLostReleases where date < currentWeekStart (persi)
-    //  v(da fare) where date between currentWeekStart and currentWeekEnd (TIPO 3)
-    //  v(da fare) where date between nextWeekStart and nextWeekEnd (TIPO 3)
-    //  vMissingReleases
-    @Query("SELECT * FROM vLostReleases UNION SELECT * FROM vMissingReleases ORDER BY type")
+    /**
+     * La query estrae:
+     * - uscite non acquistate con data inferiore a refDate,
+     * oppure uscite acquistate con lastUpdate >= retainStart
+     * - uscite con data superiore a refDate
+     * - uscite non aquistate senza data,
+     * oppure uscite acquistate con lastUpdate >= retainStart
+     *
+     * @param refDate     data di riferimento nel formato yyyyMMdd
+     * @param retainStart limite inferiore per lastUpdate in ms
+     * @return elenco ordinato di release
+     */
+    @Query("SELECT * FROM vLostReleases WHERE rdate < :refDate AND (rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart)) " +
+            "UNION " +
+            "SELECT * FROM vDatedReleases WHERE rdate >= :refDate " +
+            "UNION " +
+            "SELECT * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
+            "ORDER BY type")
     @Transaction
-    DataSource.Factory<Integer, ComicsRelease> allReleases();
-
+    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
+                                                 long retainStart);
 }

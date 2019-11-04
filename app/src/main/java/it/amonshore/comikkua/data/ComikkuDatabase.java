@@ -19,8 +19,8 @@ import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
 
 @Database(entities = {Comics.class, Release.class},
-        views = {MissingRelease.class, LostRelease.class},
-        version = 4)
+        views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
+        version = 9)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
