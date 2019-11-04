@@ -15,6 +15,13 @@
     <string name="title_comics">Comikku - Comics</string>
     <string name="title_selected">Selected %d</string>
 
+    <string name="header_lost">Lost</string>
+    <string name="header_current_period">This week</string>
+    <string name="header_next_period">Next week</string>
+    <string name="header_other">Other</string>
+    <string name="header_missing">Missing</string>
+    <string name="header_count">%d/%d</string>
+
     <string name="comics_name">Name</string>
     <string name="comics_publisher">Publisher</string>
     <string name="comics_authors">Authors</string>

@@ -2,7 +2,6 @@ package it.amonshore.comikkua.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,14 +12,19 @@ import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import it.amonshore.comikkua.BuildConfig;
-import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsDao;
+import it.amonshore.comikkua.data.release.DatedRelease;
+import it.amonshore.comikkua.data.release.LostRelease;
+import it.amonshore.comikkua.data.release.MissingRelease;
+import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.data.release.ReleaseDao;
 
 @Database(entities = {Comics.class, Release.class},
         views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
-        version = 9)
+        version = 1)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -93,6 +97,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
             Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_MONTH, -3);
 
             List<Comics> comics = mComicsDao.getRawComics();
             Release[] releases = new Release[comics.size() * 2];

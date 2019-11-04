@@ -10,28 +10,22 @@ import org.junit.runner.RunWith;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.room.Room;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-import it.amonshore.comikkua.data.Comics;
-import it.amonshore.comikkua.data.ComicsDao;
-import it.amonshore.comikkua.data.ComicsRelease;
-import it.amonshore.comikkua.data.ComicsWithReleases;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsDao;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.ComikkuDatabase;
-import it.amonshore.comikkua.data.LostRelease;
-import it.amonshore.comikkua.data.MissingRelease;
-import it.amonshore.comikkua.data.Release;
-import it.amonshore.comikkua.data.ReleaseDao;
+import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.data.release.ReleaseDao;
 
 import static org.junit.Assert.*;
 

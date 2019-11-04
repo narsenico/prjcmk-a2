@@ -1,10 +1,11 @@
-package it.amonshore.comikkua.data;
+package it.amonshore.comikkua.data.release;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import it.amonshore.comikkua.data.comics.Comics;
 
 @Entity(tableName = "tReleases",
         foreignKeys = @ForeignKey(entity = Comics.class,

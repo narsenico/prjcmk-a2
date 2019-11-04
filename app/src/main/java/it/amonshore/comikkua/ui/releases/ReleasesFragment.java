@@ -21,9 +21,9 @@ import android.view.ViewGroup;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.ComicsRelease;
-import it.amonshore.comikkua.data.Release;
-import it.amonshore.comikkua.data.ReleasesViewModel;
+import it.amonshore.comikkua.data.release.ComicsRelease;
+import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
@@ -32,7 +32,7 @@ public class ReleasesFragment extends Fragment {
 
     private OnNavigationFragmentListener mListener;
     private ReleaseAdapter mAdapter;
-    private ReleasesViewModel mReleasesViewModel;
+    private ReleaseViewModel mReleaseViewModel;
 
     public ReleasesFragment() {
     }
@@ -60,13 +60,14 @@ public class ReleasesFragment extends Fragment {
                 switch (item.getItemId()) {
                     case R.id.purchaseReleases:
                         if (tracker.hasSelection()) {
-                            // TODO: occorre implementare un update del solo purchase (con query update tReleases set purchased=:purchased, lastUpdate=:lastUpdate where id in :ids
+                            mReleaseViewModel.togglePurchased(System.currentTimeMillis(), tracker.getSelection());
                         }
-                        tracker.clearSelection();
+                        // mantengo la selezione
                         return true;
+                        // TODO: gestire toggle ordered
                     case R.id.deleteReleases:
                         if (tracker.hasSelection()) {
-                            mReleasesViewModel.delete(tracker.getSelection());
+                            mReleaseViewModel.delete(tracker.getSelection());
                         }
                         tracker.clearSelection();
                         return true;
@@ -97,35 +98,31 @@ public class ReleasesFragment extends Fragment {
                     }
                 })
                 .withOnItemActivatedListener((item, e) -> {
-                    // TODO: la lista delle release viene subito aggiornata! quindi le release acquistate vengono subito tolte dalla lista
-
-                    // possibile soluzione:
-                    // - potrei mantenere nel gruppo lost/missing anche quelli acquistati nelle ultime 24 ore, così non sparirebbero subito dalla lista
-
                     LogHelper.d("Release click key=%s hotspot=%s", item.getSelectionKey(), item.inSelectionHotspot(e));
-                    final ComicsRelease release = mAdapter.getItemAt(item.getPosition());
+                    // TODO: mi devo fidare del fatto che vengono selezionati solo le release e non gli header
+                    final ComicsRelease release = (ComicsRelease) mAdapter.getItemAt(item.getPosition());
                     if (release != null) {
                         final Release clone = Release.create(release.release);
                         clone.purchased = !release.release.purchased;
                         clone.lastUpdate = System.currentTimeMillis();
 
-                        mReleasesViewModel.update(clone);
+                        mReleaseViewModel.update(clone);
                     }
                     return false;
                 })
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
-        mReleasesViewModel = new ViewModelProvider(this)
-                .get(ReleasesViewModel.class);
+        mReleaseViewModel = new ViewModelProvider(this)
+                .get(ReleaseViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-//        mReleasesViewModel.comicsReleaseList.observe(getViewLifecycleOwner(), data -> {
+//        mReleaseViewModel.comicsReleaseList.observe(getViewLifecycleOwner(), data -> {
 //            LogHelper.d("release viewmodel data changed: size=%s, lastKey=%s", data.size(), data.getLastKey());
 //            mAdapter.submitList(data);
 //        });
-        mReleasesViewModel.getNotableReleases().observe(getViewLifecycleOwner(), comicsReleases -> {
-            LogHelper.d("release viewmodel data changed size:" + comicsReleases.size());
-            mAdapter.submitList(comicsReleases);
+        mReleaseViewModel.getReleaseViewModelItems().observe(getViewLifecycleOwner(), items -> {
+            LogHelper.d("release viewmodel data changed size:" + items.size());
+            mAdapter.submitList(items);
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -169,7 +166,7 @@ public class ReleasesFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.deleteReleases:
-                // TODO
+                // TODO: implementare cancellazione di tutte le release, chiedere conferma all'utente
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

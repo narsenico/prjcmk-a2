@@ -4,13 +4,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
@@ -20,11 +18,13 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.data.ComicsRelease;
+import it.amonshore.comikkua.data.release.ComicsRelease;
+import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
+import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
-public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder> {
+public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
 
     private ReleaseAdapter() {
@@ -32,23 +32,15 @@ public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ReleaseViewHolder holder, int position) {
-        final ComicsRelease item = getItem(position);
+    public void onBindViewHolder(@NonNull AReleaseViewModelItemViewHolder holder, int position) {
+        final IReleaseViewModelItem item = getItem(position);
         if (item != null) {
-            // mostro l'instestazione (che fa parte del ViewHolder) solo se l'elemento precedente è "tipo" diverso
-            //  cioè è stato estratto con una query diversa
-            boolean showHeader;
-            if (position == 0) {
-                showHeader = true;
+            if (item.getItemType() == ReleaseHeader.ITEM_TYPE) {
+                holder.bind(item, false);
             } else {
-                final ComicsRelease previous = getItem(position - 1);
-                if (previous == null) {
-                    showHeader = true;
-                } else {
-                    showHeader = previous.type != item.type;
-                }
+                final ComicsRelease release = (ComicsRelease)item;
+                holder.bind(item, mSelectionTracker.isSelected(release.release.id));
             }
-            holder.bind(item, mSelectionTracker.isSelected(item.release.id), showHeader, position == 0);
         } else {
             holder.clear();
         }
@@ -56,22 +48,36 @@ public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder
 
     @NonNull
     @Override
-    public ReleaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+    public AReleaseViewModelItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == ReleaseHeader.ITEM_TYPE) {
+            return ReleaseHeaderViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+        } else {
+            return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+        }
     }
 
     @Override
     public long getItemId(int position) {
-        final ComicsRelease item = getItem(position);
+        final IReleaseViewModelItem item = getItem(position);
         if (item == null) {
             return RecyclerView.NO_ID;
         } else {
-            return item.release.id;
+            return item.getId();
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        final IReleaseViewModelItem item = getItem(position);
+        if (item == null) {
+            return RecyclerView.INVALID_TYPE;
+        } else {
+            return item.getItemType();
         }
     }
 
     @Nullable
-    public ComicsRelease getItemAt(int position) {
+    public IReleaseViewModelItem getItemAt(int position) {
         return getItem(position);
     }
 
@@ -133,7 +139,24 @@ public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder
                     mRecyclerView,
                     new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
                     new ReleaseItemDetailsLookup(mRecyclerView),
-                    StorageStrategy.createLongStorage());
+                    StorageStrategy.createLongStorage())
+                    // escludo dalla selezione gli header
+                    .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
+                        @Override
+                        public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
+                            return key < ReleaseHeader.BASE_ID;
+                        }
+
+                        @Override
+                        public boolean canSetStateAtPosition(int position, boolean nextState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean canSelectMultiple() {
+                            return true;
+                        }
+                    });
 
             if (mOnItemActivatedListener != null) {
                 builder.withOnItemActivatedListener(mOnItemActivatedListener);
@@ -179,22 +202,20 @@ public class ReleaseAdapter extends ListAdapter<ComicsRelease, ReleaseViewHolder
         }
     }
 
-    private static DiffUtil.ItemCallback<ComicsRelease> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<ComicsRelease>() {
+    private static DiffUtil.ItemCallback<IReleaseViewModelItem> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<IReleaseViewModelItem>() {
                 // ComicsRelease details may have changed if reloaded from the database,
                 // but ID is fixed.
                 @Override
-                public boolean areItemsTheSame(@NonNull ComicsRelease oldComicsRelease,
-                                               @NonNull ComicsRelease newComicsRelease) {
-                    return oldComicsRelease.release.id == newComicsRelease.release.id;
+                public boolean areItemsTheSame(@NonNull IReleaseViewModelItem oldItem,
+                                               @NonNull IReleaseViewModelItem newItem) {
+                    return oldItem.getId() == newItem.getId();
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull ComicsRelease oldComicsRelease,
-                                                  @NonNull ComicsRelease newComicsRelease) {
-                    return oldComicsRelease.equals(newComicsRelease) &&
-                            oldComicsRelease.comics.lastUpdate == newComicsRelease.comics.lastUpdate &&
-                            oldComicsRelease.release.lastUpdate == newComicsRelease.release.lastUpdate;
+                public boolean areContentsTheSame(@NonNull IReleaseViewModelItem oldItem,
+                                                  @NonNull IReleaseViewModelItem newItem) {
+                    return Objects.equals(oldItem, newItem);
                 }
             };
 }

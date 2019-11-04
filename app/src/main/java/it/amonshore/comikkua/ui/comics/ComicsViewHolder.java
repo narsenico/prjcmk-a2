@@ -10,9 +10,9 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.Comics;
-import it.amonshore.comikkua.data.ComicsWithReleases;
-import it.amonshore.comikkua.data.Release;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
+import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {

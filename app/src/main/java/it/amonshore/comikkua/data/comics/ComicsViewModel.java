@@ -1,12 +1,12 @@
-package it.amonshore.comikkua.data;
+package it.amonshore.comikkua.data.comics;
 
 import android.app.Application;
+import android.text.TextUtils;
 
 import java.util.List;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 import it.amonshore.comikkua.Utility;
 
@@ -14,13 +14,25 @@ public class ComicsViewModel extends AndroidViewModel {
 
     private ComicsRepository mRepository;
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
-    public final MutableLiveData<String> filterName;
 
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
         comicsWithReleasesList = mRepository.comicsWithReleasesList;
-        filterName = mRepository.filterName;
+    }
+
+    /**
+     * Imposta un filtro sui comics.
+     * Gli osservatori collegati a comicsWithReleasesList verranno eccitati di conseguenza.
+     *
+     * @param filter    testo da usare come filtro, null o vuoto per togliere il filtro
+     */
+    public void setFilter(String filter) {
+        if (TextUtils.isEmpty(filter)) {
+            mRepository.filterComics.setValue(null);
+        } else {
+            mRepository.filterComics.setValue("%" + filter.replaceAll("\\s+", "%") + "%");
+        }
     }
 
     public LiveData<List<Comics>> getComics() {
@@ -33,10 +45,6 @@ public class ComicsViewModel extends AndroidViewModel {
 
     public LiveData<Comics> getComics(String name) {
         return mRepository.getComics(name);
-    }
-
-    public LiveData<List<ComicsWithReleases>> getComicsWithReleases() {
-        return mRepository.getComicsWithReleases();
     }
 
     public LiveData<ComicsWithReleases> getComicsWithReleases(long id) {

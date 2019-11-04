@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data;
+package it.amonshore.comikkua.data.comics;
 
 import java.util.List;
 
@@ -59,10 +59,6 @@ public interface ComicsDao {
     @Query("SELECT * FROM tComics WHERE name like :likeName ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases(String likeName);
-
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
-    @Transaction
-    List<ComicsWithReleases> getRawComicsWithReleases();
 
     @Query("SELECT * FROM tComics WHERE name = :name")
     @Transaction

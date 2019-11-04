@@ -27,11 +27,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.Comics;
-import it.amonshore.comikkua.data.ComicsViewModel;
-import it.amonshore.comikkua.data.ComicsWithReleases;
-import it.amonshore.comikkua.data.Periodicity;
-import it.amonshore.comikkua.data.Release;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
+import it.amonshore.comikkua.data.release.Periodicity;
+import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
 
 /**

@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data;
+package it.amonshore.comikkua.data.comics;
 
 import android.text.TextUtils;
 

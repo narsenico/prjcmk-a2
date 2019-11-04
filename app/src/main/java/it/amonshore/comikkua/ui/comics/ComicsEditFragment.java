@@ -17,12 +17,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.ComicsViewModel;
-import it.amonshore.comikkua.data.ComicsWithReleases;
+import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
-import static it.amonshore.comikkua.data.Comics.NEW_COMICS_ID;
+import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 
 
 public class ComicsEditFragment extends Fragment {

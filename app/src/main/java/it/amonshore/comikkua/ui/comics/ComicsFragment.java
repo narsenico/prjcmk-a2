@@ -22,15 +22,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.regex.Pattern;
-
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
-import static it.amonshore.comikkua.data.Comics.NEW_COMICS_ID;
+import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 
 
 public class ComicsFragment extends Fragment {
@@ -124,7 +122,7 @@ public class ComicsFragment extends Fragment {
         mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
 
         // la prima volta carico tutti i dati
-        mComicsViewModel.filterName.setValue(null);
+        mComicsViewModel.setFilter(null);
 
         return view;
     }
@@ -161,23 +159,19 @@ public class ComicsFragment extends Fragment {
 
         final MenuItem searchItem = menu.findItem(R.id.searchComics);
         final SearchView searchView = (SearchView) searchItem.getActionView();
-//        final Pattern
 
         // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
         // TODO: al cambio di configurazione (es orientamento) la query viene persa
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                LogHelper.d("filterName for " + query);
-//                mComicsViewModel.filterName.setValue("%" + query + "%");
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                final String searchText = newText.replaceAll("\\s+", "%");
-                LogHelper.d("filterName change " + searchText);
-                mComicsViewModel.filterName.setValue("%" + searchText + "%"); // TODO: ok ma aggiungere debounce
+                LogHelper.d("filterName change " + newText);
+                mComicsViewModel.setFilter(newText); // TODO: ok ma aggiungere debounce
                 return true;
             }
         });
@@ -195,7 +189,7 @@ public class ComicsFragment extends Fragment {
 
                 return true;
             case R.id.deleteComics:
-                // TODO
+                // TODO: chiedere conferma prima di elminare tutto
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

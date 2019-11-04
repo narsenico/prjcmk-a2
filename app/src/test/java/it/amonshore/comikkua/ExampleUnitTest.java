@@ -3,6 +3,7 @@ package it.amonshore.comikkua;
 import org.junit.Test;
 
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -61,5 +62,18 @@ public class ExampleUnitTest {
         System.out.println("first day of week " + s);
 
         assertTrue(String.format("%s != %s", s, "20191028"), s.equals("20191028"));
+    }
+
+    @Test
+    public void addDaysToCalendar() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.setTime(sdf.parse("20191028"));
+        calendar.add(Calendar.DAY_OF_MONTH, 7);
+
+        String s = sdf.format(calendar.getTime());
+        System.out.println("20191028 +7 " + s);
+
+        assertTrue(String.format("%s != %s", s, "20191104"), s.equals("20191104"));
     }
 }

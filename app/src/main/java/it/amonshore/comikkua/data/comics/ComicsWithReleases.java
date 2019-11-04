@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data;
+package it.amonshore.comikkua.data.comics;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Relation;
+import it.amonshore.comikkua.data.release.Release;
 
 @Entity
 public class ComicsWithReleases {
@@ -50,7 +51,8 @@ public class ComicsWithReleases {
 
         if (obj instanceof ComicsWithReleases) {
             final ComicsWithReleases other = (ComicsWithReleases) obj;
-            return other.comics.id == this.comics.id;
+            return other.comics.id == this.comics.id &&
+                    other.comics.lastUpdate == this.comics.lastUpdate;
         } else {
             return false;
         }

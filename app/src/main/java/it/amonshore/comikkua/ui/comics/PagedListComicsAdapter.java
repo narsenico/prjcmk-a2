@@ -18,7 +18,7 @@ import android.view.ViewGroup;
 import java.util.Iterator;
 
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.data.ComicsWithReleases;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
@@ -176,8 +176,7 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
 
                     // TODO: devo controllare la data di modifica anche di tutte le release?
 
-                    return oldComicsWithReleases.equals(newComicsWithReleases) &&
-                            oldComicsWithReleases.comics.lastUpdate == newComicsWithReleases.comics.lastUpdate;
+                    return oldComicsWithReleases.equals(newComicsWithReleases);
                 }
             };
 

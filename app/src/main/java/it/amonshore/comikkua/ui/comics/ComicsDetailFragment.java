@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.ComicsViewModel;
-import it.amonshore.comikkua.data.Release;
+import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
 import android.transition.TransitionInflater;
