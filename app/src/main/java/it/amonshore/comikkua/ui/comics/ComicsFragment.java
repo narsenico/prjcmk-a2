@@ -15,12 +15,15 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.Objects;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -34,9 +37,12 @@ import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 
 public class ComicsFragment extends Fragment {
 
+    private final static String BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout";
+
     private OnNavigationFragmentListener mListener;
     private PagedListComicsAdapter mAdapter;
     private ComicsViewModel mComicsViewModel;
+    private RecyclerView mRecyclerView;
 
     public ComicsFragment() { }
 
@@ -53,8 +59,8 @@ public class ComicsFragment extends Fragment {
 
         final String actionModeName = getClass().getSimpleName() + "_actionMode";
         final Context context = requireContext();
-        final RecyclerView recyclerView = view.findViewById(R.id.list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        mRecyclerView = view.findViewById(R.id.list);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_comics_selected) {
             @Override
@@ -82,7 +88,7 @@ public class ComicsFragment extends Fragment {
         // PROBLEMI:
         // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
 
-        mAdapter = new PagedListComicsAdapter.Builder(recyclerView)
+        mAdapter = new PagedListComicsAdapter.Builder(mRecyclerView)
                 .withOnItemSelectedListener((keys, size) -> {
                     if (mListener != null) {
                         if (size == 0) {
@@ -94,7 +100,7 @@ public class ComicsFragment extends Fragment {
                     }
                 })
                 .withOnItemActivatedListener((item, e) -> {
-                    final View sharedView = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    final View sharedView = mRecyclerView.findChildViewUnder(e.getX(), e.getY());
                     // lo stesso nome della transizione verrà assegnato alla view di arrivo
                     //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
                     final String txName = "comics_tx_" + item.getSelectionKey();
@@ -117,6 +123,12 @@ public class ComicsFragment extends Fragment {
         mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
             LogHelper.d("comics viewmodel data changed");
             mAdapter.submitList(data);
+
+            // ripristino lo stato del layout (la posizione dello scroll)
+            if (savedInstanceState != null) {
+                Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                        .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
+            }
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -149,7 +161,12 @@ public class ComicsFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
+            // ripristino le selezioni
             mAdapter.getSelectionTracker().onSaveInstanceState(outState);
+            // salvo lo stato del layout (la posizione dello scroll)
+            outState.putParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT,
+                    Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                            .onSaveInstanceState());
         }
     }
 

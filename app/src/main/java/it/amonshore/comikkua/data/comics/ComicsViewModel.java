@@ -59,8 +59,16 @@ public class ComicsViewModel extends AndroidViewModel {
         mRepository.insert(comics);
     }
 
+    public long insertSync(Comics comics) {
+        return mRepository.insertSync(comics);
+    }
+
     public void update(Comics comics) {
         mRepository.update(comics);
+    }
+
+    public int updateSync(Comics comics) {
+        return mRepository.updateSync(comics);
     }
 
     public void delete(long id) {

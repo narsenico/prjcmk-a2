@@ -124,11 +124,11 @@ public class ComicsDetailFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.editComics:
 
-                final NavDirections directions = ComicsDetailFragmentDirections
-                        .actionDestComicsDetailFragmentToComicsEditFragment()
-                        .setComicsId(mComicsId);
+                    final NavDirections directions = ComicsDetailFragmentDirections
+                            .actionDestComicsDetailFragmentToComicsEditFragment()
+                            .setComicsId(mComicsId);
 
-                Navigation.findNavController(getView()).navigate(directions);
+                    Navigation.findNavController(getView()).navigate(directions);
 
                 return true;
             default:

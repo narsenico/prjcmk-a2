@@ -15,16 +15,16 @@ import androidx.room.Update;
 public interface ComicsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Comics comics);
+    long insert(Comics comics);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Comics... comics);
+    Long[] insert(Comics... comics);
 
     @Update
-    void update(Comics comics);
+    int update(Comics comics);
 
     @Update
-    void update(Comics... comics);
+    int update(Comics... comics);
 
     @Query("DELETE FROM tComics")
     void deleteAll();

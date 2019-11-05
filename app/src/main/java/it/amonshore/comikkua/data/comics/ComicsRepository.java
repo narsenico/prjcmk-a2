@@ -69,8 +69,16 @@ public class ComicsRepository {
         new InsertAsyncTask(mComicsDao).execute(comics);
     }
 
+    public long insertSync(Comics comics) {
+        return mComicsDao.insert(comics);
+    }
+
     public void update(Comics comics) {
         new UpdateAsyncTask(mComicsDao).execute(comics);
+    }
+
+    public int updateSync(Comics comics) {
+        return mComicsDao.update(comics);
     }
 
     public void delete(long id) {

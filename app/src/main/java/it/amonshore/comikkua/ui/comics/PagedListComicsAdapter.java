@@ -148,13 +148,13 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                 });
             }
 
-            // appena un item viene inserito mi sposto sulla sua posizione
-            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                @Override
-                public void onItemRangeInserted(int positionStart, int itemCount) {
-                    mRecyclerView.scrollToPosition(positionStart);
-                }
-            });
+//            // appena un item viene inserito mi sposto sulla sua posizione
+//            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+//                @Override
+//                public void onItemRangeInserted(int positionStart, int itemCount) {
+//                    mRecyclerView.scrollToPosition(positionStart);
+//                }
+//            });
 
             return adapter;
         }

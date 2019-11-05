@@ -12,12 +12,15 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.Objects;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -30,9 +33,12 @@ import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
 public class ReleasesFragment extends Fragment {
 
+    private final static String BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout";
+
     private OnNavigationFragmentListener mListener;
     private ReleaseAdapter mAdapter;
     private ReleaseViewModel mReleaseViewModel;
+    private RecyclerView mRecyclerView;
 
     public ReleasesFragment() {
     }
@@ -50,8 +56,8 @@ public class ReleasesFragment extends Fragment {
 
         final String actionModeName = getClass().getSimpleName() + "_actionMode";
         final Context context = requireContext();
-        final RecyclerView recyclerView = view.findViewById(R.id.list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        mRecyclerView = view.findViewById(R.id.list);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
             @Override
@@ -89,7 +95,7 @@ public class ReleasesFragment extends Fragment {
         // PROBLEMI:
         // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
 
-        mAdapter = new ReleaseAdapter.Builder(recyclerView)
+        mAdapter = new ReleaseAdapter.Builder(mRecyclerView)
                 .withOnItemSelectedListener((keys, size) -> {
                     if (mListener != null) {
                         if (size == 0) {
@@ -120,13 +126,15 @@ public class ReleasesFragment extends Fragment {
         mReleaseViewModel = new ViewModelProvider(this)
                 .get(ReleaseViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-//        mReleaseViewModel.comicsReleaseList.observe(getViewLifecycleOwner(), data -> {
-//            LogHelper.d("release viewmodel data changed: size=%s, lastKey=%s", data.size(), data.getLastKey());
-//            mAdapter.submitList(data);
-//        });
         mReleaseViewModel.getReleaseViewModelItems().observe(getViewLifecycleOwner(), items -> {
             LogHelper.d("release viewmodel data changed size:" + items.size());
             mAdapter.submitList(items);
+
+            // ripristino lo stato del layout (la posizione dello scroll)
+            if (savedInstanceState != null) {
+                Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                        .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
+            }
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -156,8 +164,18 @@ public class ReleasesFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
+            // ripristino le selezioni
             mAdapter.getSelectionTracker().onSaveInstanceState(outState);
+            // salvo lo stato del layout (la posizione dello scroll)
+            outState.putParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT,
+                    Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                            .onSaveInstanceState());
         }
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
     }
 
     @Override

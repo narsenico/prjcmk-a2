@@ -74,8 +74,10 @@ class ComicsEditFragmentHelper {
     private ComicsWithReleases mComics;
     private NumberFormat numberFormat;
     private List<Periodicity> mPeriodicityList;
-    private @NonNull ComicsViewModel mViewModel;
-    private @NonNull LifecycleOwner mLifecycleOwner;
+    private @NonNull
+    ComicsViewModel mViewModel;
+    private @NonNull
+    LifecycleOwner mLifecycleOwner;
 
     private void bind(@NonNull View view, @NonNull ComicsViewModel viewModel, @NonNull LifecycleOwner lifecycleOwner) {
         mRootView = view;
@@ -96,11 +98,11 @@ class ComicsEditFragmentHelper {
         editor = new Editor();
         editor.nameLayout = view.findViewById(R.id.til_name);
         editor.name = editor.nameLayout.getEditText();
-        editor.publisher = (AutoCompleteTextView)((TextInputLayout)view.findViewById(R.id.til_publisher)).getEditText();
-        editor.series = ((TextInputLayout)view.findViewById(R.id.til_series)).getEditText();
-        editor.authors = ((TextInputLayout)view.findViewById(R.id.til_authors)).getEditText();
-        editor.price = ((TextInputLayout)view.findViewById(R.id.til_price)).getEditText();
-        editor.notes = ((TextInputLayout)view.findViewById(R.id.til_notes)).getEditText();
+        editor.publisher = (AutoCompleteTextView) ((TextInputLayout) view.findViewById(R.id.til_publisher)).getEditText();
+        editor.series = ((TextInputLayout) view.findViewById(R.id.til_series)).getEditText();
+        editor.authors = ((TextInputLayout) view.findViewById(R.id.til_authors)).getEditText();
+        editor.price = ((TextInputLayout) view.findViewById(R.id.til_price)).getEditText();
+        editor.notes = ((TextInputLayout) view.findViewById(R.id.til_notes)).getEditText();
         editor.periodicity = view.findViewById(R.id.til_periodicity);
 
         mPeriodicityList = Periodicity.createList(mRootView.getContext());
@@ -214,7 +216,7 @@ class ComicsEditFragmentHelper {
 
         // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
         final Release lastRelease = mComics.getLastPurchasedRelease();
-        preview.last.setText(lastRelease == null ? context.getString(R.string.release_last_none):
+        preview.last.setText(lastRelease == null ? context.getString(R.string.release_last_none) :
                 context.getString(R.string.release_last, lastRelease.number));
 
         final Release nextRelease = mComics.getNextToPurchaseRelease();
@@ -227,6 +229,11 @@ class ComicsEditFragmentHelper {
         preview.comicsMenu.setVisibility(View.GONE);
     }
 
+    /**
+     * Aggiorna il comics con gli input dell'utente.
+     *
+     * @return il comics aggiornato
+     */
     ComicsWithReleases writeComics() {
         mComics.comics.name = editor.name.getText().toString().trim();
         mComics.comics.publisher = editor.publisher.getText().toString().trim();
