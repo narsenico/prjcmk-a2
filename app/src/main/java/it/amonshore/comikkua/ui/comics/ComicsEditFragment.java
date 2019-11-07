@@ -56,7 +56,7 @@ public class ComicsEditFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // recupero il ViewModel per l'accesso ai dati
-        mComicsViewModel = new ViewModelProvider(this)
+        mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
 
         // helper per bindare le view

@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data.release;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
@@ -26,6 +27,21 @@ public class Release {
     public boolean ordered;
     public String notes;
     public long lastUpdate;
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == this) return true;
+
+        if (obj instanceof Release) {
+            final Release other = (Release) obj;
+            return other.comicsId == this.comicsId &&
+                    other.id == this.id &&
+                    other.number == this.number &&
+                    other.lastUpdate == this.lastUpdate;
+        } else {
+            return false;
+        }
+    }
 
     public static Release create(long comicsId, int number, String date) {
         final Release release = new Release();

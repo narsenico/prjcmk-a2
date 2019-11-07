@@ -74,8 +74,24 @@ public class ComicsWithReleases {
 
         if (obj instanceof ComicsWithReleases) {
             final ComicsWithReleases other = (ComicsWithReleases) obj;
-            return other.comics.id == this.comics.id &&
-                    other.comics.lastUpdate == this.comics.lastUpdate;
+            if (other.comics.id == this.comics.id &&
+                    other.comics.lastUpdate == this.comics.lastUpdate) {
+                if (other.releases != null && this.releases != null &&
+                        other.releases.size() == this.releases.size()) {
+                    for (int ii = 0; ii < other.releases.size(); ii++) {
+                        if (!other.releases.get(ii).equals(this.releases.get(ii))) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else if (other.releases == null && this.releases == null) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

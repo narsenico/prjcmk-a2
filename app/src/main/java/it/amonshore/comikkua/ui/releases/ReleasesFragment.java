@@ -123,24 +123,44 @@ public class ReleasesFragment extends Fragment {
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
-        mReleaseViewModel = new ViewModelProvider(this)
+        mReleaseViewModel = new ViewModelProvider(requireActivity())
                 .get(ReleaseViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
         mReleaseViewModel.getReleaseViewModelItems().observe(getViewLifecycleOwner(), items -> {
             LogHelper.d("release viewmodel data changed size:" + items.size());
             mAdapter.submitList(items);
-
-            // ripristino lo stato del layout (la posizione dello scroll)
-            if (savedInstanceState != null) {
-                Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                        .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
-            }
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
         mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // ripristino lo stato del layout (la posizione dello scroll)
+        // se non trovo savedInstanceState uso lo stato salvato nel view model
+        if (savedInstanceState != null) {
+            Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                    .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
+        } else if (mReleaseViewModel != null) {
+            Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                    .onRestoreInstanceState(mReleaseViewModel.states.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mRecyclerView != null) {
+            // visto che Navigation ricrea il fragment ogni volta (!)
+            // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
+            //  in onViewCreated
+            mReleaseViewModel.states.putParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT,
+                    Objects.requireNonNull(mRecyclerView.getLayoutManager()).onSaveInstanceState());
+        }
     }
 
     @Override

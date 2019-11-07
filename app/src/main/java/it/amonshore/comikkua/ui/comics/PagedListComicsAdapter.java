@@ -148,14 +148,6 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                 });
             }
 
-//            // appena un item viene inserito mi sposto sulla sua posizione
-//            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-//                @Override
-//                public void onItemRangeInserted(int positionStart, int itemCount) {
-//                    mRecyclerView.scrollToPosition(positionStart);
-//                }
-//            });
-
             return adapter;
         }
     }
@@ -173,9 +165,6 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                 @Override
                 public boolean areContentsTheSame(@NonNull ComicsWithReleases oldComicsWithReleases,
                                                   @NonNull ComicsWithReleases newComicsWithReleases) {
-
-                    // TODO: devo controllare la data di modifica anche di tutte le release?
-
                     return oldComicsWithReleases.equals(newComicsWithReleases);
                 }
             };

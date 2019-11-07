@@ -3,8 +3,10 @@ package it.amonshore.comikkua.ui.releases;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import java.util.Locale;
@@ -13,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
+import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
@@ -47,6 +50,15 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 2f,
                 itemView.getResources().getDisplayMetrics());
+
+        // TODO: sia la selezioen (purchase) dell'item che la selezione di una voce del menu
+        //  devono essere gestite qua dentro e poi rimandate all'adapter via callback
+
+        final PopupMenu popupMenu = new PopupMenu(itemView.getContext(), mMenu);
+        popupMenu.inflate(R.menu.menu_releases_selected);
+        mMenu.setOnClickListener(v -> {
+            popupMenu.show();
+        });
     }
 
     @Override

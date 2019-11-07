@@ -117,18 +117,12 @@ public class ComicsFragment extends Fragment {
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
-        mComicsViewModel = new ViewModelProvider(this)
+        mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
         mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
-            LogHelper.d("comics viewmodel data changed");
+            LogHelper.d("comics viewmodel data changed size=" + data.size());
             mAdapter.submitList(data);
-
-            // ripristino lo stato del layout (la posizione dello scroll)
-            if (savedInstanceState != null) {
-                Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                        .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
-            }
         });
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -138,6 +132,35 @@ public class ComicsFragment extends Fragment {
         mComicsViewModel.setFilter(null);
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // ripristino lo stato del layout (la posizione dello scroll)
+        // se non trovo savedInstanceState uso lo stato salvato nel view model
+
+        // TODO: NON FUNZIONA! forse è colpa del setFilter ???
+
+        if (savedInstanceState != null) {
+            Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                    .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
+        } else if (mComicsViewModel != null) {
+            Objects.requireNonNull(mRecyclerView.getLayoutManager())
+                    .onRestoreInstanceState(mComicsViewModel.states.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mRecyclerView != null) {
+            // visto che Navigation ricrea il fragment ogni volta (!)
+            // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
+            //  in onViewCreated
+            mComicsViewModel.states.putParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT,
+                    Objects.requireNonNull(mRecyclerView.getLayoutManager()).onSaveInstanceState());
+        }
     }
 
     @Override

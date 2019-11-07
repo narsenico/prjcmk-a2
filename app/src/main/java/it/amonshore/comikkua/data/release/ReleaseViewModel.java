@@ -2,6 +2,7 @@ package it.amonshore.comikkua.data.release;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.os.Bundle;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,10 +20,15 @@ import it.amonshore.comikkua.Utility;
 public class ReleaseViewModel extends AndroidViewModel {
 
     private ReleaseRepository mRepository;
+    private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
+
+    // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
+    public final Bundle states;
 
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
+        states = new Bundle();
     }
 
     LiveData<List<Release>> getReleases(int comicsId) {
@@ -38,9 +44,16 @@ public class ReleaseViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems() {
+        if (mReleaseViewModelItems == null) {
+            mReleaseViewModelItems = createReleaseViewModelItems();
+        }
+        return mReleaseViewModelItems;
+    }
+
+    private LiveData<List<IReleaseViewModelItem>> createReleaseViewModelItems() {
         final Calendar calendar = Calendar.getInstance(Locale.getDefault());
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-        LogHelper.d("today=%s", dateFormat.format(calendar.getTime()));
+        LogHelper.d("createReleaseViewModelItems today=%s", dateFormat.format(calendar.getTime()));
 
         // il giorno di riferimento è il primo giorno della settimana in corso
         Utility.gotoFirstDayOfWeek(calendar);
@@ -63,7 +76,6 @@ public class ReleaseViewModel extends AndroidViewModel {
         final ReleaseViewModelGroupHelper groupHelper = new ReleaseViewModelGroupHelper();
         final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
         mediatorLiveData.addSource(getAllReleases(refDate, refNextDate, refOtherDate, retainStart), comicsReleases -> {
-            // TODO: è qua che posso manipolare il risultato aggiungendo gli header
             // e raggruppando le release senza data
             mediatorLiveData.setValue(groupHelper.createViewModelItems(comicsReleases));
         });

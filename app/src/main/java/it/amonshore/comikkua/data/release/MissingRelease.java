@@ -18,6 +18,7 @@ import androidx.room.DatabaseView;
                 "tComics.notes as cnotes, " +
                 "tComics.image as cimage, " +
                 "tComics.lastUpdate as clastUpdate, " +
+                "tComics.refJsonId as crefJsonId, " +
                 "tReleases.id as rid, " +
                 "tReleases.comicsId as rcomicsId, " +
                 "tReleases.number as rnumber, " +

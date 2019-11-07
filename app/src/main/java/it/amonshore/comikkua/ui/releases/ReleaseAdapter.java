@@ -4,8 +4,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +17,7 @@ import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
@@ -159,6 +162,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     });
 
             if (mOnItemActivatedListener != null) {
+                // TODO: sostituire con callback dal viewholder
                 builder.withOnItemActivatedListener(mOnItemActivatedListener);
             }
 
@@ -190,13 +194,28 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 });
             }
 
-//            // appena un item viene inserito mi sposto sulla sua posizione
-//            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-//                @Override
-//                public void onItemRangeInserted(int positionStart, int itemCount) {
-//                    mRecyclerView.scrollToPosition(positionStart);
-//                }
-//            });
+            // TEST
+            final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+
+                @Override
+                public boolean isLongPressDragEnabled() {
+                    return false;
+                }
+
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    LogHelper.d("Release swiped");
+                    final int position = viewHolder.getAdapterPosition();
+                    adapter.notifyItemChanged(position);
+                }
+            });
+            itemTouchHelper.attachToRecyclerView(mRecyclerView);
+            // TEST
 
             return adapter;
         }

@@ -25,7 +25,7 @@ import it.amonshore.comikkua.data.release.ReleaseDao;
 
 @Database(entities = {Comics.class, Release.class},
         views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
-        version = 3)
+        version = 4)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();

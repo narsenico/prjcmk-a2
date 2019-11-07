@@ -1,6 +1,8 @@
 package it.amonshore.comikkua.data.comics;
 
 import android.app.Application;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.List;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
+import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 
 public class ComicsViewModel extends AndroidViewModel {
@@ -15,10 +18,14 @@ public class ComicsViewModel extends AndroidViewModel {
     private ComicsRepository mRepository;
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
+    // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
+    public final Bundle states;
+
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
         comicsWithReleasesList = mRepository.comicsWithReleasesList;
+        states = new Bundle();
     }
 
     /**

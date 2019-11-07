@@ -66,7 +66,7 @@ public class ComicsDetailFragment extends Fragment {
         mComicsMenu = view.findViewById(R.id.img_comics_menu);
 
         // recupero il ViewModel per l'accesso ai dati
-        mComicsViewModel = new ViewModelProvider(this)
+        mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
         mComicsViewModel.getComicsWithReleases(mComicsId).observe(getViewLifecycleOwner(), comics -> {
             if (comics != null) {
