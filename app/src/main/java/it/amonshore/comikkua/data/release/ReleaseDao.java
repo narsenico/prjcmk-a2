@@ -29,7 +29,11 @@ public interface ReleaseDao {
 
     @Query("UPDATE tReleases SET purchased = :purchased, lastUpdate = :lastUpdate WHERE id IN (:id)")
     @Transaction
-    void update(boolean purchased, long lastUpdate, Long... id);
+    void updatePurchased(boolean purchased, long lastUpdate, Long... id);
+
+    @Query("UPDATE tReleases SET ordered = :ordered, lastUpdate = :lastUpdate WHERE id IN (:id)")
+    @Transaction
+    void updateOrdered(boolean ordered, long lastUpdate, Long... id);
 
     @Query("DELETE FROM tReleases")
     void deleteAll();

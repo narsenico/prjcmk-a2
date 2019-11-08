@@ -117,6 +117,7 @@ public class ComicsFragment extends Fragment {
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
+        // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
         mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
@@ -139,9 +140,6 @@ public class ComicsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         // ripristino lo stato del layout (la posizione dello scroll)
         // se non trovo savedInstanceState uso lo stato salvato nel view model
-
-        // TODO: NON FUNZIONA! forse è colpa del setFilter ???
-
         if (savedInstanceState != null) {
             Objects.requireNonNull(mRecyclerView.getLayoutManager())
                     .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));

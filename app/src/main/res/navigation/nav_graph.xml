@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_dest_releases_to_dest_comics"
             app:destination="@id/comicsFragment" />
+        <action
+            android:id="@+id/action_dest_releases_to_comicsDetailFragment"
+            app:destination="@id/comicsDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/comicsFragment"

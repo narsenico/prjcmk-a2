@@ -61,9 +61,9 @@ class ComicsEditFragmentHelper {
 
     final class Editor {
         TextInputLayout nameLayout;
-        EditText name, series, authors, price,
+        EditText name, series, price,
                 notes;
-        AutoCompleteTextView publisher;
+        AutoCompleteTextView publisher, authors;
         MaterialSpinner periodicity;
     }
 
@@ -100,7 +100,7 @@ class ComicsEditFragmentHelper {
         editor.name = editor.nameLayout.getEditText();
         editor.publisher = (AutoCompleteTextView) ((TextInputLayout) view.findViewById(R.id.til_publisher)).getEditText();
         editor.series = ((TextInputLayout) view.findViewById(R.id.til_series)).getEditText();
-        editor.authors = ((TextInputLayout) view.findViewById(R.id.til_authors)).getEditText();
+        editor.authors = (AutoCompleteTextView) ((TextInputLayout) view.findViewById(R.id.til_authors)).getEditText();
         editor.price = ((TextInputLayout) view.findViewById(R.id.til_price)).getEditText();
         editor.notes = ((TextInputLayout) view.findViewById(R.id.til_notes)).getEditText();
         editor.periodicity = view.findViewById(R.id.til_periodicity);
@@ -150,6 +150,18 @@ class ComicsEditFragmentHelper {
                         strings));
                 // non mi serve più osservare l'elenco dei publisher
                 viewModel.getPublishers().removeObserver(this);
+            }
+        });
+
+        // passo l'elenco degli autori all'autocompletamento
+        viewModel.getAuthors().observe(lifecycleOwner, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> strings) {
+                editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+                        android.R.layout.simple_dropdown_item_1line,
+                        strings));
+                // non mi serve più osservare l'elenco degli autori
+                viewModel.getAuthors().removeObserver(this);
             }
         });
     }
@@ -253,10 +265,6 @@ class ComicsEditFragmentHelper {
             mComics.comics.price = 0;
         }
 
-        // aggiornando questo campo segnalo che i dati sono cambiati
-        // (in questo modo il sistema di paging sa che qualcosa è cambiato)
-        // non è il massimo perché effettivamente potrebbe non essere cambiato nulla, ma tant'è!
-        mComics.comics.lastUpdate = System.currentTimeMillis();
         return mComics;
     }
 

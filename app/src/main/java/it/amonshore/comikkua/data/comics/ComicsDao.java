@@ -57,11 +57,11 @@ public interface ComicsDao {
 
     @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction
-    DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases();
+    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory();
 
     @Query("SELECT * FROM tComics WHERE name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName ORDER BY name COLLATE NOCASE ASC")
     @Transaction
-    DataSource.Factory<Integer, ComicsWithReleases> comicsWithReleases(String likeName);
+    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory(String likeName);
 
     @Query("SELECT * FROM tComics WHERE name = :name")
     @Transaction
@@ -71,6 +71,9 @@ public interface ComicsDao {
     @Transaction
     LiveData<ComicsWithReleases> getComicsWithReleases(long id);
 
-    @Query("SELECT distinct(publisher) FROM tComics WHERE publisher <> '' ORDER BY publisher")
+    @Query("SELECT distinct(publisher) FROM tComics WHERE publisher IS NOT NULL AND publisher <> '' ORDER BY publisher")
     LiveData<List<String>> getPublishers();
+
+    @Query("SELECT distinct(authors) FROM tComics WHERE authors IS NOT NULL AND authors <> '' ORDER BY authors")
+    LiveData<List<String>> getAuthors();
 }

@@ -90,12 +90,36 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.update(release);
     }
 
-    public void update(boolean purchased, long lastUpdate, Iterable<Long> ids) {
-        mRepository.update(purchased, lastUpdate, Utility.toArray(ids));
+    public void updatePurchased(boolean purchased, Iterable<Long> ids) {
+        updatePurchased(purchased, Utility.toArray(ids));
     }
 
-    public void togglePurchased(long lastUpdate, Iterable<Long> ids) {
-        mRepository.togglePurchased(lastUpdate, Utility.toArray(ids));
+    public void updatePurchased(boolean purchased, Long... ids) {
+        mRepository.updatePurchased(purchased, System.currentTimeMillis(), ids);
+    }
+
+    public void togglePurchased(Iterable<Long> ids) {
+        togglePurchased(Utility.toArray(ids));
+    }
+
+    public void togglePurchased(Long... ids) {
+        mRepository.togglePurchased(System.currentTimeMillis(), ids);
+    }
+
+    public void updateOrdered(boolean ordered, Iterable<Long> ids) {
+        updateOrdered(ordered, Utility.toArray(ids));
+    }
+
+    public void updateOrdered(boolean ordered, Long... ids) {
+        mRepository.updateOrdered(ordered, System.currentTimeMillis(), ids);
+    }
+
+    public void toggleOrdered(Iterable<Long> ids) {
+        toggleOrdered(Utility.toArray(ids));
+    }
+
+    public void toggleOrdered(Long... ids) {
+        mRepository.toggleOrdered(System.currentTimeMillis(), ids);
     }
 
     public void delete(Iterable<Long> ids) {

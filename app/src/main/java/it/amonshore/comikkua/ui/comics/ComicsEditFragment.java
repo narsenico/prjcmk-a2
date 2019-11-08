@@ -152,7 +152,7 @@ public class ComicsEditFragment extends Fragment {
 
         @Override
         protected Long doInBackground(final Comics... params) {
-            // eseguo l'insert o l'update asincroni, perché sono già in un thread separato
+            // eseguo l'insert o l'updatePurchased asincroni, perché sono già in un thread separato
             if (mIsNew) {
                 // ritorna il nuovo id
                 return mComicsViewModel.insertSync(params[0]);

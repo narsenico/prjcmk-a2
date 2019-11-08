@@ -7,8 +7,12 @@ import android.text.TextUtils;
 
 import java.util.List;
 
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
+import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
@@ -16,6 +20,10 @@ import it.amonshore.comikkua.Utility;
 public class ComicsViewModel extends AndroidViewModel {
 
     private ComicsRepository mRepository;
+    private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
+    private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
+//    private LiveData<PagedList<ComicsWithReleases>> mFilteredComics; potrei riutilizzarlo se la chiave di ricerca è identica
+
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
@@ -24,8 +32,27 @@ public class ComicsViewModel extends AndroidViewModel {
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
-        comicsWithReleasesList = mRepository.comicsWithReleasesList;
         states = new Bundle();
+
+        final PagedList.Config config = new PagedList.Config.Builder()
+                .setInitialLoadSizeHint(20)
+                .setPageSize(20)
+                .setEnablePlaceholders(true)
+                .build();
+
+        // LiveData con l'elenco completo
+        mAllComics = new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(), config).build();
+
+        // è eccitato dal MutableLiveData mFilterComics
+        // se il suo valore è vuoto, oppure %%, viene ritornato l'intero set di comics
+        // oppure solo quelli che matchano il nome (like)
+        comicsWithReleasesList = Transformations.switchMap(mFilterComics, input -> {
+            if (TextUtils.isEmpty(input) || input.equals("%%")) {
+                return mAllComics;
+            } else {
+                return new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(input), config).build();
+            }
+        });
     }
 
     /**
@@ -36,9 +63,9 @@ public class ComicsViewModel extends AndroidViewModel {
      */
     public void setFilter(String filter) {
         if (TextUtils.isEmpty(filter)) {
-            mRepository.filterComics.setValue(null);
+            mFilterComics.setValue(null);
         } else {
-            mRepository.filterComics.setValue("%" + filter.replaceAll("\\s+", "%") + "%");
+            mFilterComics.setValue("%" + filter.replaceAll("\\s+", "%") + "%");
         }
     }
 
@@ -62,6 +89,10 @@ public class ComicsViewModel extends AndroidViewModel {
         return mRepository.getPublishers();
     }
 
+    public LiveData<List<String>> getAuthors() {
+        return mRepository.getAuthors();
+    }
+
     public void insert(Comics comics) {
         mRepository.insert(comics);
     }
@@ -75,6 +106,7 @@ public class ComicsViewModel extends AndroidViewModel {
     }
 
     public int updateSync(Comics comics) {
+        comics.lastUpdate = System.currentTimeMillis();
         return mRepository.updateSync(comics);
     }
 

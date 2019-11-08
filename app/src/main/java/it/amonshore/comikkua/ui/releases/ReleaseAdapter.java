@@ -4,11 +4,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 
+import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemKeyProvider;
@@ -23,12 +22,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
+import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
-import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
+    private ReleaseViewHolder.Callback mReleaseViewHolderCallback;
+//    @MenuRes
+//    private int mReleaseMenuRes;
+//    private ReleaseCallback mRelaseCallback;
 
     private ReleaseAdapter() {
         super(DIFF_CALLBACK);
@@ -55,7 +58,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         if (viewType == ReleaseHeader.ITEM_TYPE) {
             return ReleaseHeaderViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
         } else {
-            return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+            return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mReleaseViewHolderCallback);
         }
     }
 
@@ -93,46 +96,66 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         void onSelectionChanged(@Nullable Iterator<Long> keys, int size);
     }
 
-    interface ActionModeControllerCallback {
+    interface ReleaseCallback {
 
-        void onActionModeControllerCreated(ActionModeController controller);
+        void onReleasePurchased(@NonNull ComicsRelease release, boolean toBePurchased);
 
-        void onActionModeMenuItemSelected(MenuItem item);
+        void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release);
     }
 
     static class Builder {
         private final RecyclerView mRecyclerView;
-        private OnItemActivatedListener<Long> mOnItemActivatedListener;
+//        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
-        private ActionModeControllerCallback mActionModeControllerCallback;
-        private int actionModeMenuRes;
+        @MenuRes
+        private int releaseMenuRes;
+        private ReleaseCallback releaseCallback;
 
         Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
 
-        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
-            mOnItemActivatedListener = listener;
-            return this;
-        }
+//        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
+//            mOnItemActivatedListener = listener;
+//            return this;
+//        }
 
         Builder withOnItemSelectedListener(OnItemSelectedListener listener) {
             mOnItemSelectedListener = listener;
             return this;
         }
 
-        Builder withActionModeControllerCallback(int menuRes, ActionModeControllerCallback callback) {
-            // TODO: dovrebbe essere usato con withOnItemSelectedListener... altrimenti non funziona
-            //  quindi gestire da qua la creazione di ActionMode.Callback,
-            //  e al chiamante si passa la notifica della creazione e la selezione di un tasto del menu
-            //  in modo che possa aggiornare la toolbar dell'activity
-            actionModeMenuRes = menuRes;
-            mActionModeControllerCallback = callback;
+        Builder withReleaseCallback(@MenuRes int menuRes, @NonNull ReleaseCallback callback) {
+            releaseMenuRes = menuRes;
+            releaseCallback = callback;
             return this;
         }
 
         ReleaseAdapter build() {
             final ReleaseAdapter adapter = new ReleaseAdapter();
+            adapter.mReleaseViewHolderCallback = new ReleaseViewHolder.Callback(releaseMenuRes) {
+                @Override
+                void onReleaseActivated(long comicsId, long id, int position) {
+                    if (releaseCallback != null) {
+                        final IReleaseViewModelItem item = adapter.getItemAt(position);
+                        if (item != null) {
+                            final ComicsRelease release = (ComicsRelease) item;
+                            releaseCallback.onReleasePurchased(release, !release.release.purchased);
+                        }
+                    }
+                }
+
+                @Override
+                void onReleaseMenuSelected(@NonNull MenuItem menuItem, long comicsId, long id, int position) {
+                    if (releaseCallback != null) {
+                        final IReleaseViewModelItem item = adapter.getItemAt(position);
+                        if (item != null) {
+                            final ComicsRelease release = (ComicsRelease) item;
+                            releaseCallback.onReleaseMenuItemSelected(menuItem, release);
+                        }
+                    }
+                }
+            };
             // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
@@ -161,10 +184,9 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                         }
                     });
 
-            if (mOnItemActivatedListener != null) {
-                // TODO: sostituire con callback dal viewholder
-                builder.withOnItemActivatedListener(mOnItemActivatedListener);
-            }
+//            if (mOnItemActivatedListener != null) {
+//                builder.withOnItemActivatedListener(mOnItemActivatedListener);
+//            }
 
             adapter.mSelectionTracker = builder.build();
 
@@ -194,28 +216,28 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 });
             }
 
-            // TEST
-            final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-
-                @Override
-                public boolean isLongPressDragEnabled() {
-                    return false;
-                }
-
-                @Override
-                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                    return false;
-                }
-
-                @Override
-                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                    LogHelper.d("Release swiped");
-                    final int position = viewHolder.getAdapterPosition();
-                    adapter.notifyItemChanged(position);
-                }
-            });
-            itemTouchHelper.attachToRecyclerView(mRecyclerView);
-            // TEST
+//            // TEST
+//            final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+//
+//                @Override
+//                public boolean isLongPressDragEnabled() {
+//                    return false;
+//                }
+//
+//                @Override
+//                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+//                    return false;
+//                }
+//
+//                @Override
+//                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+//                    LogHelper.d("Release swiped");
+//                    final int position = viewHolder.getAdapterPosition();
+//                    adapter.notifyItemChanged(position);
+//                }
+//            });
+//            itemTouchHelper.attachToRecyclerView(mRecyclerView);
+//            // TEST
 
             return adapter;
         }

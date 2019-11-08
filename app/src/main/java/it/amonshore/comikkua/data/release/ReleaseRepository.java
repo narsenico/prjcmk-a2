@@ -38,12 +38,20 @@ public class ReleaseRepository {
         new UpdateAsyncTask(mReleaseDao).execute(release);
     }
 
-    public void update(boolean purchased, long lastUpdate, Long... id) {
+    public void updatePurchased(boolean purchased, long lastUpdate, Long... id) {
         new UpdatePurchasedAsyncTask(mReleaseDao, purchased, lastUpdate).execute(id);
     }
 
     public void togglePurchased(long lastUpdate, Long... id) {
         new TogglePurchasedAsyncTask(mReleaseDao, lastUpdate).execute(id);
+    }
+
+    public void updateOrdered(boolean ordered, long lastUpdate, Long... id) {
+        new UpdateOrderedAsyncTask(mReleaseDao, ordered, lastUpdate).execute(id);
+    }
+
+    public void toggleOrdered(long lastUpdate, Long... id) {
+        new ToggleOrderedAsyncTask(mReleaseDao, lastUpdate).execute(id);
     }
 
     public void delete(Long... id) {
@@ -94,7 +102,7 @@ public class ReleaseRepository {
 
         @Override
         protected Void doInBackground(final Long... params) {
-            mAsyncTaskDao.update(mPurchased, mLastUpdate, params);
+            mAsyncTaskDao.updatePurchased(mPurchased, mLastUpdate, params);
             return null;
         }
     }
@@ -113,7 +121,46 @@ public class ReleaseRepository {
         protected Void doInBackground(final Long... params) {
             if (params.length > 0) {
                 final Release release = mAsyncTaskDao.getRawRelease(params[0]);
-                mAsyncTaskDao.update(!release.purchased, mLastUpdate, params);
+                mAsyncTaskDao.updatePurchased(!release.purchased, mLastUpdate, params);
+            }
+            return null;
+        }
+    }
+
+    private static class UpdateOrderedAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        private ReleaseDao mAsyncTaskDao;
+        private boolean mOrdered;
+        private long mLastUpdate;
+
+        UpdateOrderedAsyncTask(ReleaseDao dao, boolean ordered, long lastUpdate) {
+            mAsyncTaskDao = dao;
+            mOrdered = ordered;
+            mLastUpdate = lastUpdate;
+        }
+
+        @Override
+        protected Void doInBackground(final Long... params) {
+            mAsyncTaskDao.updateOrdered(mOrdered, mLastUpdate, params);
+            return null;
+        }
+    }
+
+    private static class ToggleOrderedAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        private ReleaseDao mAsyncTaskDao;
+        private long mLastUpdate;
+
+        ToggleOrderedAsyncTask(ReleaseDao dao, long lastUpdate) {
+            mAsyncTaskDao = dao;
+            mLastUpdate = lastUpdate;
+        }
+
+        @Override
+        protected Void doInBackground(final Long... params) {
+            if (params.length > 0) {
+                final Release release = mAsyncTaskDao.getRawRelease(params[0]);
+                mAsyncTaskDao.updateOrdered(!release.ordered, mLastUpdate, params);
             }
             return null;
         }

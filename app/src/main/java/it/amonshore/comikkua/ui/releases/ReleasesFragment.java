@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -67,12 +69,16 @@ public class ReleasesFragment extends Fragment {
                     case R.id.purchaseReleases:
                         if (tracker.hasSelection()) {
                             // TODO: considerare le multi release
-                            mReleaseViewModel.togglePurchased(System.currentTimeMillis(), tracker.getSelection());
+                            mReleaseViewModel.togglePurchased(tracker.getSelection());
                         }
                         // mantengo la selezione
                         return true;
                     case R.id.orderReleases:
-                        // TODO: gestire toggle ordered
+                        if (tracker.hasSelection()) {
+                            // TODO: considerare le multi release
+                            mReleaseViewModel.toggleOrdered(tracker.getSelection());
+                        }
+                        // mantengo la selezione
                         return true;
                     case R.id.deleteReleases:
                         if (tracker.hasSelection()) {
@@ -106,23 +112,40 @@ public class ReleasesFragment extends Fragment {
                         }
                     }
                 })
-                .withOnItemActivatedListener((item, e) -> {
-                    LogHelper.d("Release click key=%s hotspot=%s", item.getSelectionKey(), item.inSelectionHotspot(e));
-                    // TODO: mi devo fidare del fatto che vengono selezionati solo le release e non gli header
-                    final ComicsRelease release = (ComicsRelease) mAdapter.getItemAt(item.getPosition());
-                    if (release != null) {
+                .withReleaseCallback(R.menu.menu_releases_popup, new ReleaseAdapter.ReleaseCallback() {
+                    @Override
+                    public void onReleasePurchased(@NonNull ComicsRelease release, boolean toBePurchased) {
                         // TODO: considerare le multi release (aprire il dettaglio del comics)
-                        final Release clone = Release.create(release.release);
-                        clone.purchased = !release.release.purchased;
-                        clone.lastUpdate = System.currentTimeMillis();
 
-                        mReleaseViewModel.update(clone);
+                        mReleaseViewModel.updatePurchased(toBePurchased, release.release.id);
                     }
-                    return false;
+
+                    @Override
+                    public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
+                        switch (item.getItemId()) {
+                            case R.id.gotoComics:
+                                final NavDirections directions = ReleasesFragmentDirections
+                                        .actionDestReleasesToComicsDetailFragment()
+                                        .setComicsId(release.comics.id);
+
+                                Navigation.findNavController(view).navigate(directions);
+                                break;
+                            case R.id.orderRelease:
+                                // TODO: considerare le multi release
+                                mReleaseViewModel.toggleOrdered(release.release.id);
+                                break;
+                            default:
+                                // TODO: considerare le multi release
+                                LogHelper.d("Menu %s selected on release %s #%d",
+                                        item.getTitle(), release.comics.name, release.release.number);
+                                break;
+                        }
+                    }
                 })
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
+        // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
         mReleaseViewModel = new ViewModelProvider(requireActivity())
                 .get(ReleaseViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
