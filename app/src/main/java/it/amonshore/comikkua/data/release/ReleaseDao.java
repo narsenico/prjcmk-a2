@@ -45,6 +45,9 @@ public interface ReleaseDao {
     @Transaction
     void delete(Long... id);
 
+    @Query("SELECT * FROM tReleases WHERE id = :id")
+    LiveData<Release> getRelease(long id);
+
     @Query("SELECT * FROM tReleases WHERE comicsId = :comicsId ORDER BY number ASC")
     LiveData<List<Release>> getReleases(long comicsId);
 
@@ -76,8 +79,8 @@ public interface ReleaseDao {
             "SELECT 100 as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
             "ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber")
     @Transaction
-    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
-                                                 @NonNull @Size(6) String refNextDate,
-                                                 @NonNull @Size(6) String refOtherDate,
+    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
+                                                 @NonNull @Size(8) String refNextDate,
+                                                 @NonNull @Size(8) String refOtherDate,
                                                  long retainStart);
 }

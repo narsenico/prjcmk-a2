@@ -23,11 +23,15 @@ public class ReleaseRepository {
         return mReleaseDao.getReleases(comicsId);
     }
 
-    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
-                                                 @NonNull @Size(6) String refNextDate,
-                                                 @NonNull @Size(6) String refOtherDate,
+    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
+                                                 @NonNull @Size(8) String refNextDate,
+                                                 @NonNull @Size(8) String refOtherDate,
                                                  long retainStart) {
         return mReleaseDao.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
+    }
+
+    public LiveData<Release> getRelease(long id) {
+        return mReleaseDao.getRelease(id);
     }
 
     public void insert (Release release) {

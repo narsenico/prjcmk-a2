@@ -36,9 +36,9 @@ public class ReleaseViewModel extends AndroidViewModel {
     }
 
     @SuppressLint("Assert")
-    public LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(6) String refDate,
-                                                        @NonNull @Size(6) String refNextDate,
-                                                        @NonNull @Size(6) String refOtherDate,
+    public LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
+                                                        @NonNull @Size(8) String refNextDate,
+                                                        @NonNull @Size(8) String refOtherDate,
                                                         long retainStart) {
         return mRepository.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
@@ -80,6 +80,10 @@ public class ReleaseViewModel extends AndroidViewModel {
             mediatorLiveData.setValue(groupHelper.createViewModelItems(comicsReleases));
         });
         return mediatorLiveData;
+    }
+
+    public LiveData<Release> getRelease(long id) {
+        return mRepository.getRelease(id);
     }
 
     public void insert(Release release) {

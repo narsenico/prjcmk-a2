@@ -124,15 +124,14 @@ public class ReleasesFragment extends Fragment {
                     public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
                         switch (item.getItemId()) {
                             case R.id.gotoComics:
-                                final NavDirections directions = ReleasesFragmentDirections
-                                        .actionDestReleasesToComicsDetailFragment()
-                                        .setComicsId(release.comics.id);
-
-                                Navigation.findNavController(view).navigate(directions);
+                                openComicsDetail(view, release);
                                 break;
                             case R.id.orderRelease:
                                 // TODO: considerare le multi release
                                 mReleaseViewModel.toggleOrdered(release.release.id);
+                                break;
+                            case R.id.editRelease:
+                                openEdit(view, release);
                                 break;
                             default:
                                 // TODO: considerare le multi release
@@ -236,5 +235,22 @@ public class ReleasesFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {
+        final NavDirections directions = ReleasesFragmentDirections
+                .actionDestReleasesToComicsDetailFragment()
+                .setComicsId(release.comics.id);
+
+        Navigation.findNavController(view).navigate(directions);
+    }
+
+    private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {
+        final NavDirections directions = ReleasesFragmentDirections
+                .actionReleasesFragmentToReleaseEditFragment()
+                .setComicsId(release.comics.id)
+                .setReleaseId(release.release.id);
+
+        Navigation.findNavController(view).navigate(directions);
     }
 }

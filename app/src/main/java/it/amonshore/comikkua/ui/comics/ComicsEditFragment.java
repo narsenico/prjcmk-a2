@@ -65,7 +65,7 @@ public class ComicsEditFragment extends Fragment {
                 getViewLifecycleOwner());
 
         // id del comics da editra, può essere NEW_COMICS_ID per la creazione di un nuovo comics
-        mComicsId = ComicsDetailFragmentArgs.fromBundle(getArguments()).getComicsId();
+        mComicsId = ComicsEditFragmentArgs.fromBundle(getArguments()).getComicsId();
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare

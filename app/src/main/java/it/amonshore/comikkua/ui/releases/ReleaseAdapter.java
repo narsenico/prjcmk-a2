@@ -216,6 +216,8 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 });
             }
 
+            // TODO: il purchase deve essere gestito tramite swipe
+            // TODO: il click apre la release in edit, oppure se multi apre il dettaglio comics
 //            // TEST
 //            final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 //

@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.data.release;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import it.amonshore.comikkua.data.comics.Comics;
@@ -42,5 +43,18 @@ public class ComicsRelease implements IReleaseViewModelItem {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Creo una nuova istanza di {@link ComicsRelease#release} inizializzato.
+     *
+     * @param comics comics a cui appartiene la release
+     * @return nuova istanza
+     */
+    public static ComicsRelease createNew(@NonNull Comics comics) {
+        final ComicsRelease cr = new ComicsRelease();
+        cr.comics = comics;
+        cr.release = Release.create(comics.id, 0);
+        return cr;
     }
 }

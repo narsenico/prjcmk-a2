@@ -56,7 +56,7 @@ class ComicsEditFragmentHelper {
     final class Preview {
         TextView initial, name, publisher, authors, notes,
                 last, next, missing;
-        ImageView comicsMenu;
+        ImageView menu;
     }
 
     final class Editor {
@@ -74,10 +74,10 @@ class ComicsEditFragmentHelper {
     private ComicsWithReleases mComics;
     private NumberFormat numberFormat;
     private List<Periodicity> mPeriodicityList;
-    private @NonNull
-    ComicsViewModel mViewModel;
-    private @NonNull
-    LifecycleOwner mLifecycleOwner;
+    @NonNull
+    private ComicsViewModel mViewModel;
+    @NonNull
+    private LifecycleOwner mLifecycleOwner;
 
     private void bind(@NonNull View view, @NonNull ComicsViewModel viewModel, @NonNull LifecycleOwner lifecycleOwner) {
         mRootView = view;
@@ -93,7 +93,7 @@ class ComicsEditFragmentHelper {
         preview.last = view.findViewById(R.id.txt_comics_release_last);
         preview.next = view.findViewById(R.id.txt_comics_release_next);
         preview.missing = view.findViewById(R.id.txt_comics_release_missing);
-        preview.comicsMenu = view.findViewById(R.id.img_comics_menu);
+        preview.menu = view.findViewById(R.id.img_comics_menu);
 
         editor = new Editor();
         editor.nameLayout = view.findViewById(R.id.til_name);
@@ -238,7 +238,7 @@ class ComicsEditFragmentHelper {
         final int missingCount = mComics.getNotPurchasedReleaseCount();
         preview.missing.setText(context.getString(R.string.release_missing, missingCount));
 
-        preview.comicsMenu.setVisibility(View.GONE);
+        preview.menu.setVisibility(View.GONE);
     }
 
     /**

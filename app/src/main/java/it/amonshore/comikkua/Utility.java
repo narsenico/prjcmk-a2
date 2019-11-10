@@ -7,10 +7,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -75,6 +79,48 @@ public class Utility {
         }
 
         return buffer;
+    }
+
+    /**
+     * @param text              testo da interpretare
+     * @param separator         separatore di intervalli
+     * @param sequenceSeparator separatore di sequenze
+     * @return elenco ordinato di interi
+     */
+    public static int[] parseInterval(@NonNull String text,
+                                      @NonNull String separator,
+                                      @NonNull String sequenceSeparator) {
+        final TreeSet<Integer> list = new TreeSet<>();
+        for (String token : text.split(separator)) {
+            final String[] range = token.split(sequenceSeparator);
+            if (range.length == 1) {
+                list.add(Integer.parseInt(range[0].trim()));
+            } else if (range.length == 2) {
+                final int to = Integer.parseInt(range[1].trim());
+                int from = Integer.parseInt(range[0].trim());
+                do {
+                    list.add(from);
+                } while (++from <= to);
+            }
+        }
+        return toIntArray(list.iterator(), new int[list.size()]);
+    }
+
+
+    private static int[] toIntArray(@NonNull Iterator<Integer> src, int[] dst) {
+        for (int ii = 0; src.hasNext(); ii++) {
+            dst[ii] = src.next();
+        }
+        return dst;
+    }
+
+    /**
+     * @param text
+     * @param def
+     * @return
+     */
+    public static String nvl(String text, String def) {
+        return isNullOrEmpty(text) ? def : text;
     }
 
     /**

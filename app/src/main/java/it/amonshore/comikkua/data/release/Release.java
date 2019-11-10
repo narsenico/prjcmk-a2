@@ -16,6 +16,7 @@ import it.amonshore.comikkua.data.comics.Comics;
 public class Release {
 
     public final static long NO_RELEASE_ID = -1;
+    public final static long NEW_RELEASE_ID = 0;
 
     @PrimaryKey(autoGenerate = true)
     public long id;
@@ -59,7 +60,6 @@ public class Release {
 
     public static Release create(@NonNull Release release) {
         final Release clone = new Release();
-        clone.id = release.id;
         clone.comicsId = release.comicsId;
         clone.number = release.number;
         clone.date = release.date;
@@ -67,6 +67,12 @@ public class Release {
         clone.purchased = release.purchased;
         clone.ordered = release.ordered;
         clone.notes = release.notes;
+        return clone;
+    }
+
+    public static Release clone(@NonNull Release release) {
+        final Release clone = create(release);
+        clone.id = release.id;
         clone.lastUpdate = release.lastUpdate;
         return clone;
     }

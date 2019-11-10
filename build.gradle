@@ -8,7 +8,7 @@ buildscript {
         
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
+        classpath 'com.android.tools.build:gradle:3.5.2'
         classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:1.0.0"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
@@ -33,6 +33,7 @@ ext {
     roomVersion = '2.2.1'
     archLifecycleVersion = '2.2.0-rc01'
     coreTestingVersion = '2.1.0'
-    materialVersion = '1.0.0'
+    materialVersion = '1.2.0-alpha01'
     pagingVersion = "2.1.0"
+    supportVersion = "1.0.0"
 }

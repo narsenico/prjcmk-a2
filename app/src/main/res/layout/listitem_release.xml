@@ -4,167 +4,149 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/background_selectable_item"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/txt_header"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/release_main_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/item_margin_default"
-        android:layout_marginTop="@dimen/item_margin_default"
+        android:layout_marginTop="@dimen/item_margin_small"
         android:layout_marginEnd="@dimen/item_margin_default"
-        android:background="@drawable/background_border_up"
-        android:visibility="gone"
-        tools:text="Questa settimana"
-        tools:visibility="visible" />
+        android:layout_marginBottom="@dimen/item_margin_small"
+        app:cardCornerRadius="@dimen/item_radius_double"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/background_selectable_item">
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/release_main_card"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/release_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/item_margin_default"
-            android:layout_marginTop="@dimen/item_margin_small"
-            android:layout_marginBottom="@dimen/item_margin_small"
-            android:layout_marginEnd="@dimen/item_margin_default"
-            app:cardCornerRadius="@dimen/item_radius_double"
-            app:cardPreventCornerOverlap="false"
-            app:cardUseCompatPadding="true">
+            android:background="@color/colorItemBackgroundLight">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/release_background"
-                android:background="@color/colorItemBackgroundLight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txt_release_numbers"
+                android:layout_width="115dp"
+                android:layout_height="0dp"
+                android:background="@color/colorItemBackgroundAlt"
+                android:gravity="center"
+                android:maxLines="3"
+                android:padding="@dimen/item_padding_default"
+                android:textColor="@color/colorItemForeground"
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="60sp"
+                app:autoSizeTextType="uniform"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="888" />
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/txt_release_numbers"
-                    android:layout_width="115dp"
-                    android:layout_height="0dp"
-                    android:background="@color/colorItemBackgroundAlt"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="@dimen/item_padding_default"
-                    android:textColor="@color/colorItemForeground"
-                    android:textStyle="bold"
-                    app:autoSizeMaxTextSize="60sp"
-                    app:autoSizeTextType="uniform"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="888" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_release_purchased"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/item_margin_default"
+                android:layout_marginEnd="0dp"
+                android:background="@drawable/background_release_purchased"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_purchased"
+                app:tint="@color/colorItemBackgroundAlt" />
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/img_release_purchased"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/item_margin_default"
-                    android:layout_marginEnd="0dp"
-                    android:background="@drawable/background_release_purchased"
-                    android:paddingStart="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_purchased"
-                    app:tint="@color/colorItemBackgroundAlt" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_release_ordered"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/item_margin_default"
+                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginBottom="@dimen/item_margin_default"
+                app:layout_constraintBottom_toTopOf="@id/img_release_menu"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/img_release_purchased"
+                app:srcCompat="@drawable/ic_ordered"
+                app:tint="@color/colorItemForeground" />
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/img_release_ordered"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/item_margin_default"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:layout_marginBottom="@dimen/item_margin_default"
-                    app:layout_constraintBottom_toTopOf="@id/img_release_menu"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/img_release_purchased"
-                    app:srcCompat="@drawable/ic_ordered"
-                    app:tint="@color/colorItemForeground" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_release_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginBottom="@dimen/item_margin_default"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/ic_menu_dots"
+                app:tint="@color/colorItemForeground" />
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/img_release_menu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:layout_marginBottom="@dimen/item_margin_default"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:srcCompat="@drawable/ic_menu_dots"
-                    app:tint="@color/colorItemForeground" />
+            <TextView
+                android:id="@+id/txt_release_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/item_margin_default"
+                android:layout_marginTop="@dimen/item_margin_default"
+                android:layout_marginEnd="@dimen/item_margin_default"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/colorItemForeground"
+                android:textStyle="italic"
+                app:layout_constraintEnd_toStartOf="@id/img_release_menu"
+                app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="mar, 8 gen" />
 
-                <TextView
-                    android:id="@+id/txt_release_date"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/item_margin_default"
-                    android:layout_marginTop="@dimen/item_margin_default"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    android:textStyle="italic"
-                    app:layout_constraintEnd_toStartOf="@id/img_release_menu"
-                    app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="mar, 8 gen" />
+            <TextView
+                android:id="@+id/txt_release_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/item_margin_default"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:lines="2"
+                android:maxLines="2"
+                android:textColor="@color/colorItemForeground"
+                android:textSize="@dimen/text_size_big"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@id/txt_release_info"
+                app:layout_constraintEnd_toStartOf="@+id/img_release_menu"
+                app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
+                app:layout_constraintTop_toBottomOf="@id/txt_release_date"
+                tools:text="Comics name" />
 
-                <TextView
-                    android:id="@+id/txt_release_title"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/item_margin_default"
-                    android:layout_marginEnd="8dp"
-                    android:ellipsize="end"
-                    android:lines="2"
-                    android:maxLines="2"
-                    android:textColor="@color/colorItemForeground"
-                    android:textSize="@dimen/text_size_big"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toTopOf="@id/txt_release_info"
-                    app:layout_constraintEnd_toStartOf="@+id/img_release_menu"
-                    app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
-                    app:layout_constraintTop_toBottomOf="@id/txt_release_date"
-                    tools:text="Comics name" />
+            <TextView
+                android:id="@+id/txt_release_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/item_margin_default"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/colorItemForeground"
+                app:layout_constraintBottom_toTopOf="@id/txt_release_notes"
+                app:layout_constraintEnd_toStartOf="@+id/img_release_menu"
+                app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
+                tools:text="Publisher &amp; authors" />
 
-                <TextView
-                    android:id="@+id/txt_release_info"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/item_margin_default"
-                    android:layout_marginEnd="8dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    app:layout_constraintBottom_toTopOf="@id/txt_release_notes"
-                    app:layout_constraintEnd_toStartOf="@+id/img_release_menu"
-                    app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
-                    tools:text="Publisher &amp; authors" />
+            <TextView
+                android:id="@+id/txt_release_notes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/item_margin_default"
+                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginBottom="@dimen/item_margin_default"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/colorItemForeground"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/img_release_menu"
+                app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
+                tools:text="Notes notes notes" />
 
-                <TextView
-                    android:id="@+id/txt_release_notes"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/item_margin_default"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:layout_marginBottom="@dimen/item_margin_default"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/img_release_menu"
-                    app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
-                    tools:text="Notes notes notes" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </androidx.cardview.widget.CardView>
-
-    </FrameLayout>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

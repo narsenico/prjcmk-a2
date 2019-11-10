@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -22,9 +23,45 @@ public class DateFormatterHelper {
 
     @IntDef({STYLE_FULL, STYLE_SHORT})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface Style {}
+    public @interface Style {
+    }
+
     public final static int STYLE_FULL = DateFormat.FULL;
     public final static int STYLE_SHORT = DateFormat.SHORT;
+
+    /**
+     * @param time tempo in millisecondi
+     * @return ritorna la rappresentazione della data nel format yyyyMMdd
+     */
+    public static String timeToString8(long time) {
+        return parser.format(time);
+    }
+
+    public static Calendar toUTCCalendar(@NonNull @Size(8) String date) {
+        try {
+            return toUTCCalendar(parser.parse(date).getTime());
+        } catch (ParseException e) {
+            return toUTCCalendar(System.currentTimeMillis());
+        }
+    }
+
+    public static Calendar toUTCCalendar(long date) {
+        final Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.setTimeInMillis(date);
+
+        final Calendar utccal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        utccal.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        return utccal;
+    }
+
+    public static Calendar fromUTCCalendar(long date) {
+        final Calendar utccal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        utccal.setTimeInMillis(date);
+
+        final Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.set(utccal.get(Calendar.YEAR), utccal.get(Calendar.MONTH), utccal.get(Calendar.DAY_OF_MONTH));
+        return calendar;
+    }
 
     /**
      * Ritorna "oggi", "domani" oppure la data formattata.
@@ -33,7 +70,7 @@ public class DateFormatterHelper {
      * @param date    data nel formato yyyyMMdd
      * @return data formattata
      */
-    public static String toHumanReadable(@NonNull Context context, @NonNull @Size(6) String date, @Style int style) {
+    public static String toHumanReadable(@NonNull Context context, @NonNull @Size(8) String date, @Style int style) {
         try {
             final Calendar check = Calendar.getInstance(Locale.getDefault());
             check.setTime(parser.parse(date));

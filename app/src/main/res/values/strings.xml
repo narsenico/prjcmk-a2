@@ -7,6 +7,7 @@
     <string name="menu_comics_detail">Comics detail</string>
     <string name="menu_comics_edit">Edit comics</string>
     <string name="menu_comics_save">Save comics</string>
+    <string name="menu_releases_save">Save releases</string>
     <string name="menu_delete">Remove</string>
     <string name="menu_delete_all">Remove all</string>
     <string name="menu_create">Create new</string>
@@ -35,6 +36,14 @@
     <string name="comics_price">Price</string>
     <string name="comics_periodicity">Periodicity</string>
     <string name="comics_notes">Notes</string>
+
+    <string name="release_numbers">Number</string>
+    <string name="release_numbers_helper">Single or intervals of numbers (eg: 1,4&#8211;6)</string>
+    <string name="release_date">Date</string>
+    <string name="release_price">Price</string>
+    <string name="release_purchased">Purchased</string>
+    <string name="release_ordered">Ordered</string>
+    <string name="release_notes">Notes</string>
 
     <string-array name="comics_periodicity_keys">
         <item></item>
