@@ -7,10 +7,6 @@
         android:title="@string/menu_ordered" />
 
     <item
-        android:id="@+id/editRelease"
-        android:title="@string/menu_release_edit" />
-
-    <item
         android:id="@+id/gotoComics"
         android:title="@string/menu_goto_comics" />
 

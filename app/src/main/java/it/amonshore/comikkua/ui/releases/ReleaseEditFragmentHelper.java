@@ -144,13 +144,23 @@ public class ReleaseEditFragmentHelper {
             preview.ordered.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
         });
 
+        // il campo Date non è editabile
+        // quando acquisisce il focus apro il picker
+        // quando verrà chiuso il focus rimarrà al campo date
+        // quindi al click del campo Date, se ha già il focus riapro il picker
         editor.date.setInputType(EditorInfo.TYPE_NULL);
+        editor.date.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && editor.datePicker != null) {
+                editor.datePicker.show(fragmentManager, "release_date_picker");
+            }
+        });
         editor.date.setOnClickListener(v -> {
-            if (editor.datePicker != null) {
-                editor.datePicker.show(fragmentManager, editor.date.toString());
+            if (editor.datePicker != null && v.hasFocus()) {
+                editor.datePicker.show(fragmentManager, "release_date_picker");
             }
         });
 
+        // icona alla destra del campo Date, elimina la data di rilascio
         editor.dateLayout.setEndIconOnClickListener(v -> {
             editor.selectedDateInUtc = 0;
             editor.date.setText("");

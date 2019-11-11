@@ -36,7 +36,7 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
             mMenuRes = menuRes;
         }
 
-        abstract void onReleaseActivated(long comicsId, long id, int position);
+        abstract void onReleaseClick(long comicsId, long id, int position);
         abstract void onReleaseMenuSelected(@NonNull MenuItem item, long comicsId, long id, int position);
     }
 
@@ -67,7 +67,7 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
 
         if (callback != null) {
             itemView.setOnClickListener(v -> {
-                callback.onReleaseActivated(mComicsId, mId, getAdapterPosition());
+                callback.onReleaseClick(mComicsId, mId, getAdapterPosition());
             });
 
             if (callback.mMenuRes != 0) {

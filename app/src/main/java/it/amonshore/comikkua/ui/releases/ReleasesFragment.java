@@ -114,10 +114,15 @@ public class ReleasesFragment extends Fragment {
                 })
                 .withReleaseCallback(R.menu.menu_releases_popup, new ReleaseAdapter.ReleaseCallback() {
                     @Override
-                    public void onReleasePurchased(@NonNull ComicsRelease release, boolean toBePurchased) {
+                    public void onReleaseClick(@NonNull ComicsRelease release) {
                         // TODO: considerare le multi release (aprire il dettaglio del comics)
+                        openEdit(view, release);
+                    }
 
-                        mReleaseViewModel.updatePurchased(toBePurchased, release.release.id);
+                    @Override
+                    public void onReleaseSwipe(@NonNull ComicsRelease release) {
+                        // TODO: considerare le multi release (aprire il dettaglio del comics)
+                        mReleaseViewModel.updatePurchased(!release.release.purchased, release.release.id);
                     }
 
                     @Override
@@ -129,9 +134,6 @@ public class ReleasesFragment extends Fragment {
                             case R.id.orderRelease:
                                 // TODO: considerare le multi release
                                 mReleaseViewModel.toggleOrdered(release.release.id);
-                                break;
-                            case R.id.editRelease:
-                                openEdit(view, release);
                                 break;
                             default:
                                 // TODO: considerare le multi release

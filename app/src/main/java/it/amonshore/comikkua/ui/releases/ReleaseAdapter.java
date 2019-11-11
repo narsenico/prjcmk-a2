@@ -1,17 +1,26 @@
 package it.amonshore.comikkua.ui.releases;
 
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.Iterator;
 import java.util.Objects;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -20,9 +29,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
-import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
@@ -44,7 +53,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             if (item.getItemType() == ReleaseHeader.ITEM_TYPE) {
                 holder.bind(item, false);
             } else {
-                final ComicsRelease release = (ComicsRelease)item;
+                final ComicsRelease release = (ComicsRelease) item;
                 holder.bind(item, mSelectionTracker.isSelected(release.release.id));
             }
         } else {
@@ -98,14 +107,16 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
     interface ReleaseCallback {
 
-        void onReleasePurchased(@NonNull ComicsRelease release, boolean toBePurchased);
+        void onReleaseClick(@NonNull ComicsRelease release);
+
+        void onReleaseSwipe(@NonNull ComicsRelease release);
 
         void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release);
     }
 
     static class Builder {
         private final RecyclerView mRecyclerView;
-//        private OnItemActivatedListener<Long> mOnItemActivatedListener;
+        //        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         @MenuRes
         private int releaseMenuRes;
@@ -135,12 +146,12 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             final ReleaseAdapter adapter = new ReleaseAdapter();
             adapter.mReleaseViewHolderCallback = new ReleaseViewHolder.Callback(releaseMenuRes) {
                 @Override
-                void onReleaseActivated(long comicsId, long id, int position) {
+                void onReleaseClick(long comicsId, long id, int position) {
                     if (releaseCallback != null) {
                         final IReleaseViewModelItem item = adapter.getItemAt(position);
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
-                            releaseCallback.onReleasePurchased(release, !release.release.purchased);
+                            releaseCallback.onReleaseClick(release);
                         }
                     }
                 }
@@ -170,6 +181,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
                         @Override
                         public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
+                            // TODO: se sto eseguendo lo swipe dovrei prevenire la selezione
                             return key < ReleaseHeader.BASE_ID;
                         }
 
@@ -216,30 +228,45 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 });
             }
 
-            // TODO: il purchase deve essere gestito tramite swipe
-            // TODO: il click apre la release in edit, oppure se multi apre il dettaglio comics
-//            // TEST
-//            final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-//
-//                @Override
-//                public boolean isLongPressDragEnabled() {
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-//                    return false;
-//                }
-//
-//                @Override
-//                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-//                    LogHelper.d("Release swiped");
-//                    final int position = viewHolder.getAdapterPosition();
+            // gestisco con uno swipe il purchase
+            final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+
+                @Override
+                public boolean isLongPressDragEnabled() {
+                    return false;
+                }
+
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
+                    return super.getSwipeDirs(recyclerView, viewHolder);
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    // TODO: potrei gestire "ordered" con uno swipe inverso
+
+                    LogHelper.d("Release swiped");
+                    final int position = viewHolder.getAdapterPosition();
 //                    adapter.notifyItemChanged(position);
-//                }
-//            });
-//            itemTouchHelper.attachToRecyclerView(mRecyclerView);
-//            // TEST
+                    final IReleaseViewModelItem item = adapter.getItemAt(position);
+                    if (item != null) {
+                        final ComicsRelease release = (ComicsRelease) item;
+                        releaseCallback.onReleaseSwipe(release);
+                    }
+                }
+            };
+            new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
+
+            mRecyclerView.addItemDecoration(new MyItemDecoration(mRecyclerView.getContext(),
+                    R.drawable.ic_purchased,
+                    R.drawable.ic_ordered,
+                    R.color.colorItemBackgroundLight));
 
             return adapter;
         }
@@ -261,4 +288,90 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     return Objects.equals(oldItem, newItem);
                 }
             };
+
+    private static class MyItemDecoration extends RecyclerView.ItemDecoration {
+
+        private Drawable mDecorationLeft, mDecorationRight;
+        private final Rect mBounds = new Rect();
+        private final RectF mFBounds = new RectF();
+        private final Paint mPaint = new Paint();
+
+        MyItemDecoration(@NonNull Context context,
+                         @DrawableRes int drawableLeft,
+                         @DrawableRes int drawableRight,
+                         @ColorRes int tint) {
+            mDecorationLeft = context.getResources().getDrawable(drawableLeft);
+            mDecorationRight = context.getResources().getDrawable(drawableRight);
+
+            final int tintColor = context.getResources().getColor(tint);
+            mDecorationLeft.setTint(tintColor);
+            mDecorationRight.setTint(tintColor);
+
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setColor(Color.WHITE);
+        }
+
+        @Override
+        public void onDraw(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            canvas.save();
+            final int left;
+            final int right;
+            if (parent.getClipToPadding()) {
+                left = parent.getPaddingLeft() + 32;
+                right = parent.getWidth() - parent.getPaddingRight() - 32;
+            } else {
+                left = 32;
+                right = parent.getWidth() - 32;
+            }
+
+            final int childCount = parent.getChildCount();
+            for (int ii = 0; ii < childCount; ii++) {
+                final View child = parent.getChildAt(ii);
+                final int tx = Math.round(child.getTranslationX());
+
+                // se non sto eseguendo uno swipe non disegno nulla
+                if (tx == 0) continue;
+                // anche in caso di header non disegno nulla
+                if (parent.getChildItemId(child) >= ReleaseHeader.BASE_ID) continue;
+
+                parent.getDecoratedBoundsWithMargins(child, mBounds);
+                final int top = mBounds.top;
+                final int bottom = mBounds.bottom;
+                // deve essere grande 1/3 del child
+                final int size = (bottom - top) / 3;
+                // distanza dai bordi superiore e inferiore (centrato)
+                final int py = (bottom - top) / 2 - size / 2;
+
+//                final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+//                LogHelper.d("margin %s,%s - %s,%s",
+//                        params.leftMargin, params.topMargin, params.rightMargin, params.bottomMargin);
+
+
+//                mBounds.top += child.getPaddingTop();
+//                mBounds.left += child.getPaddingLeft();
+//                mBounds.bottom -= child.getPaddingBottom() + child.getPaddingTop();
+//                mBounds.right -= child.getPaddingRight() + child.getPaddingLeft();
+//                mFBounds.set(mBounds);
+
+                // disegno il drawable a sinistra se lo swipe è verso destra
+                // disegno il drawable a destra se lo swipe è verso sinistra
+                if (tx > 0) {
+                    canvas.drawRect(mBounds, mPaint);
+                    mDecorationLeft.setBounds(left,
+                            top + py,
+                            left + size,
+                            top + py + size);
+                    mDecorationLeft.draw(canvas);
+                } else {
+                    canvas.drawRect(mBounds, mPaint);
+                    mDecorationRight.setBounds(right - size,
+                            top + py,
+                            right,
+                            top + py + size);
+                    mDecorationRight.draw(canvas);
+                }
+            }
+            canvas.restore();
+        }
+    }
 }

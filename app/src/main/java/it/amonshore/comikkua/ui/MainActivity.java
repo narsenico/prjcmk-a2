@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(Uri uri) {
         // TODO: intercettare in qualche modo la selezione di un item dal fragment in modo da attivare l'actionMode?
+
+        // TODO: farsi passare l'indicazione se mostrare o meno il BottomView (ad es. nei fragment per l'edit non serve)
     }
 
     @Override
