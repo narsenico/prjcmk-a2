@@ -17,6 +17,8 @@
     <color name="colorItemForeground">#fafafa</color>
     <color name="colorItemSelected">#B86F6C</color>
 
+    <color name="colorDecorationLine">#263238</color>
+
     <color name="colorItemBackgroundA">#EF5350</color>
     <color name="colorItemBackgroundB">#F44336</color>
     <color name="colorItemBackgroundC">#EC407A</color>

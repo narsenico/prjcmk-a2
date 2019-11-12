@@ -16,6 +16,9 @@
     <string name="menu_goto_comics">Go to comics</string>
     <string name="menu_release_edit">Edit release</string>
 
+    <string name="swipe_purchase">Toggle purchase</string>
+    <string name="swipe_order">Toggle order</string>
+
     <string name="title_releases">Release list</string>
     <string name="title_comics">Comics list</string>
     <string name="title_comics_detail">Comics detail</string>

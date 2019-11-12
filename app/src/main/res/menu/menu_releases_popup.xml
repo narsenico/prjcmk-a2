@@ -3,10 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/orderRelease"
-        android:title="@string/menu_ordered" />
-
-    <item
         android:id="@+id/gotoComics"
         android:title="@string/menu_goto_comics" />
 

@@ -27,6 +27,7 @@ import java.util.Objects;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
+import it.amonshore.comikkua.data.release.MultiRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
@@ -115,14 +116,24 @@ public class ReleasesFragment extends Fragment {
                 .withReleaseCallback(R.menu.menu_releases_popup, new ReleaseAdapter.ReleaseCallback() {
                     @Override
                     public void onReleaseClick(@NonNull ComicsRelease release) {
-                        // TODO: considerare le multi release (aprire il dettaglio del comics)
-                        openEdit(view, release);
+                        // se è una multi release apro il dettaglio del comics
+                        if (release instanceof MultiRelease) {
+                            openComicsDetail(view, release);
+                        } else {
+                            openEdit(view, release);
+                        }
                     }
 
                     @Override
-                    public void onReleaseSwipe(@NonNull ComicsRelease release) {
-                        // TODO: considerare le multi release (aprire il dettaglio del comics)
+                    public void onReleaseTogglePurchase(@NonNull ComicsRelease release) {
+                        // TODO: considerare le multi release
                         mReleaseViewModel.updatePurchased(!release.release.purchased, release.release.id);
+                    }
+
+                    @Override
+                    public void onReleaseToggleOrder(@NonNull ComicsRelease release) {
+                        // TODO: considerare le multi release
+                        mReleaseViewModel.updateOrdered(!release.release.ordered, release.release.id);
                     }
 
                     @Override
@@ -130,10 +141,6 @@ public class ReleasesFragment extends Fragment {
                         switch (item.getItemId()) {
                             case R.id.gotoComics:
                                 openComicsDetail(view, release);
-                                break;
-                            case R.id.orderRelease:
-                                // TODO: considerare le multi release
-                                mReleaseViewModel.toggleOrdered(release.release.id);
                                 break;
                             default:
                                 // TODO: considerare le multi release

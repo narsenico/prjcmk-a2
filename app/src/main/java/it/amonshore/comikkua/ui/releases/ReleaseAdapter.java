@@ -2,11 +2,10 @@ package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +19,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -109,7 +109,9 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
         void onReleaseClick(@NonNull ComicsRelease release);
 
-        void onReleaseSwipe(@NonNull ComicsRelease release);
+        void onReleaseTogglePurchase(@NonNull ComicsRelease release);
+
+        void onReleaseToggleOrder(@NonNull ComicsRelease release);
 
         void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release);
     }
@@ -177,16 +179,19 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
                     new ReleaseItemDetailsLookup(mRecyclerView),
                     StorageStrategy.createLongStorage())
-                    // escludo dalla selezione gli header
                     .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
                         @Override
                         public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
-                            // TODO: se sto eseguendo lo swipe dovrei prevenire la selezione
+                            // escludo dalla selezione gli header
                             return key < ReleaseHeader.BASE_ID;
                         }
 
                         @Override
                         public boolean canSetStateAtPosition(int position, boolean nextState) {
+                            // TODO: non viene mai chiamato! non riesco ad escludere le multi release
+//                            LogHelper.d("canSetStateAtPosition position=%s nextState=%s", position, nextState);
+//                            final IReleaseViewModelItem item = adapter.getItemAt(position);
+//                            return item != null && item.getItemType() == ComicsRelease.ITEM_TYPE;
                             return true;
                         }
 
@@ -243,30 +248,41 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
                 @Override
                 public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
+                    // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
+//                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
+                    if (adapter.mSelectionTracker.hasSelection()) return 0;
+                    final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
+                    if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
                     return super.getSwipeDirs(recyclerView, viewHolder);
                 }
 
                 @Override
                 public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                    // TODO: potrei gestire "ordered" con uno swipe inverso
-
-                    LogHelper.d("Release swiped");
-                    final int position = viewHolder.getAdapterPosition();
-//                    adapter.notifyItemChanged(position);
-                    final IReleaseViewModelItem item = adapter.getItemAt(position);
+//                    LogHelper.d("Release swiped direction=%s", direction);
+                    final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
                     if (item != null) {
                         final ComicsRelease release = (ComicsRelease) item;
-                        releaseCallback.onReleaseSwipe(release);
+                        if (direction == ItemTouchHelper.RIGHT) {
+                            releaseCallback.onReleaseTogglePurchase(release);
+                        } else if (direction == ItemTouchHelper.LEFT) {
+                            releaseCallback.onReleaseToggleOrder(release);
+                        }
                     }
                 }
             };
             new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
 
-            mRecyclerView.addItemDecoration(new MyItemDecoration(mRecyclerView.getContext(),
+            mRecyclerView.addItemDecoration(new SwappableItemDecoration(mRecyclerView.getContext(),
                     R.drawable.ic_purchased,
                     R.drawable.ic_ordered,
-                    R.color.colorItemBackgroundLight));
+                    R.color.colorPrimary,
+                    R.color.colorItemBackgroundLighterX2,
+                    0,
+                    10,
+                    1f,
+                    .85f,
+                    R.string.swipe_purchase,
+                    R.string.swipe_order));
 
             return adapter;
         }
@@ -289,26 +305,63 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 }
             };
 
-    private static class MyItemDecoration extends RecyclerView.ItemDecoration {
+    private static class SwappableItemDecoration extends RecyclerView.ItemDecoration {
 
-        private Drawable mDecorationLeft, mDecorationRight;
         private final Rect mBounds = new Rect();
-        private final RectF mFBounds = new RectF();
-        private final Paint mPaint = new Paint();
+        private final Paint mLinePaint, mTextPaint;
+        private final Drawable mDrawableLeft, mDrawableRight;
+        private final int mDrawableLeftPadding;
+        private final int mDrawableRightPadding;
+        private final float mLineHeight;
+        private final float mDrawableSpeed;
+        private final int mLeftTextWidth, mRightTextWidth,
+                mTextHeight;
+        private final String mLeftText, mRightText;
 
-        MyItemDecoration(@NonNull Context context,
-                         @DrawableRes int drawableLeft,
-                         @DrawableRes int drawableRight,
-                         @ColorRes int tint) {
-            mDecorationLeft = context.getResources().getDrawable(drawableLeft);
-            mDecorationRight = context.getResources().getDrawable(drawableRight);
+        private final static int mBorderSize = 32;
 
-            final int tintColor = context.getResources().getColor(tint);
-            mDecorationLeft.setTint(tintColor);
-            mDecorationRight.setTint(tintColor);
+        SwappableItemDecoration(@NonNull Context context,
+                                @DrawableRes int drawableLeft,
+                                @DrawableRes int drawableRight,
+                                @ColorRes int drawableColor,
+                                @ColorRes int lineColor,
+                                int drawableLeftPadding,
+                                int drawableRightPadding,
+                                float lineHeight,
+                                float drawableSpeed,
+                                @StringRes int leftText,
+                                @StringRes int rightText) {
+            final int ciDrawableColor = context.getResources().getColor(drawableColor);
 
-            mPaint.setStyle(Paint.Style.FILL);
-            mPaint.setColor(Color.WHITE);
+            mLinePaint = new Paint();
+            mLinePaint.setStyle(Paint.Style.FILL);
+            mLinePaint.setColor(context.getResources().getColor(lineColor));
+
+            // uso mutate() in modo che le modifiche vengono apportate solo a questa istanza di drawable
+            mDrawableLeft = context.getResources().getDrawable(drawableLeft).mutate();
+            mDrawableLeft.setTint(ciDrawableColor);
+
+            // uso mutate() in modo che le modifiche vengono apportate solo a questa istanza di drawable
+            mDrawableRight = context.getResources().getDrawable(drawableRight).mutate();
+            mDrawableRight.setTint(ciDrawableColor);
+
+            mDrawableLeftPadding = drawableLeftPadding;
+            mDrawableRightPadding = drawableRightPadding;
+
+            mLineHeight = Math.max(0.2f, lineHeight);
+            mDrawableSpeed = Math.min(1f, drawableSpeed);
+
+            mLeftText = context.getString(leftText);
+            mRightText = context.getString(rightText);
+
+            mTextPaint = new Paint();
+            mTextPaint.setColor(ciDrawableColor);
+            mTextPaint.setFakeBoldText(true);
+            mTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                    16, context.getResources().getDisplayMetrics()));
+            mLeftTextWidth = (int) mTextPaint.measureText(mLeftText);
+            mRightTextWidth = (int) mTextPaint.measureText(mRightText);
+            mTextHeight = mTextPaint.getFontMetricsInt(null);
         }
 
         @Override
@@ -317,11 +370,11 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             final int left;
             final int right;
             if (parent.getClipToPadding()) {
-                left = parent.getPaddingLeft() + 32;
-                right = parent.getWidth() - parent.getPaddingRight() - 32;
+                left = parent.getPaddingLeft() + mBorderSize;
+                right = parent.getWidth() - parent.getPaddingRight() - mBorderSize;
             } else {
-                left = 32;
-                right = parent.getWidth() - 32;
+                left = mBorderSize;
+                right = parent.getWidth() - mBorderSize;
             }
 
             final int childCount = parent.getChildCount();
@@ -335,40 +388,57 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 if (parent.getChildItemId(child) >= ReleaseHeader.BASE_ID) continue;
 
                 parent.getDecoratedBoundsWithMargins(child, mBounds);
+
                 final int top = mBounds.top;
                 final int bottom = mBounds.bottom;
-                // deve essere grande 1/3 del child
+                // il drawable deve essere grande 1/3 del child
                 final int size = (bottom - top) / 3;
                 // distanza dai bordi superiore e inferiore (centrato)
                 final int py = (bottom - top) / 2 - size / 2;
 
-//                final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-//                LogHelper.d("margin %s,%s - %s,%s",
-//                        params.leftMargin, params.topMargin, params.rightMargin, params.bottomMargin);
+                // dimensione della linea (calcolata come frazione della grandezza del drawable)
+                final int lineSize = (int) (size * mLineHeight);
+                // distanza della liena dai bordi (centrato)
+                final int ly = (bottom - top) / 2 - lineSize / 2;
 
+                // distanza del testo dai bordi (centrato)
+                final float ty = (bottom - top) / 2f - mTextHeight / 2f + 10f;
 
-//                mBounds.top += child.getPaddingTop();
-//                mBounds.left += child.getPaddingLeft();
-//                mBounds.bottom -= child.getPaddingBottom() + child.getPaddingTop();
-//                mBounds.right -= child.getPaddingRight() + child.getPaddingLeft();
-//                mFBounds.set(mBounds);
+                canvas.drawRoundRect(left,
+                        top + ly,
+                        right,
+                        top + ly + lineSize,
+                        50f, 50f,
+                        mLinePaint);
 
-                // disegno il drawable a sinistra se lo swipe è verso destra
-                // disegno il drawable a destra se lo swipe è verso sinistra
                 if (tx > 0) {
-                    canvas.drawRect(mBounds, mPaint);
-                    mDecorationLeft.setBounds(left,
+                    // il drawable segue la view durante lo swipe
+                    final int start = Math.min(right - size - mDrawableLeftPadding,
+                            Math.max(left + mDrawableLeftPadding, (int) (tx * mDrawableSpeed) - size + left));
+                    // se ci sta disegno il testo
+                    if (start - left > mLeftTextWidth + 20) {
+                        canvas.drawText(mLeftText, start - mLeftTextWidth - 20, bottom - ty, mTextPaint);
+                    }
+
+                    mDrawableLeft.setBounds(start,
                             top + py,
-                            left + size,
+                            start + size,
                             top + py + size);
-                    mDecorationLeft.draw(canvas);
+                    mDrawableLeft.draw(canvas);
                 } else {
-                    canvas.drawRect(mBounds, mPaint);
-                    mDecorationRight.setBounds(right - size,
+                    // il drawable segue la view durante lo swipe
+                    final int start = Math.max(left + mDrawableRightPadding,
+                            Math.min(right - size - mDrawableRightPadding, mBounds.right + (int) (tx * mDrawableSpeed)));
+                    // se ci sta disegno il testo
+                    if (right - start - size > mRightTextWidth + 20) {
+                        canvas.drawText(mRightText, start + size + 20, bottom - ty, mTextPaint);
+                    }
+
+                    mDrawableRight.setBounds(start,
                             top + py,
-                            right,
+                            start + size,
                             top + py + size);
-                    mDecorationRight.draw(canvas);
+                    mDrawableRight.draw(canvas);
                 }
             }
             canvas.restore();

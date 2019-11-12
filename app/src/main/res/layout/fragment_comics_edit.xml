@@ -89,6 +89,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_series"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:startIconDrawable="@drawable/ic_series"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_margin_default"

@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toolbar;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,12 +36,14 @@ public class MainActivity extends AppCompatActivity implements
         NavController.OnDestinationChangedListener {
 
     private ActionMode mActionMode;
+    private BottomNavigationView mBottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setSupportActionBar(findViewById(R.id.toolbar));
+        mBottomNavigationView = findViewById(R.id.bottom_nav);
 
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         navController.addOnDestinationChangedListener(this);
@@ -49,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements
                 .Builder(navController.getGraph())
                 .build();
 
-        NavigationUI.setupWithNavController((BottomNavigationView)findViewById(R.id.bottom_nav),
+        NavigationUI.setupWithNavController(mBottomNavigationView,
                 navController);
 
         NavigationUI.setupWithNavController(findViewById(R.id.toolbar),
@@ -109,6 +112,11 @@ public class MainActivity extends AppCompatActivity implements
         if (mActionMode != null) {
             mActionMode.finish();
         }
+        if (canHideNavigation(destination)) {
+            mBottomNavigationView.setVisibility(View.GONE);
+        } else {
+            mBottomNavigationView.setVisibility(View.VISIBLE);
+        }
     }
 
     private String extractSubtitle(@NonNull NavDestination destination) {
@@ -122,6 +130,11 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         return null;
+    }
+
+    private boolean canHideNavigation(@NonNull NavDestination destination) {
+        final NavArgument arg = destination.getArguments().get("hideNavigation");
+        return arg != null && arg.isDefaultValuePresent() && arg.getDefaultValue().equals(Boolean.TRUE);
     }
 
 }
