@@ -30,6 +30,10 @@ public class ReleaseRepository {
         return mReleaseDao.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 
+    LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
+        return mReleaseDao.getAllReleases(comicsId);
+    }
+
     public LiveData<Release> getRelease(long id) {
         return mReleaseDao.getRelease(id);
     }

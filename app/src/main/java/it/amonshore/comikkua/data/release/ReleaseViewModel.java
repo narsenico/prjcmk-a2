@@ -24,23 +24,24 @@ public class ReleaseViewModel extends AndroidViewModel {
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
     public final Bundle states;
+    private ReleaseViewModelGroupHelper mGroupHelper;
 
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
+        mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();
     }
 
-    LiveData<List<Release>> getReleases(int comicsId) {
-        return mRepository.getReleases(comicsId);
-    }
-
-    @SuppressLint("Assert")
     public LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
                                                         @NonNull @Size(8) String refNextDate,
                                                         @NonNull @Size(8) String refOtherDate,
                                                         long retainStart) {
         return mRepository.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
+    }
+
+    public LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
+        return mRepository.getAllReleases(comicsId);
     }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems() {
@@ -68,16 +69,30 @@ public class ReleaseViewModel extends AndroidViewModel {
         //  (quelle successive verrebbero cmq estratte in quanto fanno parte del "periodo corrente")
         final long retainStart = System.currentTimeMillis() - 86400000;
 
-        LogHelper.d("prepare notable release refDate=%s, refNextDate=%s, refOtherDate=%s retainStart=%s",
+        LogHelper.d("prepare notable releases refDate=%s, refNextDate=%s, refOtherDate=%s retainStart=%s",
                 refDate, refNextDate, refOtherDate, retainStart);
 
         // ogni volta che i dati sottostanti cambiano li riorganizzo aggiungendo gli header di gruppo e raggruppando le release quando necessario
         // quindi aggiorno mediatorLiveData
-        final ReleaseViewModelGroupHelper groupHelper = new ReleaseViewModelGroupHelper();
         final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
         mediatorLiveData.addSource(getAllReleases(refDate, refNextDate, refOtherDate, retainStart), comicsReleases -> {
             // e raggruppando le release senza data
-            mediatorLiveData.setValue(groupHelper.createViewModelItems(comicsReleases));
+            mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, MissingRelease.TYPE));
+        });
+        return mediatorLiveData;
+    }
+
+    public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(long comicsId) {
+
+        LogHelper.d("prepare releases for detail comicsId=%s",
+                comicsId);
+
+        // ogni volta che i dati sottostanti cambiano li riorganizzo aggiungendo gli header di gruppo e raggruppando le release quando necessario
+        // quindi aggiorno mediatorLiveData
+        final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
+        mediatorLiveData.addSource(getAllReleases(comicsId), comicsReleases -> {
+            // TODO: si potrebbero unire tutti i purchased, ma poi al click si devono espandere
+            mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, 0));
         });
         return mediatorLiveData;
     }

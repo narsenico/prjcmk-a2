@@ -21,12 +21,15 @@ import it.amonshore.comikkua.data.comics.ComicsDao;
 import it.amonshore.comikkua.data.release.DatedRelease;
 import it.amonshore.comikkua.data.release.LostRelease;
 import it.amonshore.comikkua.data.release.MissingRelease;
+import it.amonshore.comikkua.data.release.NotPurchasedRelease;
+import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 
 @Database(entities = {Comics.class, Release.class},
-        views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
-        version = 1)
+        views = {MissingRelease.class, LostRelease.class, DatedRelease.class,
+                PurchasedRelease.class, NotPurchasedRelease.class},
+        version = 2)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -43,6 +46,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                             ComikkuDatabase.class, "comikku_database")
 //                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
 //                            .addMigrations(MIGRATION_1_2)
+//                            .addMigrations(new FakeMigration(1, 2))
 //                            .addMigrations(new FakeMigration(4, 5))
 //                            .addMigrations(new FakeMigration(5, 6))
                             .addCallback(new DatabaseCallback(context))

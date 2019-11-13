@@ -12,6 +12,8 @@ import it.amonshore.comikkua.data.release.DatedRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.LostRelease;
 import it.amonshore.comikkua.data.release.MissingRelease;
+import it.amonshore.comikkua.data.release.NotPurchasedRelease;
+import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 
 public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
@@ -49,6 +51,12 @@ public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
                 break;
             case DatedRelease.TYPE_NEXT:
                 mTitle.setText(R.string.header_next_period);
+                break;
+            case NotPurchasedRelease.TYPE:
+                mTitle.setText(R.string.header_not_purchased);
+                break;
+            case PurchasedRelease.TYPE:
+                mTitle.setText(R.string.header_purchased);
                 break;
             case DatedRelease.TYPE_OTHER:
             default:

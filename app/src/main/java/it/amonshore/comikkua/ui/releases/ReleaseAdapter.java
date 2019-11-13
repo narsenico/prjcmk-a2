@@ -32,12 +32,16 @@ import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
+import it.amonshore.comikkua.data.release.MultiRelease;
+import it.amonshore.comikkua.data.release.NotPurchasedRelease;
+import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
-    private ReleaseViewHolder.Callback mReleaseViewHolderCallback;
+    private ReleaseViewHolderCallback mReleaseViewHolderCallback;
+    private boolean mUseLite;
 //    @MenuRes
 //    private int mReleaseMenuRes;
 //    private ReleaseCallback mRelaseCallback;
@@ -66,6 +70,8 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
     public AReleaseViewModelItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ReleaseHeader.ITEM_TYPE) {
             return ReleaseHeaderViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+        } else if (mUseLite) {
+            return ReleaseLiteViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mReleaseViewHolderCallback);
         } else {
             return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mReleaseViewHolderCallback);
         }
@@ -87,6 +93,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         if (item == null) {
             return RecyclerView.INVALID_TYPE;
         } else {
+            LogHelper.d("getItemViewType(%s) = %s", position, item.getItemType());
             return item.getItemType();
         }
     }
@@ -96,16 +103,16 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         return getItem(position);
     }
 
-    SelectionTracker<Long> getSelectionTracker() {
+    public SelectionTracker<Long> getSelectionTracker() {
         return mSelectionTracker;
     }
 
-    interface OnItemSelectedListener {
+    public interface OnItemSelectedListener {
 
         void onSelectionChanged(@Nullable Iterator<Long> keys, int size);
     }
 
-    interface ReleaseCallback {
+    public interface ReleaseCallback {
 
         void onReleaseClick(@NonNull ComicsRelease release);
 
@@ -116,15 +123,16 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release);
     }
 
-    static class Builder {
+    public static class Builder {
         private final RecyclerView mRecyclerView;
         //        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         @MenuRes
         private int releaseMenuRes;
+        private boolean useLite;
         private ReleaseCallback releaseCallback;
 
-        Builder(@NonNull RecyclerView recyclerView) {
+        public Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
 
@@ -133,20 +141,26 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 //            return this;
 //        }
 
-        Builder withOnItemSelectedListener(OnItemSelectedListener listener) {
+        public Builder withOnItemSelectedListener(OnItemSelectedListener listener) {
             mOnItemSelectedListener = listener;
             return this;
         }
 
-        Builder withReleaseCallback(@MenuRes int menuRes, @NonNull ReleaseCallback callback) {
+        public Builder withReleaseCallback(@MenuRes int menuRes, @NonNull ReleaseCallback callback) {
             releaseMenuRes = menuRes;
             releaseCallback = callback;
             return this;
         }
 
-        ReleaseAdapter build() {
+        public Builder useLite() {
+            useLite = true;
+            return this;
+        }
+
+        public ReleaseAdapter build() {
             final ReleaseAdapter adapter = new ReleaseAdapter();
-            adapter.mReleaseViewHolderCallback = new ReleaseViewHolder.Callback(releaseMenuRes) {
+            adapter.mUseLite = useLite;
+            adapter.mReleaseViewHolderCallback = new ReleaseViewHolderCallback(releaseMenuRes) {
                 @Override
                 void onReleaseClick(long comicsId, long id, int position) {
                     if (releaseCallback != null) {
@@ -233,56 +247,59 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 });
             }
 
-            // gestisco con uno swipe il purchase
-            final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+            // senza callback non gestisco lo swipe, ne tantomeno l'ItemDecoration
+            if (releaseCallback != null) {
+                // gestisco con uno swipe il purchase
+                final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
 
-                @Override
-                public boolean isLongPressDragEnabled() {
-                    return false;
-                }
+                    @Override
+                    public boolean isLongPressDragEnabled() {
+                        return false;
+                    }
 
-                @Override
-                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                    return false;
-                }
+                    @Override
+                    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                        return false;
+                    }
 
-                @Override
-                public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                    // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
+                    @Override
+                    public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                        // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
 //                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
-                    if (adapter.mSelectionTracker.hasSelection()) return 0;
-                    final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
-                    if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
-                    return super.getSwipeDirs(recyclerView, viewHolder);
-                }
+                        if (adapter.mSelectionTracker.hasSelection()) return 0;
+                        final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
+                        if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
+                        return super.getSwipeDirs(recyclerView, viewHolder);
+                    }
 
-                @Override
-                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    @Override
+                    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //                    LogHelper.d("Release swiped direction=%s", direction);
-                    final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
-                    if (item != null) {
-                        final ComicsRelease release = (ComicsRelease) item;
-                        if (direction == ItemTouchHelper.RIGHT) {
-                            releaseCallback.onReleaseTogglePurchase(release);
-                        } else if (direction == ItemTouchHelper.LEFT) {
-                            releaseCallback.onReleaseToggleOrder(release);
+                        final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
+                        if (item != null) {
+                            final ComicsRelease release = (ComicsRelease) item;
+                            if (direction == ItemTouchHelper.RIGHT) {
+                                releaseCallback.onReleaseTogglePurchase(release);
+                            } else if (direction == ItemTouchHelper.LEFT) {
+                                releaseCallback.onReleaseToggleOrder(release);
+                            }
                         }
                     }
-                }
-            };
-            new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
+                };
+                new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
 
-            mRecyclerView.addItemDecoration(new SwappableItemDecoration(mRecyclerView.getContext(),
-                    R.drawable.ic_purchased,
-                    R.drawable.ic_ordered,
-                    R.color.colorPrimary,
-                    R.color.colorItemBackgroundLighterX2,
-                    0,
-                    10,
-                    1f,
-                    .85f,
-                    R.string.swipe_purchase,
-                    R.string.swipe_order));
+                mRecyclerView.addItemDecoration(new SwappableItemDecoration(mRecyclerView.getContext(),
+                        R.drawable.ic_purchased,
+                        R.drawable.ic_ordered,
+                        R.color.colorPrimary,
+                        R.color.colorItemBackgroundLighterX2,
+                        0,
+                        10,
+                        1f,
+                        .85f,
+                        R.string.swipe_purchase,
+                        R.string.swipe_order));
+            }
 
             return adapter;
         }

@@ -10,13 +10,13 @@ public class ReleaseViewModelGroupHelper {
      * La procedura scorre le release, quando incontra una release il cui tipo
      * {@link ComicsRelease#type} è diverso da quella precedente, inserisce un header {@link ReleaseHeader},
      * con relativi contatori del numero totale di release di quel tipo, e di quelle acquistate.
-     * <p>
-     * Inoltre le release senza data, cioè del tipo {@link MissingRelease}, verranno raggruppate per comics.
      *
      * @param releases elenco di release ordinate per {@link ComicsRelease#type}.
+     * @param joinType indica il tipo di release che possono essere unite in un'unica {@link MultiRelease}, ad esempio {@link MissingRelease#TYPE};
+     *                 passare 0 per non unire
      * @return elenco di item comprensivi di header, release e release raggruppate.
      */
-    public List<IReleaseViewModelItem> createViewModelItems(List<ComicsRelease> releases) {
+    public List<IReleaseViewModelItem> createViewModelItems(List<ComicsRelease> releases, int joinType) {
         // scorro tutte le release
         // - se la release fa parte di un gruppo diverso da quella precedente, creo un nuovo header
         // - se la release non ha data, e così anche la precedente, se si riferiscono alla stesso comics, le raggruppo
@@ -47,7 +47,7 @@ public class ReleaseViewModelGroupHelper {
                 purchasedCount = 0;
             }
 
-            if (ii > 0 && canBeGrouped(releases.get(ii - 1), cr)) {
+            if (joinType > 0 && ii > 0 && canBeGrouped(joinType, releases.get(ii - 1), cr)) {
                 // la release precedente e questa possono essere raggruppate
                 if (lastMulti == null) {
                     // se non ho ancora creato un multi, lo creo adesso sostituendo in items l'ultimo valore
@@ -85,9 +85,9 @@ public class ReleaseViewModelGroupHelper {
         return items;
     }
 
-    private boolean canBeGrouped(ComicsRelease cr1, ComicsRelease cr2) {
-        return cr1.type == MissingRelease.TYPE &&
-                cr2.type == MissingRelease.TYPE &&
+    private boolean canBeGrouped(int joinType, ComicsRelease cr1, ComicsRelease cr2) {
+        return cr1.type == joinType &&
+                cr2.type == joinType &&
                 cr1.comics.id == cr2.comics.id;
     }
 

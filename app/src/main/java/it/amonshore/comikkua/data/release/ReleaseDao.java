@@ -72,19 +72,26 @@ public interface ReleaseDao {
      * @param retainStart  limite inferiore per lastUpdate in ms
      * @return elenco ordinato di release
      */
-    @Query("SELECT 10 as type, * FROM vLostReleases WHERE rdate < :refDate AND (rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart)) " +
+    @Query("SELECT " + LostRelease.TYPE + " as type, * FROM vLostReleases WHERE rdate < :refDate AND (rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart)) " +
             "UNION " +
-            "SELECT 20 as type, * FROM vDatedReleases WHERE rdate >= :refDate and rdate < :refNextDate " +        // questo periodo
+            "SELECT " + DatedRelease.TYPE + " as type, * FROM vDatedReleases WHERE rdate >= :refDate and rdate < :refNextDate " +        // questo periodo
             "UNION " +
-            "SELECT 21 as type, * FROM vDatedReleases WHERE rdate >= :refNextDate and rdate < :refOtherDate " +   // periodo successivo
+            "SELECT " + DatedRelease.TYPE_NEXT + " as type, * FROM vDatedReleases WHERE rdate >= :refNextDate and rdate < :refOtherDate " +   // periodo successivo
             "UNION " +
-            "SELECT 22 as type, * FROM vDatedReleases WHERE rdate > :refOtherDate " +                             // oltre
+            "SELECT " + DatedRelease.TYPE_OTHER + " as type, * FROM vDatedReleases WHERE rdate > :refOtherDate " +                             // oltre
             "UNION " +
-            "SELECT 100 as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
+            "SELECT " + MissingRelease.TYPE + " as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
             "ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber")
     @Transaction
     LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
                                                  @NonNull @Size(8) String refNextDate,
                                                  @NonNull @Size(8) String refOtherDate,
                                                  long retainStart);
+
+    @Query("SELECT " + NotPurchasedRelease.TYPE + " as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId " +
+            "UNION " +
+            "SELECT " + PurchasedRelease.TYPE + " as type, * FROM vPurchasedReleases WHERE cid = :comicsId " +
+            "ORDER BY type, rnumber")
+    @Transaction
+    LiveData<List<ComicsRelease>> getAllReleases(long comicsId);
 }

@@ -5,14 +5,22 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
+import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import it.amonshore.comikkua.ui.releases.ReleaseAdapter;
 
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
@@ -32,11 +40,15 @@ public class ComicsDetailFragment extends Fragment {
     private TextView mInitial, mName, mPublisher, mAuthors, mNotes,
             mLast, mNext, mMissing;
     private ImageView mComicsMenu;
+    private ReleaseAdapter mAdapter;
+    private RecyclerView mRecyclerView;
 
     private ComicsViewModel mComicsViewModel;
+    private ReleaseViewModel mReleaseViewModel;
     private long mComicsId;
 
-    public ComicsDetailFragment() { }
+    public ComicsDetailFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,6 +62,11 @@ public class ComicsDetailFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_comics_detail, container, false);
+
+        final String actionModeName = getClass().getSimpleName() + "_actionMode";
+        final Context context = requireContext();
+        mRecyclerView = view.findViewById(R.id.list);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         mComicsId = ComicsDetailFragmentArgs.fromBundle(getArguments()).getComicsId();
         // lo stesso nome della transizione è stato assegnato alla view di partenza
@@ -66,9 +83,40 @@ public class ComicsDetailFragment extends Fragment {
         mMissing = view.findViewById(R.id.txt_comics_release_missing);
         mComicsMenu = view.findViewById(R.id.img_comics_menu);
 
+        mAdapter = new ReleaseAdapter.Builder(mRecyclerView)
+                .withReleaseCallback(0, new ReleaseAdapter.ReleaseCallback() {
+                    @Override
+                    public void onReleaseClick(@NonNull ComicsRelease release) {
+                        openEdit(view, release);
+                    }
+
+                    @Override
+                    public void onReleaseTogglePurchase(@NonNull ComicsRelease release) {
+
+                    }
+
+                    @Override
+                    public void onReleaseToggleOrder(@NonNull ComicsRelease release) {
+
+                    }
+
+                    @Override
+                    public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
+
+                    }
+                })
+                // TODO: aggiungere i listeners
+                .useLite()
+                .build();
+
         // recupero il ViewModel per l'accesso ai dati
         mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
+        // TODO: lo devo tenere legato al fragment e non all'activity?
+        mReleaseViewModel = new ViewModelProvider(this)
+                .get(ReleaseViewModel.class);
+        // recupero l'istanza e poi rimuovo subito l'observer altrimenti verrebbe notificato il salvataggio
+        // TODO: beh non dovrei cmq aggiornare i tre contatori?
         mComicsViewModel.getComicsWithReleases(mComicsId).observe(getViewLifecycleOwner(), comics -> {
             if (comics != null) {
                 mInitial.setText(comics.comics.getInitial());
@@ -77,36 +125,41 @@ public class ComicsDetailFragment extends Fragment {
                 mAuthors.setText(comics.comics.authors);
                 mNotes.setText(comics.comics.notes);
 
-                final Context context = requireContext();
+                final Context context1 = requireContext();
 
                 final Release lastRelease = comics.getLastPurchasedRelease();
-                mLast.setText(lastRelease == null ? context.getString(R.string.release_last_none):
-                        context.getString(R.string.release_last, lastRelease.number));
+                mLast.setText(lastRelease == null ? context1.getString(R.string.release_last_none) :
+                        context1.getString(R.string.release_last, lastRelease.number));
 
                 final Release nextRelease = comics.getNextToPurchaseRelease();
-                mNext.setText(nextRelease == null ? context.getString(R.string.release_next_none) :
-                        context.getString(R.string.release_next, nextRelease.number));
+                mNext.setText(nextRelease == null ? context1.getString(R.string.release_next_none) :
+                        context1.getString(R.string.release_next, nextRelease.number));
 
                 final int missingCount = comics.getNotPurchasedReleaseCount();
-                mMissing.setText(context.getString(R.string.release_missing, missingCount));
+                mMissing.setText(context1.getString(R.string.release_missing, missingCount));
 
                 mComicsMenu.setVisibility(View.GONE);
 
-                LogHelper.d("release count " + comics.getReleaseCount());
-                if (comics.getReleaseCount() > 0) {
-                    for (Release release : comics.releases) {
-                        LogHelper.d(" - id:%s #%s, %s (purchased %s) ",
-                                release.id, release.number, release.date, release.purchased);
-                    }
-                }
+//                LogHelper.d("release count " + comics.getReleaseCount());
+//                if (comics.getReleaseCount() > 0) {
+//                    for (Release release : comics.releases) {
+//                        LogHelper.d(" - id:%s #%s, %s (purchased %s) ",
+//                                release.id, release.number, release.date, release.purchased);
+//                    }
+//                }
             }
+        });
+
+        mReleaseViewModel.getReleaseViewModelItems(mComicsId).observe(getViewLifecycleOwner(), items -> {
+            LogHelper.d("release viewmodel data changed size:" + items.size());
+            mAdapter.submitList(items);
         });
 
         return view;
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnNavigationFragmentListener) {
             mListener = (OnNavigationFragmentListener) context;
@@ -133,15 +186,24 @@ public class ComicsDetailFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.editComics:
 
-                    final NavDirections directions = ComicsDetailFragmentDirections
-                            .actionDestComicsDetailFragmentToComicsEditFragment()
-                            .setComicsId(mComicsId);
+                final NavDirections directions = ComicsDetailFragmentDirections
+                        .actionDestComicsDetailFragmentToComicsEditFragment()
+                        .setComicsId(mComicsId);
 
-                    Navigation.findNavController(getView()).navigate(directions);
+                Navigation.findNavController(getView()).navigate(directions);
 
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {
+        final NavDirections directions = ComicsDetailFragmentDirections
+                .actionDestComicsDetailFragmentToReleaseEditFragment()
+                .setComicsId(release.comics.id)
+                .setReleaseId(release.release.id);
+
+        Navigation.findNavController(view).navigate(directions);
     }
 }

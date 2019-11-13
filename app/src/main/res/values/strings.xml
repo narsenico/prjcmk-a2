@@ -30,6 +30,8 @@
     <string name="header_next_period">Next week</string>
     <string name="header_other">Other</string>
     <string name="header_missing">Missing</string>
+    <string name="header_not_purchased">Not purchased</string>
+    <string name="header_purchased">Purchased</string>
     <string name="header_count">%d/%d</string>
 
     <string name="comics_name">Name</string>

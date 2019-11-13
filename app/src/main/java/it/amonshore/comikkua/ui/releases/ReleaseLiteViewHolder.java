@@ -23,9 +23,9 @@ import it.amonshore.comikkua.data.release.MultiRelease;
 
 import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 
-public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
+public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
 
-    private final TextView mNumbers, mDate, mTitle, mInfo, mNotes;
+    private final TextView mNumbers, mDate, mNotes;
     private final View mPurchased, mOrdered, mMenu, mMainCard, mBackground;
 
     private long mComicsId;
@@ -33,12 +33,10 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
 
     private float mMainCardElevationPx;
 
-    private ReleaseViewHolder(View itemView, final ReleaseViewHolderCallback callback) {
+    private ReleaseLiteViewHolder(View itemView, final ReleaseViewHolderCallback callback) {
         super(itemView);
         mNumbers = itemView.findViewById(R.id.txt_release_numbers);
         mDate = itemView.findViewById(R.id.txt_release_date);
-        mTitle = itemView.findViewById(R.id.txt_release_title);
-        mInfo = itemView.findViewById(R.id.txt_release_info);
         mNotes = itemView.findViewById(R.id.txt_release_notes);
         mPurchased = itemView.findViewById(R.id.img_release_purchased);
         mOrdered = itemView.findViewById(R.id.img_release_ordered);
@@ -96,8 +94,6 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         mDate.setText(TextUtils.isEmpty(item.release.date) ?
                 null :
                 DateFormatterHelper.toHumanReadable(itemView.getContext(), item.release.date, DateFormatterHelper.STYLE_FULL));
-        mTitle.setText(item.comics.name);
-        mInfo.setText(Utility.join(", ", true, item.comics.publisher, item.comics.authors));
         mNotes.setText(TextUtils.isEmpty(item.release.notes) ? item.comics.notes : item.release.notes);
         mOrdered.setVisibility(item.release.ordered ? View.VISIBLE : View.INVISIBLE);
         if (item.release.purchased) {
@@ -118,8 +114,6 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         mId = NO_RELEASE_ID;
         mNumbers.setText("");
         mDate.setText("");
-        mTitle.setText("");
-        mInfo.setText("");
         mNotes.setText("");
         mPurchased.setVisibility(View.INVISIBLE);
         mOrdered.setVisibility(View.INVISIBLE);
@@ -134,8 +128,8 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         return Utility.formatInterval(null, ",", "~", numbers).toString();
     }
 
-    static ReleaseViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ReleaseViewHolderCallback callback) {
-        return new ReleaseViewHolder(inflater.inflate(R.layout.listitem_release, parent, false), callback);
+    static ReleaseLiteViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ReleaseViewHolderCallback callback) {
+        return new ReleaseLiteViewHolder(inflater.inflate(R.layout.listitem_release_lite, parent, false), callback);
     }
 
 }
