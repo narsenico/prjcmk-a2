@@ -190,6 +190,8 @@ public class ReleaseEditFragmentHelper {
     void setRelease(@NonNull Context context, @NotNull ComicsWithReleases comics, @Nullable Release release, Bundle savedInstanceState) {
         mComics = comics;
         if (release == null) {
+            // TODO: dovrei crearla con l'ultimo numero +1
+            // TODO: se è impostata una periodicità, calcolare la prossima data di uscita
             mRelease = Release.create(mComics.comics.id, 0);
         } else {
             mRelease = release;
@@ -295,9 +297,10 @@ public class ReleaseEditFragmentHelper {
         final Release[] releases = new Release[numbers.length];
 
         for (int ii=0; ii<numbers.length; ii++) {
-            releases[ii] = Release.create(mRelease);
+            // in questo caso imposto subito lastUpdate perché queste release potrebbero sovrascrivere quelle già esistenti
+            // così facendo risultano ancora visibili nell'elenco release anche se già acquistate per tutto il periodo di retain (vedi ReleaeDao.getAllReleases)
+            releases[ii] = Release.create(mRelease, System.currentTimeMillis());
             releases[ii].number = numbers[ii];
-            // TODO: lastUpdate non lo setta nessuno, potrebbe essere un problema
         }
 
         return releases;
@@ -318,6 +321,7 @@ public class ReleaseEditFragmentHelper {
         //  es: 4-3 non deve essere valido (modificare comportamento di Utility.parseInterval)
         //  es: 4-5-6 NO
         //  es: 4- NO etc.
+        // TODO: controllo se esistono già certe uscite? nel vecchio non lo facevo
         callback.onValidation(valid);
     }
 }

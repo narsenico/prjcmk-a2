@@ -75,6 +75,7 @@
     <string name="comics_name_empty_error">Name cannot be empty</string>
     <string name="comics_name_notunique_error">Name already used</string>
     <string name="comics_saving_error">I couldn\'t save the comics! Please try again.</string>
+    <string name="release_saving_error">I couldn\'t save the release! Please try again.</string>
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>

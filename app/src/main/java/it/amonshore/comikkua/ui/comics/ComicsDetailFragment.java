@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.release.Release;
@@ -90,6 +91,14 @@ public class ComicsDetailFragment extends Fragment {
                 mMissing.setText(context.getString(R.string.release_missing, missingCount));
 
                 mComicsMenu.setVisibility(View.GONE);
+
+                LogHelper.d("release count " + comics.getReleaseCount());
+                if (comics.getReleaseCount() > 0) {
+                    for (Release release : comics.releases) {
+                        LogHelper.d(" - id:%s #%s, %s (purchased %s) ",
+                                release.id, release.number, release.date, release.purchased);
+                    }
+                }
             }
         });
 

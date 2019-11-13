@@ -90,6 +90,14 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.insert(release);
     }
 
+    public long insertSync(Release release) {
+        return mRepository.insertSync(release);
+    }
+
+    public Long[] insertSync(Release... release) {
+        return mRepository.insertSync(release);
+    }
+
     public void update(Release release) {
         mRepository.update(release);
     }
@@ -128,6 +136,10 @@ public class ReleaseViewModel extends AndroidViewModel {
 
     public void delete(Iterable<Long> ids) {
         mRepository.delete(Utility.toArray(ids));
+    }
+
+    public int deleteByNumberSync(long comicsId, int... number) {
+        return mRepository.deleteByNumberSync(comicsId, number);
     }
 
 }

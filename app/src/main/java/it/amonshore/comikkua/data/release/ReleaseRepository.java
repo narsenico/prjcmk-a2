@@ -38,6 +38,14 @@ public class ReleaseRepository {
         new InsertAsyncTask(mReleaseDao).execute(release);
     }
 
+    public long insertSync(Release release) {
+        return mReleaseDao.insert(release);
+    }
+
+    public Long[] insertSync(Release... release) {
+        return mReleaseDao.insert(release);
+    }
+
     public void update(Release release) {
         new UpdateAsyncTask(mReleaseDao).execute(release);
     }
@@ -60,6 +68,10 @@ public class ReleaseRepository {
 
     public void delete(Long... id) {
         new DeleteAsyncTask(mReleaseDao).execute(id);
+    }
+
+    public int deleteByNumberSync(long comicsId, int... number) {
+        return mReleaseDao.deleteByNumber(comicsId, number);
     }
 
     private static class InsertAsyncTask extends AsyncTask<Release, Void, Void> {

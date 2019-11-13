@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.data.comics.Comics;
@@ -25,7 +26,7 @@ import it.amonshore.comikkua.data.release.ReleaseDao;
 
 @Database(entities = {Comics.class, Release.class},
         views = {MissingRelease.class, LostRelease.class, DatedRelease.class},
-        version = 4)
+        version = 1)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -40,8 +41,10 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             ComikkuDatabase.class, "comikku_database")
-                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
+//                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
 //                            .addMigrations(MIGRATION_1_2)
+//                            .addMigrations(new FakeMigration(4, 5))
+//                            .addMigrations(new FakeMigration(5, 6))
                             .addCallback(new DatabaseCallback(context))
                             .build();
                 }
@@ -63,6 +66,17 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 //            database.execSQL("CREATE UNIQUE INDEX tComics_name_unique_index ON tComics(name)");
 //        }
 //    };
+    private static final class FakeMigration extends Migration {
+
+        FakeMigration(int startVersion, int endVersion) {
+            super(startVersion, endVersion);
+        }
+
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // non faccio nulla
+        }
+    }
 
     private static class DatabaseCallback extends RoomDatabase.Callback {
 

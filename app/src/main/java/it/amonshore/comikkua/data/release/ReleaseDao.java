@@ -16,16 +16,16 @@ import androidx.room.Update;
 public interface ReleaseDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Release release);
+    long insert(Release release);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Release... release);
+    Long[] insert(Release... release);
 
     @Update()
-    void update(Release release);
+    int update(Release release);
 
     @Update()
-    void update(Release... releases);
+    int update(Release... releases);
 
     @Query("UPDATE tReleases SET purchased = :purchased, lastUpdate = :lastUpdate WHERE id IN (:id)")
     @Transaction
@@ -44,6 +44,10 @@ public interface ReleaseDao {
     @Query("DELETE FROM tReleases WHERE id IN (:id)")
     @Transaction
     void delete(Long... id);
+
+    @Query("DELETE FROM tReleases WHERE comicsId = :comicsId AND number IN (:number)")
+    @Transaction
+    int deleteByNumber(long comicsId, int... number);
 
     @Query("SELECT * FROM tReleases WHERE id = :id")
     LiveData<Release> getRelease(long id);

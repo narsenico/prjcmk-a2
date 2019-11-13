@@ -10,6 +10,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
@@ -149,7 +150,7 @@ public class ReleaseEditFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private static class InsertAsyncTask extends AsyncTask<Release, Void, Long> {
+    private static class InsertAsyncTask extends AsyncTask<Release, Void, Integer> {
 
         private WeakReference<View> mWeakView;
         private ReleaseViewModel mReleaseViewModel;
@@ -162,21 +163,31 @@ public class ReleaseEditFragment extends Fragment {
         }
 
         @Override
-        protected Long doInBackground(Release... releases) {
-            // TODO: se sto modificando una release (!isNew), prima la devo eliminare
-            //  poi inserisco le inserisco tutte come nuove (altrimenti dovrei controllare una per una quelle già esistenti e quelle no)
-
-            LogHelper.d("INSERT %d releases", releases.length);
-
-            return null; // ritornare
+        protected Integer doInBackground(Release... releases) {
+            // per prima cosa elimino tutte le release esistenti con gli stessi numeri
+            // così potrò "sovrascrierle"
+            int[] numbers = new int[releases.length];
+            for (int ii = 0; ii < numbers.length; ii++) {
+                numbers[ii] = releases[ii].number;
+            }
+            int delCount = mReleaseViewModel.deleteByNumberSync(releases[0].comicsId, numbers);
+            LogHelper.d("DELETED OLD %d releases", delCount);
+            return mReleaseViewModel.insertSync(releases).length;
         }
 
         @Override
-        protected void onPostExecute(Long comicsId) {
+        protected void onPostExecute(Integer count) {
+            LogHelper.d("INSERTED %d releases", count);
             final View view = mWeakView.get();
             if (view != null) {
-                Navigation.findNavController(view)
-                        .navigateUp();
+                if (count > 0) {
+                    Navigation.findNavController(view)
+                            .navigateUp();
+                } else {
+                    Toast.makeText(view.getContext(),
+                            R.string.comics_saving_error,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }
     }

@@ -68,6 +68,10 @@ public class ComicsWithReleases {
         return count;
     }
 
+    public int getReleaseCount() {
+        return this.releases == null ? 0 : this.releases.size();
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this) return true;

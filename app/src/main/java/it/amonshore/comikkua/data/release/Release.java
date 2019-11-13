@@ -58,7 +58,7 @@ public class Release {
         return create(comicsId, number, null);
     }
 
-    public static Release create(@NonNull Release release) {
+    public static Release create(@NonNull Release release, long lastUpdate) {
         final Release clone = new Release();
         clone.comicsId = release.comicsId;
         clone.number = release.number;
@@ -67,13 +67,13 @@ public class Release {
         clone.purchased = release.purchased;
         clone.ordered = release.ordered;
         clone.notes = release.notes;
+        clone.lastUpdate = lastUpdate;
         return clone;
     }
 
     public static Release clone(@NonNull Release release) {
-        final Release clone = create(release);
+        final Release clone = create(release, release.lastUpdate);
         clone.id = release.id;
-        clone.lastUpdate = release.lastUpdate;
         return clone;
     }
 }
