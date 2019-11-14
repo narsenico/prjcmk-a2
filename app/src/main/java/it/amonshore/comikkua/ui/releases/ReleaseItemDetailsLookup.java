@@ -22,8 +22,8 @@ public class ReleaseItemDetailsLookup extends ItemDetailsLookup<Long> {
         final View view = mRecyclerView.findChildViewUnder(e.getX(), e.getY());
         if (view != null) {
             final RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(view);
-            if (holder instanceof ReleaseViewHolder) {
-                return ((ReleaseViewHolder) holder).getItemDetails();
+            if (holder instanceof AReleaseViewModelItemViewHolder) {
+                return ((AReleaseViewModelItemViewHolder) holder).getItemDetails();
             }
         }
         return null;

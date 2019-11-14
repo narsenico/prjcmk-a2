@@ -23,6 +23,7 @@
     <string name="title_comics">Comics list</string>
     <string name="title_comics_detail">Comics detail</string>
     <string name="title_comics_edit">Edit comics</string>
+    <string name="title_release_edit">Edit release</string>
     <string name="title_selected">Selected %d</string>
 
     <string name="header_lost">Lost</string>

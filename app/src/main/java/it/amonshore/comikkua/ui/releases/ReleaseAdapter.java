@@ -93,7 +93,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         if (item == null) {
             return RecyclerView.INVALID_TYPE;
         } else {
-            LogHelper.d("getItemViewType(%s) = %s", position, item.getItemType());
+//            LogHelper.d("getItemViewType(%s) = %s", position, item.getItemType());
             return item.getItemType();
         }
     }

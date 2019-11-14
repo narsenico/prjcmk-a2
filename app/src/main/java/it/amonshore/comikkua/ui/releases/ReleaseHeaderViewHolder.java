@@ -39,6 +39,7 @@ public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
     }
 
     private void bind(@NonNull ReleaseHeader item) {
+        mId = item.getId();
         switch (item.getType()) {
             case LostRelease.TYPE:
                 mTitle.setText(R.string.header_lost);

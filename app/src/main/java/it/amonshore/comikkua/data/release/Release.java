@@ -22,6 +22,7 @@ public class Release {
     public long id;
     public long comicsId;
     public int number;
+    // yyyyMMdd
     public String date;
     public double price;
     public boolean purchased;

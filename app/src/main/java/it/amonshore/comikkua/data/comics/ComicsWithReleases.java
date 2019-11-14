@@ -1,11 +1,16 @@
 package it.amonshore.comikkua.data.comics;
 
+import android.text.TextUtils;
+
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Relation;
+import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.data.release.Release;
 
 @Entity
@@ -53,6 +58,16 @@ public class ComicsWithReleases {
         }
     }
 
+    @Nullable
+    public Release getLastRelease() {
+        // presumo che siano ordinate per numero
+        if (this.releases == null || this.releases.size() == 0) {
+            return null;
+        } else {
+            return this.releases.get(this.releases.size() - 1);
+        }
+    }
+
     /**
      * @return numero di uscite non ancora acquistate
      */
@@ -70,6 +85,28 @@ public class ComicsWithReleases {
 
     public int getReleaseCount() {
         return this.releases == null ? 0 : this.releases.size();
+    }
+
+    /**
+     * Crea una nuova release per il comics, impostando in automatico il numero (+1 rispetto all'ultimo),
+     * e la data di uscita (in base alla periodicità).
+     * La release create non viene aggiunta all'elenco {@link ComicsWithReleases#releases}.
+     *
+     * @return nuova release
+     */
+    public Release createNextRelease() {
+        final Release lastRelease = getLastRelease();
+        final Release nextRelease;
+        if (lastRelease != null) {
+            String nextDate = null;
+            if (!TextUtils.isEmpty(lastRelease.date) && !TextUtils.isEmpty(this.comics.periodicity)) {
+                nextDate = DateFormatterHelper.toNextPeriod(lastRelease.date, this.comics.periodicity);
+            }
+            nextRelease = Release.create(this.comics.id, lastRelease.number + 1, nextDate);
+        } else {
+            nextRelease = Release.create(this.comics.id, 1);
+        }
+        return nextRelease;
     }
 
     @Override

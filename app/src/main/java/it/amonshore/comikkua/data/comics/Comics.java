@@ -22,6 +22,7 @@ public class Comics {
     public String publisher;
     public String authors;
     public double price;
+    // Wn, Mn, Yn
     public String periodicity;
     public boolean reserved;
     public String notes;

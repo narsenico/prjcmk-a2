@@ -190,9 +190,8 @@ public class ReleaseEditFragmentHelper {
     void setRelease(@NonNull Context context, @NotNull ComicsWithReleases comics, @Nullable Release release, Bundle savedInstanceState) {
         mComics = comics;
         if (release == null) {
-            // TODO: dovrei crearla con l'ultimo numero +1
-            // TODO: se è impostata una periodicità, calcolare la prossima data di uscita
-            mRelease = Release.create(mComics.comics.id, 0);
+            // creo una release nuova impostando in automatico numero e data uscita (in base alla periodicità)
+            mRelease = mComics.createNextRelease();
         } else {
             mRelease = release;
         }

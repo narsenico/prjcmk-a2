@@ -92,7 +92,7 @@
         <argument
             android:name="subtitle"
             app:argType="reference"
-            android:defaultValue="@string/title_comics_edit" />
+            android:defaultValue="@string/title_release_edit" />
         <argument
             android:name="hideNavigation"
             app:argType="boolean"

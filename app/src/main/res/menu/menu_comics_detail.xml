@@ -8,4 +8,9 @@
         android:title="@string/menu_comics_edit"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/createNewRelease"
+        android:icon="@drawable/ic_add"
+        android:title="@string/menu_create"
+        app:showAsAction="ifRoom" />
 </menu>
