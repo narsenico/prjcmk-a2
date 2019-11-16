@@ -58,6 +58,9 @@ public interface ReleaseDao {
     @Query("SELECT * FROM tReleases WHERE id = :id")
     Release getRawRelease(long id);
 
+    @Query("SELECT " + DatedRelease.TYPE + " as type, * FROM vDatedReleases WHERE rpurchased = 0 AND rdate BETWEEN :startDate AND :endDate")
+    List<ComicsRelease> getRawNotPurchasedReleases(@NonNull @Size(8) String startDate, @NonNull @Size(8) String endDate);
+
     /**
      * La query estrae:
      * - uscite non acquistate con data inferiore a refDate, oppure uscite acquistate con lastUpdate >= retainStart

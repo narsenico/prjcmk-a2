@@ -2,32 +2,36 @@ package it.amonshore.comikkua.ui;
 
 import android.net.Uri;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toolbar;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.view.ActionMode;
 import androidx.navigation.NavArgument;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.NavGraphDirections;
+import it.amonshore.comikkua.NotificationUtils;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 
@@ -37,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private ActionMode mActionMode;
     private BottomNavigationView mBottomNavigationView;
+    private NavController mNavController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,30 +50,47 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(findViewById(R.id.toolbar));
         mBottomNavigationView = findViewById(R.id.bottom_nav);
 
-        final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        navController.addOnDestinationChangedListener(this);
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
+
+        mNavController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        mNavController.addOnDestinationChangedListener(this);
 
         final AppBarConfiguration appBarConfiguration = new AppBarConfiguration
-                .Builder(navController.getGraph())
+                .Builder(mNavController.getGraph())
                 .build();
 
         NavigationUI.setupWithNavController(mBottomNavigationView,
-                navController);
+                mNavController);
 
         NavigationUI.setupWithNavController(findViewById(R.id.toolbar),
-                navController,
+                mNavController,
                 appBarConfiguration);
 
         // parrebbe del tutto inutile visto che ho già configurato la navigazione con la toolbar qua sopra
         /*NavigationUI.setupActionBarWithNavController(this, navController,
                 appBarConfiguration);*/
+
+        NotificationUtils.setupNotifications(this, this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+            mNavController.navigate(R.id.action_global_settingsFragment);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
         // TODO: intercettare in qualche modo la selezione di un item dal fragment in modo da attivare l'actionMode?
-
-        // TODO: farsi passare l'indicazione se mostrare o meno il BottomView (ad es. nei fragment per l'edit non serve)
     }
 
     @Override
@@ -136,5 +158,4 @@ public class MainActivity extends AppCompatActivity implements
         final NavArgument arg = destination.getArguments().get("hideNavigation");
         return arg != null && arg.isDefaultValuePresent() && arg.getDefaultValue().equals(Boolean.TRUE);
     }
-
 }

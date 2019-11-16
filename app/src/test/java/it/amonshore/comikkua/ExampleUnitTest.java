@@ -76,4 +76,27 @@ public class ExampleUnitTest {
 
         assertTrue(String.format("%s != %s", s, "20191104"), s.equals("20191104"));
     }
+
+    @Test
+    public void calcTimeDiff() {
+        final Calendar now = Calendar.getInstance(Locale.getDefault());
+        final Calendar morning = Calendar.getInstance(Locale.getDefault());
+        if (now.get(Calendar.HOUR_OF_DAY) > 8) {
+            morning.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        morning.set(Calendar.HOUR_OF_DAY, 8);
+        morning.set(Calendar.MINUTE, 0);
+        morning.set(Calendar.SECOND, 0);
+
+        final long delay = morning.getTimeInMillis() - now.getTimeInMillis();
+
+        //TEST
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+        final Calendar test = Calendar.getInstance(Locale.getDefault());
+        test.setTimeInMillis(new Date().getTime() + delay);
+
+        System.out.println(sdf.format(test.getTime()));
+        assertEquals(test.get(Calendar.HOUR_OF_DAY), 8);
+        assertEquals(test.get(Calendar.MINUTE), 0);
+    }
 }
