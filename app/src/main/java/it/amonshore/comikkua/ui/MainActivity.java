@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui;
 
+import android.content.Intent;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -13,24 +14,15 @@ import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.concurrent.TimeUnit;
-
 import androidx.appcompat.view.ActionMode;
 import androidx.navigation.NavArgument;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
-import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
-import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.NavGraphDirections;
 import it.amonshore.comikkua.NotificationUtils;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
@@ -70,7 +62,11 @@ public class MainActivity extends AppCompatActivity implements
         /*NavigationUI.setupActionBarWithNavController(this, navController,
                 appBarConfiguration);*/
 
+        // prearo il sistema di notifiche
         NotificationUtils.setupNotifications(this, this);
+
+        // preparo le opzioni per Glide da poter usare in tutta l'app
+        GlideHelper.prepareOptions(this);
     }
 
     @Override
@@ -119,6 +115,16 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeFinished(@NonNull ActionMode mode) {
         super.onSupportActionModeFinished(mode);
         mActionMode = null;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

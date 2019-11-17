@@ -44,6 +44,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation "androidx.legacy:legacy-support-v4:$rootProject.supportVersion"
     implementation 'com.github.tiper:MaterialSpinner:1.4.0'
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
     // CardView
     implementation "androidx.cardview:cardview:$rootProject.supportVersion"
@@ -58,7 +59,7 @@ dependencies {
 
     // Room components
     implementation "androidx.room:room-runtime:$rootProject.roomVersion"
-    implementation 'androidx.preference:preference:1.1.0-alpha05'
+    implementation 'androidx.preference:preference:1.1.0'
     annotationProcessor "androidx.room:room-compiler:$rootProject.roomVersion"
     androidTestImplementation "androidx.room:room-testing:$rootProject.roomVersion"
 
@@ -75,6 +76,11 @@ dependencies {
 
     // WorkManager
     implementation "androidx.work:work-runtime:$rootProject.workVersion"
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation 'jp.wasabeef:glide-transformations:4.1.0'
 
     // Testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

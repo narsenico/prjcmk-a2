@@ -8,6 +8,7 @@
     <string name="menu_comics_detail">Comics detail</string>
     <string name="menu_comics_edit">Edit comics</string>
     <string name="menu_comics_save">Save comics</string>
+    <string name="menu_comics_set_image">Set image</string>
     <string name="menu_releases_save">Save releases</string>
     <string name="menu_delete">Remove</string>
     <string name="menu_delete_all">Remove all</string>
@@ -85,7 +86,7 @@
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
 
-    <string name="today_releases_channel_name">today_release</string>
+    <string name="today_releases_channel_name">Today releases</string>
     <string name="today_releases_channel_description">Releases</string>
 
     <string name="notification_new_releases">New comics today</string>
@@ -100,5 +101,10 @@
     <string name="settings_notifications_header">Notifications</string>
     <string name="settings_notifications_enabled">Enabled</string>
     <string name="settings_notifications_settings">Notification settings</string>
+
+    <string name="permission_camera_comics_denied">Need Camera permission</string>
+    <string name="permission_camera_comics_settings">Settings</string>
+    <string name="permission_camera_comics_title">Camera permission</string>
+    <string name="permission_camera_comics_explanation">Camera permission is required to capture comics thumbnail.</string>
 
 </resources>

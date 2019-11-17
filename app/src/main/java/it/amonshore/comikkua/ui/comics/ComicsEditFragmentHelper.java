@@ -1,8 +1,12 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.CustomViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.textfield.TextInputLayout;
 import com.tiper.MaterialSpinner;
 
@@ -32,7 +40,10 @@ import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Periodicity;
 import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
+import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
 
 /**
  * Helper per il binding delle view di {@link ComicsEditFragment}.
@@ -45,10 +56,12 @@ class ComicsEditFragmentHelper {
 
     static ComicsEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
                                          @NonNull ComicsViewModel viewModel,
-                                         @NonNull LifecycleOwner lifecycleOwner) {
+                                         @NonNull LifecycleOwner lifecycleOwner,
+                                         @NonNull RequestManager glideRequestManager) {
         final View view = inflater.inflate(R.layout.fragment_comics_edit, container, false);
         final ComicsEditFragmentHelper helper = new ComicsEditFragmentHelper();
-        helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
+        helper.mNumberFormat = NumberFormat.getNumberInstance(Locale.US);
+        helper.mGlideRequestManager = glideRequestManager;
         helper.bind(view, viewModel, lifecycleOwner);
         return helper;
     }
@@ -57,6 +70,7 @@ class ComicsEditFragmentHelper {
         TextView initial, name, publisher, authors, notes,
                 last, next, missing;
         ImageView menu;
+        Uri comicsImageUri;
     }
 
     final class Editor {
@@ -72,12 +86,15 @@ class ComicsEditFragmentHelper {
     private Editor editor;
     @NonNull
     private ComicsWithReleases mComics;
-    private NumberFormat numberFormat;
+    private NumberFormat mNumberFormat;
     private List<Periodicity> mPeriodicityList;
     @NonNull
     private ComicsViewModel mViewModel;
     @NonNull
     private LifecycleOwner mLifecycleOwner;
+    @NonNull
+    private RequestManager mGlideRequestManager;
+    private CustomViewTarget<TextView, Drawable> mComicsImageViewTarget;
 
     private void bind(@NonNull View view, @NonNull ComicsViewModel viewModel, @NonNull LifecycleOwner lifecycleOwner) {
         mRootView = view;
@@ -164,6 +181,8 @@ class ComicsEditFragmentHelper {
                 viewModel.getAuthors().removeObserver(this);
             }
         });
+
+        mComicsImageViewTarget = new DrawableTextViewTarget(preview.initial);
     }
 
     @NonNull
@@ -211,6 +230,7 @@ class ComicsEditFragmentHelper {
             editor.price.setText(savedInstanceState.getString("price"));
             editor.notes.setText(savedInstanceState.getString("notes"));
             editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, savedInstanceState.getString("periodicity")));
+            updateComicsImage(savedInstanceState.getString("comics_image"));
         } else {
             preview.initial.setText(mComics.comics.getInitial());
             preview.name.setText(mComics.comics.name);
@@ -221,9 +241,10 @@ class ComicsEditFragmentHelper {
             editor.publisher.setText(mComics.comics.publisher);
             editor.series.setText(mComics.comics.series);
             editor.authors.setText(mComics.comics.authors);
-            editor.price.setText(numberFormat.format(mComics.comics.price));
+            editor.price.setText(mNumberFormat.format(mComics.comics.price));
             editor.notes.setText(mComics.comics.notes);
             editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, mComics.comics.periodicity));
+            updateComicsImage(mComics.comics.image);
         }
 
         // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
@@ -241,6 +262,21 @@ class ComicsEditFragmentHelper {
         preview.menu.setVisibility(View.GONE);
     }
 
+    void updateComicsImage(String uriString) {
+        if (TextUtils.isEmpty(uriString)) {
+            updateComicsImage(Uri.parse(""));
+        } else {
+            updateComicsImage(Uri.parse(uriString));
+        }
+    }
+
+    void updateComicsImage(Uri uri) {
+        preview.comicsImageUri = uri;
+        mGlideRequestManager.load(preview.comicsImageUri)
+                .apply(GlideHelper.getCircleOptions())
+                .into(mComicsImageViewTarget);
+    }
+
     /**
      * Aggiorna il comics con gli input dell'utente.
      *
@@ -253,10 +289,11 @@ class ComicsEditFragmentHelper {
         mComics.comics.authors = editor.authors.getText().toString().trim();
         mComics.comics.notes = editor.notes.getText().toString().trim();
         mComics.comics.periodicity = getSelectedPeriodicityKey();
+        mComics.comics.image = preview.comicsImageUri == null ? null : preview.comicsImageUri.toString();
 
         if (editor.price.length() > 0) {
             try {
-                mComics.comics.price = numberFormat.parse(editor.price.getText().toString()).doubleValue();
+                mComics.comics.price = mNumberFormat.parse(editor.price.getText().toString()).doubleValue();
             } catch (ParseException e) {
                 mComics.comics.price = 0;
                 LogHelper.e("Error parsing comics price", e);
@@ -276,6 +313,7 @@ class ComicsEditFragmentHelper {
         outState.putString("notes", editor.notes.getText().toString());
         outState.putString("price", editor.price.getText().toString());
         outState.putString("periodicity", getSelectedPeriodicityKey());
+        outState.putString("comics_image", preview.comicsImageUri == null ? null : preview.comicsImageUri.toString());
     }
 
     void isValid(@NonNull final ValidationCallback callback) {

@@ -1,6 +1,8 @@
 package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.method.DigitsKeyListener;
@@ -13,6 +15,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.target.CustomViewTarget;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -35,6 +40,8 @@ import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
 
 public class ReleaseEditFragmentHelper {
@@ -46,10 +53,12 @@ public class ReleaseEditFragmentHelper {
     static ReleaseEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
                                           @NonNull ReleaseViewModel viewModel,
                                           @NonNull LifecycleOwner lifecycleOwner,
-                                          @NonNull FragmentManager fragmentManager) {
+                                          @NonNull FragmentManager fragmentManager,
+                                          @NonNull RequestManager glideRequestManager) {
         final View view = inflater.inflate(R.layout.fragment_release_edit, container, false);
         final ReleaseEditFragmentHelper helper = new ReleaseEditFragmentHelper();
         helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
+        helper.mGlideRequestManager = glideRequestManager;
         helper.bind(view, viewModel, lifecycleOwner, fragmentManager);
         return helper;
     }
@@ -81,6 +90,7 @@ public class ReleaseEditFragmentHelper {
     private ReleaseViewModel mViewModel;
     @NonNull
     private LifecycleOwner mLifecycleOwner;
+    private RequestManager mGlideRequestManager;
 
     private void bind(@NonNull View view, @NonNull ReleaseViewModel viewModel,
                       @NonNull LifecycleOwner lifecycleOwner,
@@ -223,6 +233,13 @@ public class ReleaseEditFragmentHelper {
         // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
         preview.title.setText(mComics.comics.name);
         preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
+
+        if (comics.comics.image != null) {
+            mGlideRequestManager
+                    .load(Uri.parse(comics.comics.image))
+                    .apply(GlideHelper.getSquareOptions())
+                    .into(new DrawableTextViewTarget(preview.numbers));
+        }
 
         preview.menu.setVisibility(View.INVISIBLE);
     }

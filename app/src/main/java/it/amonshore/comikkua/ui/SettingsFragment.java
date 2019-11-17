@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.ui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -21,7 +22,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         if (prefNotifications != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 prefNotifications.setOnPreferenceClickListener(preference -> {
-                    final String packageName = requireActivity().getPackageName();
+                    final String packageName = requireContext().getPackageName();
 
                     startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                             .putExtra(Settings.EXTRA_APP_PACKAGE, packageName));

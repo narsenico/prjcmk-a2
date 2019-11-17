@@ -1,14 +1,15 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -19,13 +20,17 @@ import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
+import it.amonshore.comikkua.ui.ColorFilterTransformationEx;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter;
+import jp.wasabeef.glide.transformations.BlurTransformation;
+import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
 
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
@@ -37,7 +42,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.Objects;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideOption;
+import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.request.RequestOptions;
 
 
 public class ComicsDetailFragment extends Fragment {
@@ -178,6 +186,13 @@ public class ComicsDetailFragment extends Fragment {
                 mPublisher.setText(comics.comics.publisher);
                 mAuthors.setText(comics.comics.authors);
                 mNotes.setText(comics.comics.notes);
+
+                if (comics.comics.image != null) {
+                    Glide.with(this)
+                            .load(Uri.parse(comics.comics.image))
+                            .apply(GlideHelper.getCircleOptions())
+                            .into(new DrawableTextViewTarget(mInitial));
+                }
 
                 final Release lastRelease = comics.getLastPurchasedRelease();
                 mLast.setText(lastRelease == null ? context.getString(R.string.release_last_none) :

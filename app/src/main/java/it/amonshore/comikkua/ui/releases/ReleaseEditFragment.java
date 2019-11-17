@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
 import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
@@ -65,7 +67,8 @@ public class ReleaseEditFragment extends Fragment {
         mHelper = ReleaseEditFragmentHelper.init(inflater, container,
                 mReleaseViewModel,
                 getViewLifecycleOwner(),
-                getParentFragmentManager());
+                getParentFragmentManager(),
+                Glide.with(this));
 
         final Bundle arguments = requireArguments();
         // id del comics, deve esistere sempre
