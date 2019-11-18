@@ -20,9 +20,9 @@ import it.amonshore.comikkua.Utility;
 public class ComicsViewModel extends AndroidViewModel {
 
     private ComicsRepository mRepository;
+    private String mLastFilter;
     private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
     private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
-//    private LiveData<PagedList<ComicsWithReleases>> mFilteredComics; potrei riutilizzarlo se la chiave di ricerca è identica
 
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
@@ -62,11 +62,20 @@ public class ComicsViewModel extends AndroidViewModel {
      * @param filter    testo da usare come filtro, null o vuoto per togliere il filtro
      */
     public void setFilter(String filter) {
+        mLastFilter = filter;
         if (TextUtils.isEmpty(filter)) {
             mFilterComics.setValue(null);
         } else {
             mFilterComics.setValue("%" + filter.replaceAll("\\s+", "%") + "%");
         }
+    }
+
+    public void useLastFilter() {
+        setFilter(mLastFilter);
+    }
+
+    public String getLastFilter() {
+        return mLastFilter;
     }
 
     public LiveData<List<Comics>> getComics() {

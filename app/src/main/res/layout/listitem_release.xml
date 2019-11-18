@@ -26,6 +26,10 @@
             android:background="@color/colorItemBackgroundLight">
 
             <androidx.appcompat.widget.AppCompatTextView
+                android:shadowColor="@color/colorShadow"
+                android:shadowDx="0.0"
+                android:shadowDy="0.0"
+                android:shadowRadius="1"
                 android:id="@+id/txt_release_numbers"
                 android:layout_width="115dp"
                 android:layout_height="0dp"

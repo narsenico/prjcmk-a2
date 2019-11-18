@@ -18,6 +18,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         // su Android O mostro il link ai setting di sistema riguardo alle notifiche
 
+        // TODO: mi fa schifo! non si capisce da dove si attivano le notifiche
+
         final Preference prefNotifications = findPreference("notifications");
         if (prefNotifications != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

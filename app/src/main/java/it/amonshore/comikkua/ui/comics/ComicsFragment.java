@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,9 +24,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.w3c.dom.Text;
+
 import java.util.Objects;
 
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.ModifiableBoolean;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.BackupImporter;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
@@ -38,6 +42,7 @@ import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 public class ComicsFragment extends Fragment {
 
     private final static String BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout";
+    private final static String BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query";
 
     private OnNavigationFragmentListener mListener;
     private PagedListComicsAdapter mAdapter;
@@ -130,7 +135,8 @@ public class ComicsFragment extends Fragment {
         mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
 
         // la prima volta carico tutti i dati
-        mComicsViewModel.setFilter(null);
+//        mComicsViewModel.setFilter(null);
+        mComicsViewModel.useLastFilter();
 
         return view;
     }
@@ -200,10 +206,26 @@ public class ComicsFragment extends Fragment {
         final SearchView searchView = (SearchView) searchItem.getActionView();
 
         // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
+
         // TODO: al cambio di configurazione (es orientamento) la query viene persa
+        //  è il viewModel che deve tenere memorizzata l'ultima query,
+        //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
+
+        if (!TextUtils.isEmpty(mComicsViewModel.getLastFilter())) {
+            // lo faccio prima di aver impostato i listener così non scateno più nulla
+            searchItem.expandActionView();
+            searchView.setQuery(mComicsViewModel.getLastFilter(), false);
+            searchView.clearFocus();
+
+            // TODO: non funziona sulla navigazione (es apro il dettaglio di un comics filtrato),
+            //  perché viene chiusa la searchView e scatenato onQueryTextChange con testo vuoto
+            //  che mi serve così perché quando volutamente la chiudo voglio che il filtro venga pulito
+        }
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                LogHelper.d("onQueryTextSubmit");
                 return true;
             }
 

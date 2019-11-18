@@ -169,13 +169,25 @@
 
     </FrameLayout>
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/txt_comics_initial"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+    <ImageView
+        android:src="@drawable/background_comics_initial_noborder_back"
+        android:id="@+id/img_comics_initial"
         android:layout_marginStart="20dp"
         android:layout_marginTop="@dimen/item_margin_default"
-        android:background="@drawable/background_comics_initial"
+        android:layout_width="104dp"
+        android:layout_height="104dp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:shadowColor="@color/colorShadow"
+        android:shadowDx="0.0"
+        android:shadowDy="0.0"
+        android:shadowRadius="1"
+        android:id="@+id/txt_comics_initial"
+        android:layout_width="92dp"
+        android:layout_height="92dp"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/background_comics_initial_noborder"
         android:gravity="center"
         android:paddingBottom="2dp"
         android:textAllCaps="true"
