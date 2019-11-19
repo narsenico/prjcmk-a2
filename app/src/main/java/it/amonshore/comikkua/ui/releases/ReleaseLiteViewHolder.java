@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui.releases;
 
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -7,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.bumptech.glide.RequestManager;
 
 import java.util.Locale;
 
@@ -20,6 +23,8 @@ import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.MultiRelease;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 
 import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 
@@ -78,11 +83,11 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
     }
 
     @Override
-    public void bind(@NonNull IReleaseViewModelItem item, boolean selected) {
-        bind((ComicsRelease) item, selected);
+    public void bind(@NonNull IReleaseViewModelItem item, boolean selected, RequestManager requestManager) {
+        bind((ComicsRelease) item, selected, requestManager);
     }
 
-    private void bind(@NonNull ComicsRelease item, boolean selected) {
+    private void bind(@NonNull ComicsRelease item, boolean selected, RequestManager requestManager) {
         itemView.setActivated(selected);
         mComicsId = item.comics.id;
         mId = item.release.id;
@@ -94,7 +99,7 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         mDate.setText(TextUtils.isEmpty(item.release.date) ?
                 null :
                 DateFormatterHelper.toHumanReadable(itemView.getContext(), item.release.date, DateFormatterHelper.STYLE_FULL));
-        mNotes.setText(TextUtils.isEmpty(item.release.notes) ? item.comics.notes : item.release.notes);
+        mNotes.setText(item.release.notes);
         mOrdered.setVisibility(item.release.ordered ? View.VISIBLE : View.INVISIBLE);
         if (item.release.purchased) {
             mPurchased.setVisibility(View.VISIBLE);
@@ -104,6 +109,15 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
             mPurchased.setVisibility(View.INVISIBLE);
             mMainCard.setElevation(mMainCardElevationPx);
             mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLight));
+        }
+
+        if (requestManager != null && item.comics.image != null) {
+            requestManager
+                    .load(Uri.parse(item.comics.image))
+                    .apply(GlideHelper.getSquareOptions())
+                    .into(new DrawableTextViewTarget(mNumbers));
+        } else {
+            mNumbers.setBackgroundColor(itemView.getContext().getResources().getColor(R.color.colorItemBackgroundAlt));
         }
     }
 

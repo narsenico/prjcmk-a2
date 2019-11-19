@@ -11,20 +11,34 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.ListPreloader;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
+import com.bumptech.glide.util.FixedPreloadSizeProvider;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 
 public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
+    private RequestManager mRequestManager;
 
     private PagedListComicsAdapter() {
         super(DIFF_CALLBACK);
@@ -34,7 +48,7 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
     public void onBindViewHolder(@NonNull ComicsViewHolder holder, int position) {
         final ComicsWithReleases item = getItem(position);
         if (item != null) {
-            holder.bind(item, mSelectionTracker.isSelected(item.comics.id));
+            holder.bind(item, mSelectionTracker.isSelected(item.comics.id), mRequestManager);
         } else {
             holder.clear();
         }
@@ -65,19 +79,11 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
         void onSelectionChanged(@Nullable Iterator<Long> keys, int size);
     }
 
-    interface ActionModeControllerCallback {
-
-        void onActionModeControllerCreated(ActionModeController controller);
-
-        void onActionModeMenuItemSelected(MenuItem item);
-    }
-
     static class Builder {
         private final RecyclerView mRecyclerView;
         private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
-        private ActionModeControllerCallback mActionModeControllerCallback;
-        private int actionModeMenuRes;
+        private RequestManager mRequestManager;
 
         Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
@@ -93,13 +99,8 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             return this;
         }
 
-        Builder withActionModeControllerCallback(int menuRes, ActionModeControllerCallback callback) {
-            // TODO: dovrebbe essere usato con withOnItemSelectedListener... altrimenti non funziona
-            //  quindi gestire da qua la creazione di ActionMode.Callback,
-            //  e al chiamante si passa la notifica della creazione e la selezione di un tasto del menu
-            //  in modo che possa aggiornare la toolbar dell'activity
-            actionModeMenuRes = menuRes;
-            mActionModeControllerCallback = callback;
+        Builder withGlide(RequestManager requestManager) {
+            mRequestManager = requestManager;
             return this;
         }
 
@@ -148,6 +149,19 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                 });
             }
 
+            if (mRequestManager != null) {
+                // precarico le immagini dei comics
+                final FixedPreloadSizeProvider<ComicsWithReleases> sizeProvider =
+                        new FixedPreloadSizeProvider<>(GlideHelper.getDefaultSize(), GlideHelper.getDefaultSize());
+                final ComicsPreloadModelProvider modelProvider =
+                        new ComicsPreloadModelProvider(adapter, mRequestManager);
+                final RecyclerViewPreloader<ComicsWithReleases> preloader =
+                        new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
+
+                adapter.mRequestManager = mRequestManager;
+                mRecyclerView.addOnScrollListener(preloader);
+            }
+
             return adapter;
         }
     }
@@ -168,5 +182,40 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                     return oldComicsWithReleases.equals(newComicsWithReleases);
                 }
             };
+
+    private static class ComicsPreloadModelProvider implements ListPreloader.PreloadModelProvider<ComicsWithReleases> {
+
+        private PagedListComicsAdapter mAdapter;
+        private RequestManager mRequestManager;
+
+        ComicsPreloadModelProvider(@NonNull PagedListComicsAdapter adapter, @NonNull RequestManager requestManager) {
+            mAdapter = adapter;
+            mRequestManager = requestManager;
+        }
+
+        @NonNull
+        @Override
+        public List<ComicsWithReleases> getPreloadItems(int position) {
+            final ComicsWithReleases item = mAdapter.getItem(position);
+            if (item == null) {
+                return Collections.emptyList();
+            } else {
+                return Collections.singletonList(item);
+            }
+        }
+
+        @Nullable
+        @Override
+        public RequestBuilder<?> getPreloadRequestBuilder(@NonNull ComicsWithReleases item) {
+            if (item.comics.image != null) {
+                return mRequestManager
+                        .load(Uri.parse(item.comics.image))
+                        .apply(GlideHelper.getCircleOptions());
+
+            } else {
+                return null;
+            }
+        }
+    }
 
 }

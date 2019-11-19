@@ -178,10 +178,6 @@
         android:layout_height="104dp" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:shadowColor="@color/colorShadow"
-        android:shadowDx="0.0"
-        android:shadowDy="0.0"
-        android:shadowRadius="1"
         android:id="@+id/txt_comics_initial"
         android:layout_width="92dp"
         android:layout_height="92dp"
@@ -191,7 +187,7 @@
         android:gravity="center"
         android:paddingBottom="2dp"
         android:textAllCaps="true"
-        android:textColor="@color/colorItemForeground"
+        android:textColor="@color/color_comics_initial"
         android:textSize="65sp"
         android:textStyle="bold"
         tools:text="C" />

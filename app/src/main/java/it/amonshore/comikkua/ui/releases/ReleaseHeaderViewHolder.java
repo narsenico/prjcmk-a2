@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.bumptech.glide.RequestManager;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.R;
@@ -34,7 +36,7 @@ public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
     }
 
     @Override
-    public void bind(@NonNull IReleaseViewModelItem item, boolean selected) {
+    public void bind(@NonNull IReleaseViewModelItem item, boolean selected, RequestManager requestManager) {
         bind((ReleaseHeader) item);
     }
 

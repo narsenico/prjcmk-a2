@@ -21,6 +21,7 @@ public class GlideHelper {
 
     private static RequestOptions mSquareOptions;
     private static RequestOptions mCircleOptions;
+    private static int mDefaultSize;
 
     private final static int BLUR_RADIUS = 4;
 
@@ -57,10 +58,21 @@ public class GlideHelper {
 
         mCircleOptions = new RequestOptions()
                 .override(size)
-                .apply(RequestOptions.bitmapTransform(multiTransformation))
-//                .apply(RequestOptions.circleCropTransform())
+//                .apply(RequestOptions.bitmapTransform(multiTransformation))
+                .apply(RequestOptions.circleCropTransform())
                 .placeholder(R.drawable.background_comics_initial_noborder)
                 .error(R.drawable.background_comics_initial_noborder);
+
+        mDefaultSize = size;
+    }
+
+    /**
+     * Si presume che l'immagine abbia la stessa altezza e larghezza.
+     *
+     * @return la dimensione di default dell'immagine in pixel
+     */
+    public static int getDefaultSize() {
+        return mDefaultSize;
     }
 
     /**

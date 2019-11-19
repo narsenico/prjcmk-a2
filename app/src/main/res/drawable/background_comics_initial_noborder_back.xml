@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true">
+        <shape android:shape="oval">
 
+            <solid android:color="@color/colorItemSelected" />
+
+            <size android:width="100dp" android:height="100dp" />
+        </shape>
+    </item>
     <item>
         <shape android:shape="oval">
 
             <solid android:color="@color/colorBackground" />
 
-            <size
-                android:width="100dp"
-                android:height="100dp" />
+            <size android:width="100dp" android:height="100dp" />
         </shape>
     </item>
-
-</layer-list>
+</selector>

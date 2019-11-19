@@ -4,7 +4,7 @@
     <item>
         <shape android:shape="oval">
 
-            <solid android:color="@color/colorItemBackgroundAlt" />
+            <solid android:color="@color/colorItemBackgroundLight" />
 
             <size
                 android:width="92dp"

@@ -26,10 +26,6 @@
             android:background="@color/colorItemBackgroundLight">
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:shadowColor="@color/colorShadow"
-                android:shadowDx="0.0"
-                android:shadowDy="0.0"
-                android:shadowRadius="1"
                 android:id="@+id/txt_release_numbers"
                 android:layout_width="100dp"
                 android:layout_height="0dp"
@@ -106,7 +102,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/item_margin_default"
-                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginEnd="80dp"
                 android:layout_marginBottom="@dimen/item_margin_default"
                 android:ellipsize="end"
                 android:lines="3"
@@ -116,7 +112,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/txt_release_numbers"
                 app:layout_constraintTop_toBottomOf="@id/txt_release_date"
-                tools:text="Notes notes notes" />
+                tools:text="Notes notes notes notes v notes notes notes notes notes notes notes notes notes" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

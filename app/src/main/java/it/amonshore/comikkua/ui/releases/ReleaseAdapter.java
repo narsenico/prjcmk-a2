@@ -5,13 +5,22 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.ListPreloader;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
+import com.bumptech.glide.util.FixedPreloadSizeProvider;
+
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.ColorRes;
@@ -30,6 +39,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.MultiRelease;
@@ -37,14 +47,13 @@ import it.amonshore.comikkua.data.release.NotPurchasedRelease;
 import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
+import it.amonshore.comikkua.ui.GlideHelper;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
     private SelectionTracker<Long> mSelectionTracker;
     private ReleaseViewHolderCallback mReleaseViewHolderCallback;
     private boolean mUseLite;
-//    @MenuRes
-//    private int mReleaseMenuRes;
-//    private ReleaseCallback mRelaseCallback;
+    private RequestManager mRequestManager;
 
     private ReleaseAdapter() {
         super(DIFF_CALLBACK);
@@ -55,10 +64,10 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         final IReleaseViewModelItem item = getItem(position);
         if (item != null) {
             if (item.getItemType() == ReleaseHeader.ITEM_TYPE) {
-                holder.bind(item, false);
+                holder.bind(item, false, null);
             } else {
                 final ComicsRelease release = (ComicsRelease) item;
-                holder.bind(item, mSelectionTracker.isSelected(release.release.id));
+                holder.bind(item, mSelectionTracker.isSelected(release.release.id), mRequestManager);
             }
         } else {
             holder.clear();
@@ -125,21 +134,16 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
     public static class Builder {
         private final RecyclerView mRecyclerView;
-        //        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         @MenuRes
         private int releaseMenuRes;
         private boolean useLite;
         private ReleaseCallback releaseCallback;
+        private RequestManager mRequestManager;
 
         public Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
-
-//        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
-//            mOnItemActivatedListener = listener;
-//            return this;
-//        }
 
         public Builder withOnItemSelectedListener(OnItemSelectedListener listener) {
             mOnItemSelectedListener = listener;
@@ -154,6 +158,11 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
         public Builder useLite() {
             useLite = true;
+            return this;
+        }
+
+        Builder withGlide(RequestManager requestManager) {
+            mRequestManager = requestManager;
             return this;
         }
 
@@ -214,10 +223,6 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                             return true;
                         }
                     });
-
-//            if (mOnItemActivatedListener != null) {
-//                builder.withOnItemActivatedListener(mOnItemActivatedListener);
-//            }
 
             adapter.mSelectionTracker = builder.build();
 
@@ -299,6 +304,19 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                         .85f,
                         R.string.swipe_purchase,
                         R.string.swipe_order));
+            }
+
+            if (mRequestManager != null) {
+                // precarico le immagini dei comics
+                final FixedPreloadSizeProvider<IReleaseViewModelItem> sizeProvider =
+                        new FixedPreloadSizeProvider<>(GlideHelper.getDefaultSize(), GlideHelper.getDefaultSize());
+                final ReleasePreloadModelProvider modelProvider =
+                        new ReleasePreloadModelProvider(adapter, mRequestManager);
+                final RecyclerViewPreloader<IReleaseViewModelItem> preloader =
+                        new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
+
+                adapter.mRequestManager = mRequestManager;
+                mRecyclerView.addOnScrollListener(preloader);
             }
 
             return adapter;
@@ -459,6 +477,42 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 }
             }
             canvas.restore();
+        }
+    }
+
+    private static class ReleasePreloadModelProvider implements ListPreloader.PreloadModelProvider<IReleaseViewModelItem> {
+
+        private ReleaseAdapter mAdapter;
+        private RequestManager mRequestManager;
+
+        ReleasePreloadModelProvider(@NonNull ReleaseAdapter adapter, @NonNull RequestManager requestManager) {
+            mAdapter = adapter;
+            mRequestManager = requestManager;
+        }
+
+        @NonNull
+        @Override
+        public List<IReleaseViewModelItem> getPreloadItems(int position) {
+            final IReleaseViewModelItem item = mAdapter.getItemAt(position);
+            if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) {
+                return Collections.emptyList();
+            } else {
+                return Collections.singletonList(item);
+            }
+        }
+
+        @Nullable
+        @Override
+        public RequestBuilder<?> getPreloadRequestBuilder(@NonNull IReleaseViewModelItem item) {
+            final ComicsRelease comicsRelease = (ComicsRelease) item;
+            if (comicsRelease.comics.image != null) {
+                return mRequestManager
+                        .load(Uri.parse(comicsRelease.comics.image))
+                        .apply(GlideHelper.getSquareOptions());
+
+            } else {
+                return null;
+            }
         }
     }
 }

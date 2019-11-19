@@ -1,10 +1,14 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
@@ -14,6 +18,8 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.ui.DrawableTextViewTarget;
+import it.amonshore.comikkua.ui.GlideHelper;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
@@ -38,10 +44,10 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         return new ComicsItemDetails(getAdapterPosition(), mId);
     }
 
-    void bind(@NonNull ComicsWithReleases comics, boolean selected) {
+    void bind(@NonNull ComicsWithReleases comics, boolean selected, RequestManager requestManager) {
         itemView.setActivated(selected);
         mId = comics.comics.id;
-        mInitial.setText(comics.comics.getInitial());
+//        mInitial.setText(comics.comics.getInitial());
         mName.setText(comics.comics.name);
         mPublisher.setText(comics.comics.publisher);
         mAuthors.setText(comics.comics.authors);
@@ -78,6 +84,17 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 //                        getInitialColor(comics.comics.getInitial().toUpperCase().charAt(0))));
 //            }
 //        }
+
+        if (requestManager != null && comics.comics.image != null) {
+            mInitial.setText("");
+            requestManager
+                    .load(Uri.parse(comics.comics.image))
+                    .apply(GlideHelper.getCircleOptions())
+                    .into(new DrawableTextViewTarget(mInitial));
+        } else {
+            mInitial.setText(comics.comics.getInitial());
+            mInitial.setBackgroundResource(R.drawable.background_comics_initial_noborder);
+        }
     }
 
     void clear() {

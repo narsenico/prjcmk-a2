@@ -22,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
+
 import java.util.Objects;
 
 import it.amonshore.comikkua.LogHelper;
@@ -150,6 +152,7 @@ public class ReleasesFragment extends Fragment {
                         }
                     }
                 })
+                .withGlide(Glide.with(this))
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati

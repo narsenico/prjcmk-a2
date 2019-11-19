@@ -181,17 +181,20 @@ public class ComicsDetailFragment extends Fragment {
         // TODO: beh non dovrei cmq aggiornare i tre contatori?
         mComicsViewModel.getComicsWithReleases(mComicsId).observe(getViewLifecycleOwner(), comics -> {
             if (comics != null) {
-                mInitial.setText(comics.comics.getInitial());
+//                mInitial.setText(comics.comics.getInitial());
                 mName.setText(comics.comics.name);
                 mPublisher.setText(comics.comics.publisher);
                 mAuthors.setText(comics.comics.authors);
                 mNotes.setText(comics.comics.notes);
 
                 if (comics.comics.image != null) {
+                    mInitial.setText("");
                     Glide.with(this)
                             .load(Uri.parse(comics.comics.image))
                             .apply(GlideHelper.getCircleOptions())
                             .into(new DrawableTextViewTarget(mInitial));
+                } else {
+                    mInitial.setText(comics.comics.getInitial());
                 }
 
                 final Release lastRelease = comics.getLastPurchasedRelease();

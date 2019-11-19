@@ -24,6 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
+
 import org.w3c.dom.Text;
 
 import java.util.Objects;
@@ -119,6 +121,7 @@ public class ComicsFragment extends Fragment {
 
                     return false;
                 })
+                .withGlide(Glide.with(this))
                 .build();
 
         // recupero il ViewModel per l'accesso ai dati
