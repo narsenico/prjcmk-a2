@@ -10,6 +10,7 @@
         android:id="@+id/block_top"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/item_margin_default"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -37,13 +38,13 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_numbers"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:startIconDrawable="@drawable/ic_numbers"
-                app:helperText="@string/release_numbers_helper"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                app:helperText="@string/release_numbers_helper"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:startIconDrawable="@drawable/ic_numbers">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -80,13 +81,13 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_price"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:startIconDrawable="@drawable/ic_price"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_margin_default"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/til_date">
+                app:layout_constraintTop_toBottomOf="@id/til_date"
+                app:startIconDrawable="@drawable/ic_price">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -120,13 +121,13 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_notes"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:startIconDrawable="@drawable/ic_notes"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_margin_default"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chk_ordered">
+                app:layout_constraintTop_toBottomOf="@id/chk_ordered"
+                app:startIconDrawable="@drawable/ic_notes">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"

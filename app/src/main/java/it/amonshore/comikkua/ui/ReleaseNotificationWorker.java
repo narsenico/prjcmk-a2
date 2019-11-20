@@ -1,8 +1,14 @@
 package it.amonshore.comikkua.ui;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.FutureTarget;
 
 import java.util.List;
 
@@ -58,15 +64,34 @@ public class ReleaseNotificationWorker extends Worker {
                 int id = NOTIFICATION_GROUP_ID;
                 // creo una singola notifica per ogni release
                 for (ComicsRelease cr : lst) {
-                    notificationManager.notify(++id, new NotificationCompat.Builder(context, CHANNEL_ID)
-                            .setSmallIcon(R.drawable.ic_release)
+
+                    final String text;
+                    if (cr.release.hasNotes()) {
+                        text = context.getString(R.string.notification_new_release_detail_notes, cr.release.number, cr.release.notes);
+                    } else {
+                        text = context.getString(R.string.notification_new_release_detail, cr.release.number);
+                    }
+
+                    final NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher5f) // TODO: icona app
                             .setContentTitle(cr.comics.name)
-                            .setContentText(context.getString(R.string.notification_new_release_detail, cr.release.number))
+                            .setContentText(text)
+                            .setNumber(cr.release.number) // TODO: non appare da nessuna parte!
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             .setAutoCancel(true)
                             .setContentIntent(resultPendingIntent)
-                            .setGroup(NOTIFICATION_GROUP)
-                            .build());
+                            .setGroup(NOTIFICATION_GROUP);
+
+                    if (cr.comics.hasImage()) {
+                        final FutureTarget<Bitmap> future = Glide.with(context)
+                                .asBitmap()
+                                .load(Uri.parse(cr.comics.image))
+                                .submit();
+
+                        notification.setLargeIcon(future.get());
+                    }
+
+                    notificationManager.notify(++id, notification.build());
 
                     inboxStyle.addLine(context.getString(R.string.notification_new_release_complete, cr.comics.name, cr.release.number));
                 }
@@ -75,7 +100,7 @@ public class ReleaseNotificationWorker extends Worker {
 
                 // e una per il sommario
                 notificationManager.notify(NOTIFICATION_GROUP_ID, new NotificationCompat.Builder(context, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_release)
+                        .setSmallIcon(R.drawable.ic_launcher5f) // TODO: icona app
                         .setContentTitle(context.getText(R.string.notification_new_releases))
                         .setContentText(contextText)
                         .setStyle(inboxStyle

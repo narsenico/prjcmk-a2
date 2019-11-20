@@ -1,5 +1,7 @@
 package it.amonshore.comikkua.data.release;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Entity;
@@ -29,6 +31,10 @@ public class Release {
     public boolean ordered;
     public String notes;
     public long lastUpdate;
+
+    public boolean hasNotes() {
+        return !TextUtils.isEmpty(this.notes);
+    }
 
     @Override
     public boolean equals(@Nullable Object obj) {

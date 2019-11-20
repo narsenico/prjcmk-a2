@@ -46,6 +46,9 @@ dependencies {
     implementation 'com.github.tiper:MaterialSpinner:1.4.0'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
+    // CoordinatorLayout
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$rootProject.coordinatorlayoutVersion"
+
     // CardView
     implementation "androidx.cardview:cardview:$rootProject.supportVersion"
 

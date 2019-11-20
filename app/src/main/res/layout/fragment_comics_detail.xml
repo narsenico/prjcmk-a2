@@ -8,6 +8,7 @@
 
     <LinearLayout
         android:id="@+id/block_top"
+        android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -17,6 +18,12 @@
         <include
             android:id="@+id/comics"
             layout="@layout/listitem_comics" />
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/divider_vertical" />
 
     </LinearLayout>
 

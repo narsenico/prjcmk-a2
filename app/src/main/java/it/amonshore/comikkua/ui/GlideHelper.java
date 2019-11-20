@@ -2,20 +2,25 @@ package it.amonshore.comikkua.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 
-import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import jp.wasabeef.glide.transformations.BlurTransformation;
-import jp.wasabeef.glide.transformations.CropCircleTransformation;
-import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
+import jp.wasabeef.glide.transformations.ColorFilterTransformation;
 
 public class GlideHelper {
 
@@ -40,19 +45,22 @@ public class GlideHelper {
 //                4,
 //                context.getResources().getDisplayMetrics());
 
-        final BlurTransformation blurTransformation = new BlurTransformation(BLUR_RADIUS);
-        final MultiTransformation<Bitmap> multiTransformation = new MultiTransformation<>(
-                blurTransformation,
-//                new ColorFilterTransformationEx(context.getResources().getColor(R.color.colorText), PorterDuff.Mode.ADD),
-//                new CropCircleWithBorderTransformation(borderSize,
-//                        context.getResources().getColor(R.color.colorBackground))
-                new CircleCrop()
-        );
+        final ColorFilterTransformationEx colorFilterTransformation =
+                new ColorFilterTransformationEx(context.getResources().getColor(R.color.colorReleaseImageTint), PorterDuff.Mode.MULTIPLY);
+//        final BlurTransformation blurTransformation = new BlurTransformation(BLUR_RADIUS);
+//        final MultiTransformation<Bitmap> multiTransformation = new MultiTransformation<>(
+//                blurTransformation,
+////                new ColorFilterTransformationEx(context.getResources().getColor(R.color.colorText), PorterDuff.Mode.ADD),
+////                new CropCircleWithBorderTransformation(borderSize,
+////                        context.getResources().getColor(R.color.colorBackground))
+//                new CircleCrop()
+//        );
         final ColorDrawable backgroundColorDrawable = new ColorDrawable(context.getResources().getColor(R.color.colorItemBackgroundAlt));
 
         mSquareOptions = new RequestOptions()
                 .override(size)
-                .transform(blurTransformation)
+//                .transform(blurTransformation)
+                .transform(colorFilterTransformation)
                 .placeholder(backgroundColorDrawable)
                 .error(backgroundColorDrawable);
 
@@ -92,4 +100,20 @@ public class GlideHelper {
     public static RequestOptions getSquareOptions() {
         return mSquareOptions;
     }
+
+    public static RequestListener<Drawable> drawableRequestListener = new RequestListener<Drawable>() {
+        @Override
+        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            LogHelper.e(e, "GLIDE LOAD FAILED with url=\"%s\"", model);
+
+            // important to return false so the error placeholder can be placed
+            return false;
+        }
+
+        @Override
+        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+            // everything worked out, so probably nothing to do
+            return false;
+        }
+    };
 }

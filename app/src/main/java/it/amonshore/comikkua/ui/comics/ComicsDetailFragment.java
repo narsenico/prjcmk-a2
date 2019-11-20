@@ -187,7 +187,7 @@ public class ComicsDetailFragment extends Fragment {
                 mAuthors.setText(comics.comics.authors);
                 mNotes.setText(comics.comics.notes);
 
-                if (comics.comics.image != null) {
+                if (comics.comics.hasImage()) {
                     mInitial.setText("");
                     Glide.with(this)
                             .load(Uri.parse(comics.comics.image))

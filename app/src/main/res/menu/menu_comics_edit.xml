@@ -12,6 +12,20 @@
         android:id="@+id/setImage"
         android:icon="@drawable/ic_image"
         android:title="@string/menu_comics_set_image"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom">
+
+        <menu>
+            <item
+                android:id="@+id/changeImage"
+                android:icon="@drawable/ic_edit"
+                android:title="@string/menu_comics_set_image" />
+
+            <item
+                android:id="@+id/removeImage"
+                android:icon="@drawable/ic_delete"
+                android:title="@string/menu_comics_remove_image" />
+        </menu>
+
+    </item>
 
 </menu>

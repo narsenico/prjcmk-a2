@@ -115,7 +115,7 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
             mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLight));
         }
 
-        if (requestManager != null && item.comics.image != null) {
+        if (requestManager != null && item.comics.hasImage()) {
             requestManager
                     .load(Uri.parse(item.comics.image))
                     .apply(GlideHelper.getSquareOptions())

@@ -19,6 +19,7 @@
 
     <color name="colorDecorationLine">#263238</color>
     <color name="colorShadow">#333333</color>
+    <color name="colorReleaseImageTint">#cfc9b9</color>
 
     <color name="colorItemBackgroundA">#EF5350</color>
     <color name="colorItemBackgroundB">#F44336</color>

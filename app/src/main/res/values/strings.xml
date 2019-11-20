@@ -9,6 +9,8 @@
     <string name="menu_comics_edit">Edit comics</string>
     <string name="menu_comics_save">Save comics</string>
     <string name="menu_comics_set_image">Set image</string>
+    <string name="menu_comics_change_image">Change image</string>
+    <string name="menu_comics_remove_image">Remove image</string>
     <string name="menu_releases_save">Save releases</string>
     <string name="menu_delete">Remove</string>
     <string name="menu_delete_all">Remove all</string>
@@ -91,6 +93,7 @@
 
     <string name="notification_new_releases">New comics today</string>
     <string name="notification_new_release_detail">Today release: #%d</string>
+    <string name="notification_new_release_detail_notes">Today release: #%d (%s)</string>
     <string name="notification_new_release_complete">%s: #%d</string>
     <plurals name="notification_new_releases_today">
         <item quantity="one">There is a new release today</item>

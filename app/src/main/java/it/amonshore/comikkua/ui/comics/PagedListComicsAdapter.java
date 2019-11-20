@@ -207,9 +207,10 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
         @Nullable
         @Override
         public RequestBuilder<?> getPreloadRequestBuilder(@NonNull ComicsWithReleases item) {
-            if (item.comics.image != null) {
+            if (item.comics.hasImage()) {
                 return mRequestManager
                         .load(Uri.parse(item.comics.image))
+                        .listener(GlideHelper.drawableRequestListener)
                         .apply(GlideHelper.getCircleOptions());
 
             } else {

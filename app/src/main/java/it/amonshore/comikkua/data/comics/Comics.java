@@ -39,6 +39,10 @@ public class Comics {
         }
     }
 
+    public boolean hasImage() {
+        return !TextUtils.isEmpty(this.image);
+    }
+
     public static Comics create(@NonNull String name) {
         final Comics comics = new Comics();
         comics.name = name;

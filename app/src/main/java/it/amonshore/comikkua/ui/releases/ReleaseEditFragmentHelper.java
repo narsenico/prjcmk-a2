@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LifecycleOwner;
 import it.amonshore.comikkua.DateFormatterHelper;
@@ -234,7 +235,7 @@ public class ReleaseEditFragmentHelper {
         preview.title.setText(mComics.comics.name);
         preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
 
-        if (comics.comics.image != null) {
+        if (comics.comics.hasImage()) {
             mGlideRequestManager
                     .load(Uri.parse(comics.comics.image))
                     .apply(GlideHelper.getSquareOptions())

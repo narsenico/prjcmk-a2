@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -167,8 +168,11 @@ public class ComicsEditFragment extends Fragment {
                 });
 
                 return true;
-            case R.id.setImage:
+            case R.id.changeImage:
                 grabImage();
+                return true;
+            case R.id.removeImage:
+                mHelper.setComicsImage(null);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -188,7 +192,7 @@ public class ComicsEditFragment extends Fragment {
                 //  il nome del file deve contenere una parte variabile progressiva
                 //  in modo che la cache per la vecchia immagine venga invalidata
 
-                mHelper.updateComicsImage(resultUri);
+                mHelper.setComicsImage(resultUri);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 LogHelper.e("Crop error", result.getError());
@@ -208,8 +212,6 @@ public class ComicsEditFragment extends Fragment {
     }
 
     private void grabImage() {
-        // TODO: se l'immagine è già impostata chiedere tramite menu popup se si vuole toglierla o cambiarla
-
         final Context context = requireContext();
 
         if (ContextCompat.checkSelfPermission(context,
@@ -221,10 +223,9 @@ public class ComicsEditFragment extends Fragment {
                 new AlertDialog.Builder(context, R.style.DialogTheme)
                         .setTitle(R.string.permission_camera_comics_title)
                         .setMessage(R.string.permission_camera_comics_explanation)
-                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                    MY_PERMISSIONS_REQUEST_CAMERA);
-                        })
+                        .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                                requestPermissions(new String[]{Manifest.permission.CAMERA},
+                                        MY_PERMISSIONS_REQUEST_CAMERA))
                         .show();
             } else {
                 // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
@@ -233,7 +234,7 @@ public class ComicsEditFragment extends Fragment {
                         Snackbar.LENGTH_LONG);
                 snackbar.setAction(R.string.permission_camera_comics_settings, v ->
                         startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            .setData(Uri.fromParts("package", context.getPackageName(), null)))
+                                .setData(Uri.fromParts("package", context.getPackageName(), null)))
                 );
                 snackbar.show();
             }

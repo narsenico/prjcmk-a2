@@ -134,9 +134,12 @@ class ComicsEditFragmentHelper {
         editor.name.addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
-                final String value = s.toString().trim();
-                preview.name.setText(value);
-                preview.initial.setText(value.length() > 0 ? value.substring(0, 1) : "");
+                // l'iniziale la mostra solo se non c'è l'immagine
+                if (preview.comicsImageUri == null) {
+                    final String value = s.toString().trim();
+                    preview.name.setText(value);
+                    preview.initial.setText(value.length() > 0 ? value.substring(0, 1) : "");
+                }
             }
         });
         editor.publisher.addTextChangedListener(new TextWatcherAdapter() {
@@ -217,8 +220,8 @@ class ComicsEditFragmentHelper {
         }
 
         if (savedInstanceState != null) {
-            final String name = savedInstanceState.getString("name");
-            preview.initial.setText(name == null || name.length() == 0 ? "" : name.substring(0, 1));
+//            final String name = savedInstanceState.getString("name");
+//            preview.initial.setText(name == null || name.length() == 0 ? "" : name.substring(0, 1));
             preview.name.setText(savedInstanceState.getString("name"));
             preview.publisher.setText(savedInstanceState.getString("publisher"));
             preview.authors.setText(savedInstanceState.getString("authors"));
@@ -230,9 +233,9 @@ class ComicsEditFragmentHelper {
             editor.price.setText(savedInstanceState.getString("price"));
             editor.notes.setText(savedInstanceState.getString("notes"));
             editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, savedInstanceState.getString("periodicity")));
-            updateComicsImage(savedInstanceState.getString("comics_image"));
+            updateComicsImageAndInitial(savedInstanceState.getString("comics_image"), savedInstanceState.getString("name"));
         } else {
-            preview.initial.setText(mComics.comics.getInitial());
+//            preview.initial.setText(mComics.comics.getInitial());
             preview.name.setText(mComics.comics.name);
             preview.publisher.setText(mComics.comics.publisher);
             preview.authors.setText(mComics.comics.authors);
@@ -244,7 +247,7 @@ class ComicsEditFragmentHelper {
             editor.price.setText(mNumberFormat.format(mComics.comics.price));
             editor.notes.setText(mComics.comics.notes);
             editor.periodicity.setSelection(Periodicity.getIndexByKey(mPeriodicityList, mComics.comics.periodicity));
-            updateComicsImage(mComics.comics.image);
+            updateComicsImageAndInitial(mComics.comics.image, mComics.comics.name);
         }
 
         // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
@@ -262,19 +265,39 @@ class ComicsEditFragmentHelper {
         preview.menu.setVisibility(View.GONE);
     }
 
-    void updateComicsImage(String uriString) {
+    private void updateComicsImageAndInitial(String uriString, String name) {
         if (TextUtils.isEmpty(uriString)) {
-            updateComicsImage(Uri.parse(""));
+            updateComicsImageAndInitial((Uri) null, name);
         } else {
-            updateComicsImage(Uri.parse(uriString));
+            updateComicsImageAndInitial(Uri.parse(uriString), name);
         }
     }
 
-    void updateComicsImage(Uri uri) {
+    private void updateComicsImageAndInitial(Uri uri, String name) {
+        // mostro l'iniziale solo se non c'è l'immagine
         preview.comicsImageUri = uri;
-        mGlideRequestManager.load(preview.comicsImageUri)
-                .apply(GlideHelper.getCircleOptions())
-                .into(mComicsImageViewTarget);
+        if (preview.comicsImageUri == null) {
+            preview.initial.setText(name == null || name.length() == 0 ? "" : name.substring(0, 1));
+            preview.initial.setBackgroundResource(R.drawable.background_comics_initial_noborder);
+        } else {
+            preview.initial.setText("");
+            mGlideRequestManager.load(preview.comicsImageUri)
+                    .apply(GlideHelper.getCircleOptions())
+                    .into(mComicsImageViewTarget);
+        }
+    }
+
+    /**
+     * Imposta l'immagine del comics.
+     *
+     * @param uri l'uri dell'immagine, può essere null
+     */
+    void setComicsImage(@Nullable Uri uri) {
+        updateComicsImageAndInitial(uri, editor.name.getText().toString());
+    }
+
+    boolean hasComicsImage() {
+        return preview.comicsImageUri != null;
     }
 
     /**

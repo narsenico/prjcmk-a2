@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -16,6 +17,10 @@ import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.util.FixedPreloadSizeProvider;
 
 import java.util.Collections;
@@ -505,9 +510,12 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         @Override
         public RequestBuilder<?> getPreloadRequestBuilder(@NonNull IReleaseViewModelItem item) {
             final ComicsRelease comicsRelease = (ComicsRelease) item;
-            if (comicsRelease.comics.image != null) {
+            if (comicsRelease.comics.hasImage()) {
+//                LogHelper.d("GLIDE getPreloadRequestBuilder on %s uri=%s",
+//                        comicsRelease.comics.name, comicsRelease.comics.image);
                 return mRequestManager
                         .load(Uri.parse(comicsRelease.comics.image))
+                        .listener(GlideHelper.drawableRequestListener)
                         .apply(GlideHelper.getSquareOptions());
 
             } else {

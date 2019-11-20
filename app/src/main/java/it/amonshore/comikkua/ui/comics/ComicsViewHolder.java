@@ -25,6 +25,7 @@ import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mInitial, mName, mPublisher, mAuthors, mNotes,
             mLast, mNext, mMissing;
+    private final View mMenu;
     private long mId;
 
     private ComicsViewHolder(View itemView) {
@@ -37,6 +38,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mLast = itemView.findViewById(R.id.txt_comics_release_last);
         mNext = itemView.findViewById(R.id.txt_comics_release_next);
         mMissing = itemView.findViewById(R.id.txt_comics_release_missing);
+        mMenu = itemView.findViewById(R.id.img_comics_menu);
     }
 
     @Override
@@ -85,7 +87,9 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 //            }
 //        }
 
-        if (requestManager != null && comics.comics.image != null) {
+        mMenu.setVisibility(View.GONE);
+
+        if (requestManager != null && comics.comics.hasImage()) {
             mInitial.setText("");
             requestManager
                     .load(Uri.parse(comics.comics.image))
