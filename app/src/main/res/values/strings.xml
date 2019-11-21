@@ -111,4 +111,9 @@
     <string name="permission_camera_comics_title">Camera permission</string>
     <string name="permission_camera_comics_explanation">Camera permission is required to capture comics thumbnail.</string>
 
+    <string name="permission_import_backup_read_denied">Need Read external storage permission</string>
+    <string name="permission_import_backup_read_settings">Settings</string>
+    <string name="permission_import_backup_read_title">Read external storage permission</string>
+    <string name="permission_import_backup_read_explanation">Read external storage permission is required to import backup data.</string>
+
 </resources>

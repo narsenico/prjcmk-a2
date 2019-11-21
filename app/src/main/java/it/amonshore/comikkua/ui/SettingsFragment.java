@@ -16,28 +16,25 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.BackupImporter;
-import it.amonshore.comikkua.data.ComikkuDatabase;
-import it.amonshore.comikkua.data.comics.ComicsRepository;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 456;
     private static final String BACKUP_FILE_NAME = "comikku_data.bck";
 
     @Override
@@ -99,21 +96,61 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                importBackup();
+            }
+        }
+    }
+
     private void importBackup() {
         final Context context = requireContext();
         final File bckFile = Utility.getExternalFile(Environment.DIRECTORY_DOWNLOADS, BACKUP_FILE_NAME);
         LogHelper.d("Try import from " + bckFile);
 
         if (bckFile.exists()) {
-            new AlertDialog.Builder(context, R.style.DialogTheme)
-                    .setTitle("Import backup")
-                    .setMessage("Do you want to import the backup?\nExisting data will be removed.")
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        final BackupImporter importer = new BackupImporter(requireActivity().getApplication());
-                        new ImportAsyncTask(context, importer).execute(bckFile);
-                    })
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show();
+            if (ContextCompat.checkSelfPermission(context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // non ho il permesso: contollo se posso mostrare il perché serve
+                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    new android.app.AlertDialog.Builder(context, R.style.DialogTheme)
+                            .setTitle(R.string.permission_import_backup_read_title)
+                            .setMessage(R.string.permission_import_backup_read_explanation)
+                            .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE))
+                            .show();
+                } else {
+                    // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
+
+                    final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_import_backup_read_denied,
+                            Snackbar.LENGTH_LONG);
+                    snackbar.setAction(R.string.permission_import_backup_read_settings, v ->
+                            startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                    .setData(Uri.fromParts("package", context.getPackageName(), null)))
+                    );
+                    snackbar.show();
+                }
+
+            } else {
+                // ho il permesso: avvio la procedura di import
+                new AlertDialog.Builder(context, R.style.DialogTheme)
+                        .setTitle("Import backup")
+                        .setMessage("Do you want to import the backup?\nExisting data will be removed.")
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                            final BackupImporter importer = new BackupImporter(requireActivity().getApplication());
+                            new ImportAsyncTask(context, importer).execute(bckFile);
+                        })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
+
+            }
 
         } else {
             // TODO: file di backup non trovato
