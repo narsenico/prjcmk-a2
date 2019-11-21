@@ -172,11 +172,8 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
         @Override
         protected Integer doInBackground(final String... params) {
-            mReleaseDao.deleteAll();
-            mComicsDao.deleteAll();
-
             final BackupImporter importer = new BackupImporter(mComicsDao, mReleaseDao);
-            return importer.importFromAssets(mAssetManager, params[0]);
+            return importer.importFromAssets(mAssetManager, params[0], true);
         }
     }
 }

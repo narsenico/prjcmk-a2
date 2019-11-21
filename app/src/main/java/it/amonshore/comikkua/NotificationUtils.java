@@ -33,7 +33,6 @@ public final class NotificationUtils {
             return;
         }
 
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         boolean enabled;
 
         // con Android O è obbligatorio usare un canale per le notifiche
@@ -45,28 +44,30 @@ public final class NotificationUtils {
 
             final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
+            // recupero l'abilitazione alle notifiche direttamente dai settings dell'app
             enabled = notificationManager.areNotificationsEnabled();
         } else {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
             enabled = sharedPreferences.getBoolean("notifications_enabled", false);
+            // rimango in ascolto dei cambiamenti da SettingsFragment
+            final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences1, key) -> {
+                if (key.equals(KEY_NOTIFICATIONS_ENABLED)) {
+                    setupNotificationWork(context, sharedPreferences1.getBoolean(KEY_NOTIFICATIONS_ENABLED, false));
+                }
+            };
+            // il listener è tolto quando l'app non è più attiva, e rimessa quando ritorna attiva
+            lifecycleOwner.getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
+                switch (event) {
+                    case ON_PAUSE:
+                        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
+                        break;
+                    case ON_RESUME:
+                        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+                        listener.onSharedPreferenceChanged(sharedPreferences, KEY_NOTIFICATIONS_ENABLED);
+                        break;
+                }
+            });
         }
-
-        final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences1, key) -> {
-            if (key.equals(KEY_NOTIFICATIONS_ENABLED)) {
-                setupNotificationWork(context, sharedPreferences1.getBoolean(KEY_NOTIFICATIONS_ENABLED, false));
-            }
-        };
-
-        lifecycleOwner.getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
-            switch (event) {
-                case ON_PAUSE:
-                    sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
-                    break;
-                case ON_RESUME:
-                    sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
-                    listener.onSharedPreferenceChanged(sharedPreferences, KEY_NOTIFICATIONS_ENABLED);
-                    break;
-            }
-        });
 
         setupNotificationWork(context, enabled);
     }

@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
@@ -82,10 +84,13 @@ public class ReleaseNotificationWorker extends Worker {
                             .setContentIntent(resultPendingIntent)
                             .setGroup(NOTIFICATION_GROUP);
 
+                    // TODO: le imamagini sono supportate solo da una certa versione in poi
+                    //  inutile generarle per quelle precedenti
                     if (cr.comics.hasImage()) {
                         final FutureTarget<Bitmap> future = Glide.with(context)
                                 .asBitmap()
                                 .load(Uri.parse(cr.comics.image))
+                                .apply(RequestOptions.circleCropTransform())
                                 .submit();
 
                         notification.setLargeIcon(future.get());
@@ -96,21 +101,23 @@ public class ReleaseNotificationWorker extends Worker {
                     inboxStyle.addLine(context.getString(R.string.notification_new_release_complete, cr.comics.name, cr.release.number));
                 }
 
-                final String contextText = context.getResources().getQuantityString(R.plurals.notification_new_releases_today, count, count);
+//                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                    final String contextText = context.getResources().getQuantityString(R.plurals.notification_new_releases_today, count, count);
 
-                // e una per il sommario
-                notificationManager.notify(NOTIFICATION_GROUP_ID, new NotificationCompat.Builder(context, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_launcher5f) // TODO: icona app
-                        .setContentTitle(context.getText(R.string.notification_new_releases))
-                        .setContentText(contextText)
-                        .setStyle(inboxStyle
-                            .setBigContentTitle(contextText))
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setAutoCancel(true)
-                        .setContentIntent(resultPendingIntent)
-                        .setGroup(NOTIFICATION_GROUP)
-                        .setGroupSummary(true)
-                        .build());
+                    // e una per il sommario
+                    notificationManager.notify(NOTIFICATION_GROUP_ID, new NotificationCompat.Builder(context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher5f) // TODO: icona app
+                            .setContentTitle(context.getText(R.string.notification_new_releases))
+                            .setContentText(contextText)
+                            .setStyle(inboxStyle
+                                    .setBigContentTitle(contextText))
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setAutoCancel(true)
+                            .setContentIntent(resultPendingIntent)
+                            .setGroup(NOTIFICATION_GROUP)
+                            .setGroupSummary(true)
+                            .build());
+//                }
             }
 
             return Result.success();

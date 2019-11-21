@@ -11,6 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -62,11 +64,11 @@ public class BackupImporter {
         mReleaseDao = releaseRepository;
     }
 
-    public int importFromAssets(@NonNull AssetManager assetManager, @NonNull String fileName) {
+    public int importFromAssets(@NonNull AssetManager assetManager, @NonNull String fileName, boolean clearData) {
         InputStream stream = null;
         try {
             stream = assetManager.open(fileName, AssetManager.ACCESS_STREAMING);
-            return importFromStream(stream);
+            return importFromStream(stream, clearData);
         } catch (Exception ex) {
             LogHelper.e("Importing backup from assets", ex);
             if (stream != null) {
@@ -80,10 +82,33 @@ public class BackupImporter {
         }
     }
 
-    public int importFromStream(@NonNull InputStream stream) throws IOException, JSONException {
+    public int importFromFile(@NonNull File file, boolean clearData) {
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(file);
+            return importFromStream(stream, clearData);
+        } catch (Exception ex) {
+            LogHelper.e("Importing backup from file", ex);
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ioex) {
+                    LogHelper.e("Closing stream", ioex);
+                }
+            }
+            return 0;
+        }
+    }
+
+    public int importFromStream(@NonNull InputStream stream, boolean clearData) throws IOException, JSONException {
         final int size = stream.available();
         final byte[] buffer = new byte[size];
         final int len = stream.read(buffer);
+
+        if (clearData) {
+            mReleaseDao.deleteAll();
+            mComicsDao.deleteAll();
+        }
 
         if (len > 0) {
             final String data = new String(buffer);

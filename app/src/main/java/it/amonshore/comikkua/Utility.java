@@ -2,11 +2,13 @@ package it.amonshore.comikkua;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -175,5 +177,39 @@ public class Utility {
     public static void hideKeyboard(@NonNull View view) {
         final InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    /**
+     *
+     * @return true se l'external storage è accessibile in scrittura
+     */
+    public static boolean isExternalStorageWritable() {
+        return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+    }
+
+    /**
+     * Restituisce una istanza di file il cui percorso è dato dall'external storage
+     * se accessibile in scrittura, altrimenti dalla cartella dell'app interna.
+     *
+     * @param context contesto
+     * @param fileName  nome del file (senza il percorso)
+     * @return  una istanza di File
+     */
+    public static File getExternalFile(Context context, String fileName) {
+        if (isExternalStorageWritable()) {
+            return new File(context.getExternalFilesDir(null), fileName);
+        } else {
+            return new File(context.getFilesDir(), fileName);
+        }
+    }
+
+    /**
+     *
+     * @param folderType    il tipo della cartella esterna in cui risiede il file (vedi Enviroment.DIRECTORY_xxx)
+     * @param fileName  nome del file
+     * @return  una istanza di File
+     */
+    public static File getExternalFile(String folderType, String fileName) {
+        return new File(Environment.getExternalStoragePublicDirectory(folderType), fileName);
     }
 }
