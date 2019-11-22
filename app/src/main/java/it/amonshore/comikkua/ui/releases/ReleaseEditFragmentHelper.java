@@ -67,7 +67,7 @@ public class ReleaseEditFragmentHelper {
     final class Preview {
         TextView numbers, date, title, info, notes;
         ImageView purchased, ordered, menu;
-        View mainCard;
+        View mainCard, background;
     }
 
     final class Editor {
@@ -110,6 +110,7 @@ public class ReleaseEditFragmentHelper {
         preview.ordered = view.findViewById(R.id.img_release_ordered);
         preview.menu = view.findViewById(R.id.img_release_menu);
         preview.mainCard = view.findViewById(R.id.release_main_card);
+        preview.background = view.findViewById(R.id.release_background);
 
         editor = new Editor();
         editor.numbersLayout = view.findViewById(R.id.til_numbers);
@@ -139,15 +140,18 @@ public class ReleaseEditFragmentHelper {
             }
         });
 
-        final float mainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+        final float mainCardElevationPx = preview.mainCard.getElevation(); /*TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 2f,
-                preview.mainCard.getResources().getDisplayMetrics());
+                preview.mainCard.getResources().getDisplayMetrics());*/
         editor.purchased.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            preview.purchased.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
             if (isChecked) {
+                preview.purchased.setVisibility(View.VISIBLE);
                 preview.mainCard.setElevation(0);
+                preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemPurchased));
             } else {
+                preview.purchased.setVisibility(View.INVISIBLE);
                 preview.mainCard.setElevation(mainCardElevationPx);
+                preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemNotPurchased));
             }
         });
 

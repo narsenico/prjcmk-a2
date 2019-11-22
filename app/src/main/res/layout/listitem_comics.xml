@@ -2,9 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/background_selectable_item"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_selectable_item">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -16,11 +16,11 @@
             android:layout_height="125dp"
             android:layout_marginStart="@dimen/item_margin_default"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="@dimen/item_margin_default"
             android:layout_marginEnd="@dimen/item_margin_default"
+            android:layout_marginBottom="@dimen/item_margin_default"
             app:cardBackgroundColor="@color/colorItemBackgroundLight"
             app:cardCornerRadius="@dimen/item_radius_emphatic"
-            app:cardElevation="3dp"
+            app:cardElevation="2dp"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="true">
 
@@ -39,7 +39,7 @@
                     android:lines="2"
                     android:maxLines="2"
                     android:textAllCaps="true"
-                    android:textColor="@color/colorItemForeground"
+                    android:textColor="@color/colorItemTitle"
                     android:textSize="@dimen/text_size_medium"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -102,6 +102,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/item_margin_default"
                     android:layout_marginBottom="@dimen/item_margin_default"
+                    android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:srcCompat="@drawable/ic_menu_dots"
@@ -112,18 +113,19 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
-            tools:visibility="visible"
             android:id="@+id/comics_footer_card"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_marginTop="108dp"
             android:layout_marginStart="@dimen/item_margin_double"
+            android:layout_marginTop="108dp"
             android:layout_marginEnd="@dimen/item_margin_double"
             android:layout_marginBottom="@dimen/item_margin_default"
-            app:cardBackgroundColor="@color/colorItemBackgroundSecondary"
+            app:cardBackgroundColor="@color/colorBackground"
             app:cardCornerRadius="@dimen/item_radius_emphatic"
             app:cardPreventCornerOverlap="false"
-            app:cardUseCompatPadding="true">
+            app:cardUseCompatPadding="true"
+            app:cardElevation="1dp"
+            tools:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -170,12 +172,12 @@
     </FrameLayout>
 
     <ImageView
-        android:src="@drawable/background_comics_initial_noborder_back"
         android:id="@+id/img_comics_initial"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="@dimen/item_margin_default"
-        android:layout_width="104dp"
-        android:layout_height="104dp" />
+        android:src="@drawable/background_comics_initial_noborder_back" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/txt_comics_initial"

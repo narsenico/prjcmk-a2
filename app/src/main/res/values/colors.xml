@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#B86F6C</color>
     <color name="colorAccent">#ed8f8d</color>
 
-    <color name="colorText">#4d596d</color>
+    <color name="colorText">#4F4B45</color>
 
     <color name="colorBackground">#e9e6df</color>
     <color name="colorItemBackgroundDark">#ed8f8d</color>
@@ -16,6 +16,10 @@
     <color name="colorItemBackgroundAltVivid">#acdfd0</color>
     <color name="colorItemForeground">#fafafa</color>
     <color name="colorItemSelected">#B86F6C</color>
+
+    <color name="colorItemTitle">#4F4B45</color>
+    <color name="colorItemPurchased">#d9d5c8</color>
+    <color name="colorItemNotPurchased">#B5AE9F</color>
 
     <color name="colorDecorationLine">#263238</color>
     <color name="colorShadow">#333333</color>

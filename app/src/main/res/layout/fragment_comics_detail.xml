@@ -19,12 +19,6 @@
             android:id="@+id/comics"
             layout="@layout/listitem_comics" />
 
-        <View
-            android:id="@+id/separator"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@drawable/divider_vertical" />
-
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

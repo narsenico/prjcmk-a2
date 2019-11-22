@@ -69,7 +69,6 @@ class ComicsEditFragmentHelper {
     final class Preview {
         TextView initial, name, publisher, authors, notes,
                 last, next, missing;
-        ImageView menu;
         Uri comicsImageUri;
     }
 
@@ -110,7 +109,6 @@ class ComicsEditFragmentHelper {
         preview.last = view.findViewById(R.id.txt_comics_release_last);
         preview.next = view.findViewById(R.id.txt_comics_release_next);
         preview.missing = view.findViewById(R.id.txt_comics_release_missing);
-        preview.menu = view.findViewById(R.id.img_comics_menu);
 
         editor = new Editor();
         editor.nameLayout = view.findViewById(R.id.til_name);
@@ -261,8 +259,6 @@ class ComicsEditFragmentHelper {
 
         final int missingCount = mComics.getNotPurchasedReleaseCount();
         preview.missing.setText(context.getString(R.string.release_missing, missingCount));
-
-        preview.menu.setVisibility(View.GONE);
     }
 
     private void updateComicsImageAndInitial(String uriString, String name) {

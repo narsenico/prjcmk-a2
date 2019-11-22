@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
+import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
@@ -49,9 +50,10 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         mMainCard = itemView.findViewById(R.id.release_main_card);
         mBackground = itemView.findViewById(R.id.release_background);
 
-        mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                2f,
-                itemView.getResources().getDisplayMetrics());
+//        mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+//                2f,
+//                itemView.getResources().getDisplayMetrics());
+        mMainCardElevationPx = mMainCard.getElevation();
 
         if (callback != null) {
             itemView.setOnClickListener(v -> {
@@ -104,11 +106,11 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         if (item.release.purchased) {
             mPurchased.setVisibility(View.VISIBLE);
             mMainCard.setElevation(0);
-            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLighter));
+            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemPurchased));
         } else {
             mPurchased.setVisibility(View.INVISIBLE);
             mMainCard.setElevation(mMainCardElevationPx);
-            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemBackgroundLight));
+            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemNotPurchased));
         }
 
         if (requestManager != null && item.comics.hasImage()) {

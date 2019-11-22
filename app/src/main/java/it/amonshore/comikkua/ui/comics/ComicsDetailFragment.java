@@ -54,7 +54,6 @@ public class ComicsDetailFragment extends Fragment {
 
     private TextView mInitial, mName, mPublisher, mAuthors, mNotes,
             mLast, mNext, mMissing;
-    private ImageView mComicsMenu;
     private ReleaseAdapter mAdapter;
     private RecyclerView mRecyclerView;
 
@@ -96,7 +95,6 @@ public class ComicsDetailFragment extends Fragment {
         mLast = view.findViewById(R.id.txt_comics_release_last);
         mNext = view.findViewById(R.id.txt_comics_release_next);
         mMissing = view.findViewById(R.id.txt_comics_release_missing);
-        mComicsMenu = view.findViewById(R.id.img_comics_menu);
 
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
             @Override
@@ -216,8 +214,6 @@ public class ComicsDetailFragment extends Fragment {
 
                 final int missingCount = comics.getNotPurchasedReleaseCount();
                 mMissing.setText(context.getString(R.string.release_missing, missingCount));
-
-                mComicsMenu.setVisibility(View.GONE);
             }
         });
 
