@@ -33,7 +33,7 @@
                 android:gravity="center"
                 android:maxLines="3"
                 android:padding="@dimen/item_padding_default"
-                android:textColor="@color/colorItemForeground"
+                android:textColor="@color/colorBackground"
                 android:textStyle="bold"
                 app:autoSizeMaxTextSize="60sp"
                 app:autoSizeTextType="uniform"

@@ -71,6 +71,8 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
                 mMenu.setOnClickListener(v -> {
                     popupMenu.show();
                 });
+            } else {
+                mMenu.setVisibility(View.GONE);
             }
         } else {
             itemView.setOnClickListener(null);

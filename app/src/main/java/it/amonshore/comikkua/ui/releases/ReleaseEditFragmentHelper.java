@@ -68,6 +68,7 @@ public class ReleaseEditFragmentHelper {
         TextView numbers, date, title, info, notes;
         ImageView purchased, ordered, menu;
         View mainCard, background;
+        float mainCardElevationPx;
     }
 
     final class Editor {
@@ -140,19 +141,11 @@ public class ReleaseEditFragmentHelper {
             }
         });
 
-        final float mainCardElevationPx = preview.mainCard.getElevation(); /*TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+        preview.mainCardElevationPx = preview.mainCard.getElevation(); /*TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 2f,
                 preview.mainCard.getResources().getDisplayMetrics());*/
         editor.purchased.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                preview.purchased.setVisibility(View.VISIBLE);
-                preview.mainCard.setElevation(0);
-                preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemPurchased));
-            } else {
-                preview.purchased.setVisibility(View.INVISIBLE);
-                preview.mainCard.setElevation(mainCardElevationPx);
-                preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemNotPurchased));
-            }
+            updatePurchased(isChecked);
         });
 
         editor.ordered.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -235,6 +228,8 @@ public class ReleaseEditFragmentHelper {
             prepareDatePicker(mRelease.date);
         }
 
+        updatePurchased(editor.purchased.isChecked());
+
         // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
         preview.title.setText(mComics.comics.name);
         preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
@@ -247,6 +242,18 @@ public class ReleaseEditFragmentHelper {
         }
 
         preview.menu.setVisibility(View.INVISIBLE);
+    }
+
+    private void updatePurchased(boolean isChecked) {
+        if (isChecked) {
+            preview.purchased.setVisibility(View.VISIBLE);
+            preview.mainCard.setElevation(0);
+            preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemPurchased));
+        } else {
+            preview.purchased.setVisibility(View.INVISIBLE);
+            preview.mainCard.setElevation(preview.mainCardElevationPx);
+            preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemNotPurchased));
+        }
     }
 
     private void prepareDatePicker(String date) {
