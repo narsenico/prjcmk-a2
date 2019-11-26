@@ -102,6 +102,10 @@ public class ComicsViewModel extends AndroidViewModel {
         return mRepository.getAuthors();
     }
 
+    public LiveData<List<String>> getComicsName() {
+        return mRepository.getComicsName();
+    }
+
     public void insert(Comics comics) {
         mRepository.insert(comics);
     }

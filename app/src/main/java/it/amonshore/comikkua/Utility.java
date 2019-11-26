@@ -7,6 +7,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -211,5 +215,19 @@ public class Utility {
      */
     public static File getExternalFile(String folderType, String fileName) {
         return new File(Environment.getExternalStoragePublicDirectory(folderType), fileName);
+    }
+
+    @NonNull
+    @SuppressWarnings("unchecked")
+    public static <T extends EditText> T requireTextInputLayoutEditText(@NonNull View parent, @IdRes int textInputLayoutId) {
+        final TextInputLayout til = parent.findViewById(textInputLayoutId);
+        if (til == null) {
+            throw new IllegalStateException("ID does not reference a View inside this View");
+        }
+        final EditText editText = til.getEditText();
+        if (editText == null) {
+            throw new IllegalStateException("EditText null inside TextInputLayout");
+        }
+        return (T) editText;
     }
 }

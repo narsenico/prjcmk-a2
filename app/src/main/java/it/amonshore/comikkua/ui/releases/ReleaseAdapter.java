@@ -55,6 +55,7 @@ import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 import it.amonshore.comikkua.ui.GlideHelper;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
+
     private SelectionTracker<Long> mSelectionTracker;
     private ReleaseViewHolderCallback mReleaseViewHolderCallback;
     private boolean mUseLite;

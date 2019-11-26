@@ -50,6 +50,10 @@ public class ComicsRepository {
         return mComicsDao.getAuthors();
     }
 
+    LiveData<List<String>> getComicsName() {
+        return mComicsDao.getComicsName();
+    }
+
     public void insert(Comics comics) {
         new InsertAsyncTask(mComicsDao).execute(comics);
     }

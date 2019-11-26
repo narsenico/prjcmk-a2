@@ -144,6 +144,10 @@ public class ReleasesFragment extends Fragment {
                             case R.id.gotoComics:
                                 openComicsDetail(view, release);
                                 break;
+                            case R.id.deleteRelease:
+                                // TODO: considerare le multi release
+                                mReleaseViewModel.delete(release.release.id);
+                                break;
                             default:
                                 // TODO: considerare le multi release
                                 LogHelper.d("Menu %s selected on release %s #%d",

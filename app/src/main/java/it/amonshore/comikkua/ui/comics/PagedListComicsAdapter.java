@@ -38,6 +38,7 @@ import it.amonshore.comikkua.ui.GlideHelper;
 public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
+    private ComicsViewHolderCallback mComicsViewHolderCallback;
     private RequestManager mRequestManager;
 
     private PagedListComicsAdapter() {
@@ -57,7 +58,7 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
     @NonNull
     @Override
     public ComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return ComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+        return ComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mComicsViewHolderCallback);
     }
 
     @Override
@@ -79,18 +80,32 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
         void onSelectionChanged(@Nullable Iterator<Long> keys, int size);
     }
 
+    public interface ComicsCallback {
+
+        void onComicsClick(@NonNull ComicsWithReleases comics);
+
+        void onNewRelease(@NonNull ComicsWithReleases comics);
+
+    }
+
     static class Builder {
         private final RecyclerView mRecyclerView;
-        private OnItemActivatedListener<Long> mOnItemActivatedListener;
+//        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         private RequestManager mRequestManager;
+        private ComicsCallback comicsCallback;
 
         Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
 
-        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
-            mOnItemActivatedListener = listener;
+//        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
+//            mOnItemActivatedListener = listener;
+//            return this;
+//        }
+
+        Builder withComcisCallback(@NonNull ComicsCallback callback) {
+            comicsCallback = callback;
             return this;
         }
 
@@ -106,6 +121,27 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
 
         PagedListComicsAdapter build() {
             final PagedListComicsAdapter adapter = new PagedListComicsAdapter();
+            adapter.mComicsViewHolderCallback = new ComicsViewHolderCallback() {
+                @Override
+                void onComicsClick(long comicsId, int position) {
+                    if (comicsCallback != null) {
+                        final ComicsWithReleases comics = adapter.getItem(position);
+                        if (comics != null) {
+                            comicsCallback.onComicsClick(comics);
+                        }
+                    }
+                }
+
+                @Override
+                void onNewRelease(long comicsId, int position) {
+                    if (comicsCallback != null) {
+                        final ComicsWithReleases comics = adapter.getItem(position);
+                        if (comics != null) {
+                            comicsCallback.onNewRelease(comics);
+                        }
+                    }
+                }
+            };
             // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
@@ -117,9 +153,9 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                     new ComicsItemDetailsLookup(mRecyclerView),
                     StorageStrategy.createLongStorage());
 
-            if (mOnItemActivatedListener != null) {
-                builder.withOnItemActivatedListener(mOnItemActivatedListener);
-            }
+//            if (mOnItemActivatedListener != null) {
+//                builder.withOnItemActivatedListener(mOnItemActivatedListener);
+//            }
 
             adapter.mSelectionTracker = builder.build();
 

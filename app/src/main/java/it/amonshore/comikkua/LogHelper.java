@@ -28,6 +28,10 @@ public class LogHelper {
         Log.w(mTag, String.format(message, args));
     }
 
+    public static void e(String message) {
+        Log.e(mTag, message);
+    }
+
     public static void e(String message, Exception error) {
         Log.e(mTag, message, error);
     }
@@ -35,4 +39,9 @@ public class LogHelper {
     public static void e(Exception error, String message, Object... args) {
         Log.e(mTag, String.format(message, args), error);
     }
+
+    public static void e(String message, Object... args) {
+        Log.e(mTag, String.format(message, args));
+    }
+
 }

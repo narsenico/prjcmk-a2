@@ -14,6 +14,7 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
+import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
@@ -25,9 +26,10 @@ import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mInitial, mName, mPublisher, mAuthors, mNotes,
             mLast, mNext, mMissing;
+    private final View mNewRelease;
     private long mId;
 
-    private ComicsViewHolder(View itemView) {
+    private ComicsViewHolder(View itemView, final ComicsViewHolderCallback callback) {
         super(itemView);
         mInitial = itemView.findViewById(R.id.txt_comics_initial);
         mName = itemView.findViewById(R.id.txt_comics_name);
@@ -37,6 +39,22 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mLast = itemView.findViewById(R.id.txt_comics_release_last);
         mNext = itemView.findViewById(R.id.txt_comics_release_next);
         mMissing = itemView.findViewById(R.id.txt_comics_release_missing);
+        mNewRelease = itemView.findViewById(R.id.img_new_release);
+
+        if (callback != null) {
+            itemView.setOnClickListener(v -> {
+                callback.onComicsClick(mId, getAdapterPosition());
+            });
+
+            mNewRelease.setVisibility(View.VISIBLE);
+            mNewRelease.setOnClickListener(v -> {
+                callback.onNewRelease(mId, getAdapterPosition());
+            });
+        } else {
+            itemView.setOnClickListener(null);
+            mNewRelease.setVisibility(View.INVISIBLE);
+            mNewRelease.setOnClickListener(null);
+        }
     }
 
     @Override
@@ -172,8 +190,8 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         }
     }
 
-    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
-        return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false));
+    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ComicsViewHolderCallback callback) {
+        return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false), callback);
     }
 
 }

@@ -38,6 +38,9 @@
         <action
             android:id="@+id/action_dest_comicsFragment_to_comicsEditFragment"
             app:destination="@id/comicsEditFragment" />
+        <action
+            android:id="@+id/action_dest_comicFragment_to_releaseEditFragment"
+            app:destination="@id/releaseEditFragment" />
     </fragment>
     <fragment
         android:id="@+id/comicsDetailFragment"

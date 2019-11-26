@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="@dimen/item_radius_double"
+        app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="true">
 
@@ -48,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_margin_default"
                 android:layout_marginEnd="0dp"
-                android:background="@drawable/background_release_purchased"
+                android:background="@drawable/background_clip_right"
                 android:paddingStart="12dp"
                 android:paddingTop="4dp"
                 android:paddingEnd="8dp"
@@ -62,21 +63,25 @@
                 android:id="@+id/img_release_ordered"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginEnd="0dp"
                 android:layout_marginBottom="@dimen/item_margin_default"
+                android:background="@drawable/background_clip_right"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/img_release_menu"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_ordered"
-                app:tint="@color/colorItemForeground" />
+                app:tint="@color/colorItemBackgroundAlt" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/img_release_menu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/item_margin_default"
                 android:layout_marginBottom="@dimen/item_margin_default"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/img_release_ordered"
                 app:srcCompat="@drawable/ic_menu_dots"
                 app:tint="@color/colorItemForeground" />
 

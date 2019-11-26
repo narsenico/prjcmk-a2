@@ -6,4 +6,8 @@
         android:id="@+id/gotoComics"
         android:title="@string/menu_goto_comics" />
 
+    <item
+        android:id="@+id/deleteRelease"
+        android:title="@string/menu_delete" />
+
 </menu>

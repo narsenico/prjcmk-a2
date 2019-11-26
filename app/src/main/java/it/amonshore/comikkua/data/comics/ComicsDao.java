@@ -76,4 +76,7 @@ public interface ComicsDao {
 
     @Query("SELECT distinct(authors) FROM tComics WHERE authors IS NOT NULL AND authors <> '' ORDER BY authors")
     LiveData<List<String>> getAuthors();
+
+    @Query("SELECT distinct(name) FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    LiveData<List<String>> getComicsName();
 }

@@ -35,6 +35,7 @@ import it.amonshore.comikkua.ModifiableBoolean;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.BackupImporter;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
@@ -106,20 +107,24 @@ public class ComicsFragment extends Fragment {
                         }
                     }
                 })
-                .withOnItemActivatedListener((item, e) -> {
-                    final View sharedView = mRecyclerView.findChildViewUnder(e.getX(), e.getY());
-                    // lo stesso nome della transizione verrà assegnato alla view di arrivo
-                    //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
-                    final String txName = "comics_tx_" + item.getSelectionKey();
-                    sharedView.setTransitionName(txName);
+                .withComcisCallback(new PagedListComicsAdapter.ComicsCallback() {
+                    @Override
+                    public void onComicsClick(@NonNull ComicsWithReleases comics) {
+                        final NavDirections directions = ComicsFragmentDirections
+                                .actionDestComicsToComicsDetailFragment()
+                                .setComicsId(comics.comics.id);
 
-                    final NavDirections directions = ComicsFragmentDirections
-                            .actionDestComicsToComicsDetailFragment()
-                            .setComicsId(item.getSelectionKey());
+                        Navigation.findNavController(requireView()).navigate(directions);
+                    }
 
-                    Navigation.findNavController(getView()).navigate(directions);
+                    @Override
+                    public void onNewRelease(@NonNull ComicsWithReleases comics) {
+                        final NavDirections directions = ComicsFragmentDirections
+                                .actionDestComicFragmentToReleaseEditFragment()
+                                .setComicsId(comics.comics.id);
 
-                    return false;
+                        Navigation.findNavController(requireView()).navigate(directions);
+                    }
                 })
                 .withGlide(Glide.with(this))
                 .build();

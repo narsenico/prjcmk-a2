@@ -153,6 +153,10 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.delete(Utility.toArray(ids));
     }
 
+    public void delete(Long... ids) {
+        mRepository.delete(ids);
+    }
+
     public int deleteByNumberSync(long comicsId, int... number) {
         return mRepository.deleteByNumberSync(comicsId, number);
     }

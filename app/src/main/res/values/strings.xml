@@ -4,6 +4,7 @@
 
     <string name="menu_settings">Settings</string>
     <string name="menu_releases">Releases</string>
+    <string name="menu_release_wizard">Wizard</string>
     <string name="menu_comics">Comics</string>
     <string name="menu_comics_detail">Comics detail</string>
     <string name="menu_comics_edit">Edit comics</string>
@@ -31,6 +32,7 @@
     <string name="title_comics_edit">Edit comics</string>
     <string name="title_release_edit">Edit release</string>
     <string name="title_selected">Selected %d</string>
+    <string name="title_release_wizard">Wizard</string>
 
     <string name="header_lost">Lost</string>
     <string name="header_current_period">This week</string>
@@ -56,6 +58,8 @@
     <string name="release_purchased">Purchased</string>
     <string name="release_ordered">Ordered</string>
     <string name="release_notes">Notes</string>
+
+    <string name="wizard_add_release">Add release</string>
 
     <string-array name="comics_periodicity_keys">
         <item></item>
