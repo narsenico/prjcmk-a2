@@ -87,6 +87,9 @@ public class ComicsEditFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        final ComicsEditFragmentArgs args = ComicsEditFragmentArgs.fromBundle(requireArguments());
+        mListener.onSubtitleChanged(args.getSubtitle());
+
         // recupero il ViewModel per l'accesso ai dati
         mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
@@ -98,7 +101,7 @@ public class ComicsEditFragment extends Fragment {
                 Glide.with(this));
 
         // id del comics da editra, può essere NEW_COMICS_ID per la creazione di un nuovo comics
-        mComicsId = ComicsEditFragmentArgs.fromBundle(getArguments()).getComicsId();
+        mComicsId = args.getComicsId();
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare

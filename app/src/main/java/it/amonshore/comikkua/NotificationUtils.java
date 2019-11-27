@@ -78,12 +78,12 @@ public final class NotificationUtils {
         LogHelper.d("setupNotificationWork enabled=" + enabled);
 
         if (enabled) {
-            if (BuildConfig.DEBUG) {
-                final OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(ReleaseNotificationWorker.class)
-                        .build();
-
-                workManager.enqueue(work);
-            } else {
+//            if (BuildConfig.DEBUG) {
+//                final OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(ReleaseNotificationWorker.class)
+//                        .build();
+//
+//                workManager.enqueue(work);
+//            } else {
                 // calcolo il delay al prossimo 08:00AM
                 final Calendar now = Calendar.getInstance(Locale.getDefault());
                 final Calendar morning = Calendar.getInstance(Locale.getDefault());
@@ -104,7 +104,7 @@ public final class NotificationUtils {
                 workManager.enqueueUniquePeriodicWork(NOTIFICATION_WORK_NAME,
                         ExistingPeriodicWorkPolicy.KEEP, // mantengo l'eventuale work già schedulato con lo stesso nome
                         work);
-            }
+//            }
         } else {
             workManager.cancelUniqueWork(NOTIFICATION_WORK_NAME);
         }

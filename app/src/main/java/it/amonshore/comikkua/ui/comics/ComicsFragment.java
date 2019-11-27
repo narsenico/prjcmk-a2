@@ -2,6 +2,17 @@ package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.bumptech.glide.Glide;
+
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,26 +25,8 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.os.Parcelable;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.bumptech.glide.Glide;
-
-import org.w3c.dom.Text;
-
-import java.util.Objects;
-
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.ModifiableBoolean;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.BackupImporter;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
@@ -73,14 +66,13 @@ public class ComicsFragment extends Fragment {
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_comics_selected) {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.deleteComics:
-                        final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
-                        if (tracker.hasSelection()) {
-                            mComicsViewModel.delete(tracker.getSelection());
-                        }
-                        tracker.clearSelection();
-                        return true;
+                if (item.getItemId() == R.id.deleteComics) {
+                    final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
+                    if (tracker.hasSelection()) {
+                        mComicsViewModel.delete(tracker.getSelection());
+                    }
+                    tracker.clearSelection();
+                    return true;
                 }
                 return false;
             }
@@ -121,7 +113,8 @@ public class ComicsFragment extends Fragment {
                     public void onNewRelease(@NonNull ComicsWithReleases comics) {
                         final NavDirections directions = ComicsFragmentDirections
                                 .actionDestComicFragmentToReleaseEditFragment()
-                                .setComicsId(comics.comics.id);
+                                .setComicsId(comics.comics.id)
+                                .setSubtitle(R.string.title_release_create);
 
                         Navigation.findNavController(requireView()).navigate(directions);
                     }
@@ -248,20 +241,16 @@ public class ComicsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.createNewComics:
-                final NavDirections directions = ComicsFragmentDirections
-                        .actionDestComicsFragmentToComicsEditFragment()
-                        .setComicsId(NEW_COMICS_ID);
+        if (item.getItemId() == R.id.createNewComics) {
+            final NavDirections directions = ComicsFragmentDirections
+                    .actionDestComicsFragmentToComicsEditFragment()
+                    .setComicsId(NEW_COMICS_ID)
+                    .setSubtitle(R.string.title_comics_create);
 
-                Navigation.findNavController(getView()).navigate(directions);
+            Navigation.findNavController(requireView()).navigate(directions);
 
-                return true;
-            case R.id.deleteComics:
-                // TODO: chiedere conferma prima di elminare tutto
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

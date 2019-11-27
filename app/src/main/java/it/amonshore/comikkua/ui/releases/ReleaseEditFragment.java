@@ -57,6 +57,9 @@ public class ReleaseEditFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        final ReleaseEditFragmentArgs args = ReleaseEditFragmentArgs.fromBundle(requireArguments());
+        mListener.onSubtitleChanged(args.getSubtitle());
+
         // recupero il ViewModel per l'accesso ai dati
         mComicsViewModel = new ViewModelProvider(requireActivity())
                 .get(ComicsViewModel.class);
@@ -72,9 +75,9 @@ public class ReleaseEditFragment extends Fragment {
 
         final Bundle arguments = requireArguments();
         // id del comics, deve esistere sempre
-        mComicsId = ReleaseEditFragmentArgs.fromBundle(arguments).getComicsId();
+        mComicsId = args.getComicsId();
         // id della release da editare, può essere NEW_RELEASE_ID per la creazione di una nuova release
-        mReleaseId = ReleaseEditFragmentArgs.fromBundle(arguments).getReleaseId();
+        mReleaseId = args.getReleaseId();
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare

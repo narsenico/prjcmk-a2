@@ -5,6 +5,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -90,6 +91,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onSubtitleChanged(int resId) {
+        getSupportActionBar().setSubtitle(resId);
+    }
+
+    @Override
     public void onFragmentRequestActionMode(@Nullable ActionMode.Callback callback, String name, CharSequence title) {
         if (mActionMode != null && (!name.equals(mActionMode.getTag()) || callback == null)) {
             mActionMode.finish();
@@ -133,7 +139,8 @@ public class MainActivity extends AppCompatActivity implements
                                      @Nullable Bundle arguments) {
         LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.getLabel());
         // imposto il sottotitolo che viene passato come argomento della destinazione
-        getSupportActionBar().setSubtitle(extractSubtitle(destination));
+        // i singoli fragment possono sovrascrivere il default chiamando direttamente onSubtitleChanged
+        onSubtitleChanged(extractSubtitle(destination));
         // chiudo sempre la tasteira eventualmente aperta
         Utility.hideKeyboard(getWindow().getDecorView());
         // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment
@@ -147,17 +154,18 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private String extractSubtitle(@NonNull NavDestination destination) {
+    @StringRes
+    private int extractSubtitle(@NonNull NavDestination destination) {
         // visto che non posso impostare il sottotitolo direttamente in nav_graph.xml
         //  lo passo come argomento, di tpo reference (string)
         final NavArgument arg = destination.getArguments().get("subtitle");
         if (arg != null) {
             final Object value = arg.getDefaultValue();
             if (value != null) {
-                return getString((Integer) value);
+                return (Integer) value;
             }
         }
-        return null;
+        return 0;
     }
 
     private boolean canHideNavigation(@NonNull NavDestination destination) {

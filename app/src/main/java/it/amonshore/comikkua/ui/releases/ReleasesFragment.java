@@ -2,19 +2,6 @@ package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.view.ActionMode;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,11 +13,21 @@ import com.bumptech.glide.Glide;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ActionMode;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.MultiRelease;
-import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
@@ -71,14 +68,14 @@ public class ReleasesFragment extends Fragment {
                 switch (item.getItemId()) {
                     case R.id.purchaseReleases:
                         if (tracker.hasSelection()) {
-                            // TODO: considerare le multi release
+                            // le multi non vengono passate
                             mReleaseViewModel.togglePurchased(tracker.getSelection());
                         }
                         // mantengo la selezione
                         return true;
                     case R.id.orderReleases:
                         if (tracker.hasSelection()) {
-                            // TODO: considerare le multi release
+                            // le multi non vengono passate
                             mReleaseViewModel.toggleOrdered(tracker.getSelection());
                         }
                         // mantengo la selezione
@@ -128,13 +125,13 @@ public class ReleasesFragment extends Fragment {
 
                     @Override
                     public void onReleaseTogglePurchase(@NonNull ComicsRelease release) {
-                        // TODO: considerare le multi release
+                        // le multi non vengono passate qua
                         mReleaseViewModel.updatePurchased(!release.release.purchased, release.release.id);
                     }
 
                     @Override
                     public void onReleaseToggleOrder(@NonNull ComicsRelease release) {
-                        // TODO: considerare le multi release
+                        // le multi non vengono passate qua
                         mReleaseViewModel.updateOrdered(!release.release.ordered, release.release.id);
                     }
 
@@ -145,13 +142,7 @@ public class ReleasesFragment extends Fragment {
                                 openComicsDetail(view, release);
                                 break;
                             case R.id.deleteRelease:
-                                // TODO: considerare le multi release
-                                mReleaseViewModel.delete(release.release.id);
-                                break;
-                            default:
-                                // TODO: considerare le multi release
-                                LogHelper.d("Menu %s selected on release %s #%d",
-                                        item.getTitle(), release.comics.name, release.release.number);
+                                deleteRelease(release);
                                 break;
                         }
                     }
@@ -244,13 +235,7 @@ public class ReleasesFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.deleteReleases:
-                // TODO: implementare cancellazione di tutte le release, chiedere conferma all'utente
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {
@@ -268,5 +253,21 @@ public class ReleasesFragment extends Fragment {
                 .setReleaseId(release.release.id);
 
         Navigation.findNavController(view).navigate(directions);
+    }
+
+    private void deleteRelease(@NonNull ComicsRelease release) {
+        // nel caso di multi chideo conferma
+        if (release instanceof MultiRelease) {
+            final MultiRelease multiRelease = (MultiRelease) release;
+            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+                    .setTitle(release.comics.name)
+                    .setMessage(getString(R.string.confirm_delete_multi_release, multiRelease.size()))
+                    .setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            mReleaseViewModel.delete(multiRelease.getAllReleaseId()))
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+        } else {
+            mReleaseViewModel.delete(release.release.id);
+        }
     }
 }

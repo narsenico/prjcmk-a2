@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.data.release;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MultiRelease extends ComicsRelease {
@@ -15,5 +16,18 @@ public class MultiRelease extends ComicsRelease {
      * (esclusa da questo elenco).
      */
     public List<Release> otherReleases;
+
+    public int size() {
+        return this.otherReleases.size() + 1;
+    }
+
+    public Long[] getAllReleaseId() {
+        final Long[] ids = new Long[this.otherReleases.size() + 1];
+        ids[0] = this.release.id;
+        for (int ii = 0; ii < this.otherReleases.size(); ii++) {
+            ids[ii + 1] = this.otherReleases.get(ii).id;
+        }
+        return ids;
+    }
 
 }

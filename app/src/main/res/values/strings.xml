@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Comikku_v2</string>
+    <string name="app_name" translatable="false">Comikku_v2</string>
 
     <string name="menu_settings">Settings</string>
     <string name="menu_releases">Releases</string>
-    <string name="menu_release_wizard">Wizard</string>
     <string name="menu_comics">Comics</string>
     <string name="menu_comics_detail">Comics detail</string>
     <string name="menu_comics_edit">Edit comics</string>
@@ -21,6 +20,7 @@
     <string name="menu_goto_comics">Go to comics</string>
     <string name="menu_release_edit">Edit release</string>
     <string name="menu_import_backup">Import backup</string>
+    <string name="menu_release_menu">Release menu</string>
 
     <string name="swipe_purchase">Toggle purchase</string>
     <string name="swipe_order">Toggle order</string>
@@ -30,9 +30,10 @@
     <string name="title_comics">Comics list</string>
     <string name="title_comics_detail">Comics detail</string>
     <string name="title_comics_edit">Edit comics</string>
+    <string name="title_comics_create">Create comics</string>
     <string name="title_release_edit">Edit release</string>
+    <string name="title_release_create">Create release</string>
     <string name="title_selected">Selected %d</string>
-    <string name="title_release_wizard">Wizard</string>
 
     <string name="header_lost">Lost</string>
     <string name="header_current_period">This week</string>
@@ -41,7 +42,7 @@
     <string name="header_missing">Missing</string>
     <string name="header_not_purchased">Not purchased</string>
     <string name="header_purchased">Purchased</string>
-    <string name="header_count">%d/%d</string>
+    <string name="header_count" translatable="false">%d/%d</string>
 
     <string name="comics_name">Name</string>
     <string name="comics_publisher">Publisher</string>
@@ -59,10 +60,8 @@
     <string name="release_ordered">Ordered</string>
     <string name="release_notes">Notes</string>
 
-    <string name="wizard_add_release">Add release</string>
-
     <string-array name="comics_periodicity_keys">
-        <item></item>
+        <item />
         <item>W1</item>
         <item>W2</item>
         <item>M1</item>
@@ -120,4 +119,5 @@
     <string name="permission_import_backup_read_title">Read external storage permission</string>
     <string name="permission_import_backup_read_explanation">Read external storage permission is required to import backup data.</string>
 
+    <string name="confirm_delete_multi_release">Remove all %d releases?</string>
 </resources>

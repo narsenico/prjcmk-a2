@@ -17,7 +17,7 @@
     <color name="colorItemForeground">#fafafa</color>
     <color name="colorItemSelected">#B86F6C</color>
 
-    <color name="colorItemTitle">#4F4B45</color>
+    <color name="colorItemTitle">#69635B</color>
     <color name="colorItemPurchased">#d9d5c8</color>
     <color name="colorItemNotPurchased">#B5AE9F</color>
 

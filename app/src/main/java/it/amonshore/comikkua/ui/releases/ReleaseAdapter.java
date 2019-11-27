@@ -1,7 +1,6 @@
 package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -17,10 +16,6 @@ import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.util.FixedPreloadSizeProvider;
 
 import java.util.Collections;
@@ -44,12 +39,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
-import it.amonshore.comikkua.data.release.MultiRelease;
-import it.amonshore.comikkua.data.release.NotPurchasedRelease;
-import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 import it.amonshore.comikkua.ui.GlideHelper;
@@ -113,11 +104,6 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         }
     }
 
-    @Nullable
-    public IReleaseViewModelItem getItemAt(int position) {
-        return getItem(position);
-    }
-
     public SelectionTracker<Long> getSelectionTracker() {
         return mSelectionTracker;
     }
@@ -179,7 +165,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 @Override
                 void onReleaseClick(long comicsId, long id, int position) {
                     if (releaseCallback != null) {
-                        final IReleaseViewModelItem item = adapter.getItemAt(position);
+                        final IReleaseViewModelItem item = adapter.getItem(position);
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
                             releaseCallback.onReleaseClick(release);
@@ -190,7 +176,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 @Override
                 void onReleaseMenuSelected(@NonNull MenuItem menuItem, long comicsId, long id, int position) {
                     if (releaseCallback != null) {
-                        final IReleaseViewModelItem item = adapter.getItemAt(position);
+                        final IReleaseViewModelItem item = adapter.getItem(position);
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
                             releaseCallback.onReleaseMenuItemSelected(menuItem, release);
@@ -202,25 +188,28 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
 
+            final CustomItemKeyProvider itemKeyProvider = new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED);
             final SelectionTracker.Builder<Long> builder = new SelectionTracker.Builder<>(
-                    "comics-selection",
+                    "release-selection",
                     mRecyclerView,
-                    new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
+                    itemKeyProvider,
                     new ReleaseItemDetailsLookup(mRecyclerView),
                     StorageStrategy.createLongStorage())
                     .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
                         @Override
                         public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
-                            // escludo dalla selezione gli header
-                            return key < ReleaseHeader.BASE_ID;
+                            // escludo dalla selezione gli header e le multi
+                            final int pos = itemKeyProvider.getPosition(key);
+                            if (pos != RecyclerView.NO_POSITION) {
+                                final IReleaseViewModelItem item = adapter.getItem(pos);
+                                return (item != null && item.getItemType() == ComicsRelease.ITEM_TYPE);
+                            } else {
+                                return key < ReleaseHeader.BASE_ID;
+                            }
                         }
 
                         @Override
                         public boolean canSetStateAtPosition(int position, boolean nextState) {
-                            // TODO: non viene mai chiamato! non riesco ad escludere le multi release
-//                            LogHelper.d("canSetStateAtPosition position=%s nextState=%s", position, nextState);
-//                            final IReleaseViewModelItem item = adapter.getItemAt(position);
-//                            return item != null && item.getItemType() == ComicsRelease.ITEM_TYPE;
                             return true;
                         }
 
@@ -278,7 +267,8 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                         // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
 //                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
                         if (adapter.mSelectionTracker.hasSelection()) return 0;
-                        final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
+                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getAdapterPosition());
+                        // escludo header e multi
                         if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
                         return super.getSwipeDirs(recyclerView, viewHolder);
                     }
@@ -286,7 +276,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     @Override
                     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //                    LogHelper.d("Release swiped direction=%s", direction);
-                        final IReleaseViewModelItem item = adapter.getItemAt(viewHolder.getAdapterPosition());
+                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getAdapterPosition());
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
                             if (direction == ItemTouchHelper.RIGHT) {
@@ -499,7 +489,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         @NonNull
         @Override
         public List<IReleaseViewModelItem> getPreloadItems(int position) {
-            final IReleaseViewModelItem item = mAdapter.getItemAt(position);
+            final IReleaseViewModelItem item = mAdapter.getItem(position);
             if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) {
                 return Collections.emptyList();
             } else {

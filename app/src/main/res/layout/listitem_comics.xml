@@ -66,13 +66,13 @@
                     android:id="@+id/txt_comics_authors"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/item_margin_default"
+                    android:layout_marginEnd="0dp"
                     android:ellipsize="end"
                     android:lines="1"
                     android:maxLines="1"
                     android:textColor="@color/colorItemForeground"
                     android:textSize="@dimen/text_size_medium"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/img_new_release"
                     app:layout_constraintStart_toStartOf="@id/txt_comics_publisher"
                     app:layout_constraintTop_toBottomOf="@id/txt_comics_publisher"
                     tools:text="Authors" />
@@ -96,13 +96,16 @@
                     app:layout_constraintTop_toBottomOf="@id/txt_comics_authors"
                     tools:text="Notes notes notes" />
 
-                <androidx.appcompat.widget.AppCompatImageView
+                <ImageButton
                     android:id="@+id/img_new_release"
-                    android:layout_width="wrap_content"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/item_margin_default"
                     android:layout_marginBottom="@dimen/item_margin_default"
+                    android:contentDescription="@string/title_release_create"
                     android:visibility="invisible"
+                    app:icon="@drawable/ic_new_release"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:srcCompat="@drawable/ic_new_release"

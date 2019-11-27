@@ -279,7 +279,8 @@ public class ComicsDetailFragment extends Fragment {
                 Navigation.findNavController(requireView())
                         .navigate(ComicsDetailFragmentDirections
                                 .actionDestComicsDetailFragmentToReleaseEditFragment()
-                                .setComicsId(mComicsId));
+                                .setComicsId(mComicsId)
+                                .setSubtitle(R.string.title_release_create));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

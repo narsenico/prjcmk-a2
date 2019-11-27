@@ -27,7 +27,9 @@
     <string name="title_comics">Lista fumetti</string>
     <string name="title_comics_detail">Dettaglio fumetto</string>
     <string name="title_comics_edit">Modifica fumetto</string>
+    <string name="title_comics_create">Nuovo fumetto</string>
     <string name="title_release_edit">Modifica uscita</string>
+    <string name="title_release_create">Nuova uscita</string>
 
     <string name="header_lost">Persi</string>
     <string name="header_current_period">Questa settimana</string>
@@ -69,4 +71,14 @@
     <string name="release_next_dated">Prossimo: #%d (%s)</string>
     <string name="release_missing">Persi: %d</string>
 
+    <string name="comics_name_empty_error">Il nome non può essere vuoto</string>
+    <string name="comics_name_notunique_error">Nome già usato</string>
+
+    <string name="today">Oggi</string>
+    <string name="tomorrow">Domani</string>
+
+    <string name="today_releases_channel_name">Uscite di oggi</string>
+    <string name="today_releases_channel_description">Uscite</string>
+
+    <string name="confirm_delete_multi_release">Rimuovere tutte le %d uscite?</string>
 </resources>
