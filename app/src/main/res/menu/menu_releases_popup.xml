@@ -7,6 +7,10 @@
         android:title="@string/menu_goto_comics" />
 
     <item
+        android:id="@+id/share"
+        android:title="@string/menu_share" />
+
+    <item
         android:id="@+id/deleteRelease"
         android:title="@string/menu_delete" />
 

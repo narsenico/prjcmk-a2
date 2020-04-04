@@ -2,9 +2,39 @@ package it.amonshore.comikkua.data.release;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.DatabaseView;
 import androidx.room.Embedded;
 import it.amonshore.comikkua.data.comics.Comics;
 
+/**
+ * Vista per le uscite.
+ */
+@DatabaseView(viewName = "vComicsReleases",
+        value = "SELECT " +
+                "tComics.id as cid, " +
+                "tComics.name as cname, " +
+                "tComics.series as cseries, " +
+                "tComics.publisher as cpublisher, " +
+                "tComics.authors as cauthors, " +
+                "tComics.price as cprice, " +
+                "tComics.periodicity as cperiodicity, " +
+                "tComics.reserved as creserved, " +
+                "tComics.notes as cnotes, " +
+                "tComics.image as cimage, " +
+                "tComics.lastUpdate as clastUpdate, " +
+                "tComics.refJsonId as crefJsonId, " +
+                "tReleases.id as rid, " +
+                "tReleases.comicsId as rcomicsId, " +
+                "tReleases.number as rnumber, " +
+                "tReleases.date as rdate, " +
+                "tReleases.price as rprice, " +
+                "tReleases.purchased as rpurchased, " +
+                "tReleases.ordered as rordered, " +
+                "tReleases.notes as rnotes, " +
+                "tReleases.lastUpdate as rlastUpdate " +
+                "FROM tComics INNER JOIN tReleases " +
+                "ON tComics.id = tReleases.comicsId"
+)
 public class ComicsRelease implements IReleaseViewModelItem {
     public final static int ITEM_TYPE = 2;
 

@@ -36,6 +36,10 @@ public class Release {
         return !TextUtils.isEmpty(this.notes);
     }
 
+    public boolean hasDate() {
+        return !TextUtils.isEmpty(this.date);
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this) return true;

@@ -45,6 +45,8 @@ dependencies {
     implementation "androidx.legacy:legacy-support-v4:$rootProject.supportVersion"
     implementation 'com.github.tiper:MaterialSpinner:1.4.0'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+    implementation 'com.android.volley:dc-volley:1.1.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.7.0'
 
     // CoordinatorLayout
     implementation "androidx.coordinatorlayout:coordinatorlayout:$rootProject.coordinatorlayoutVersion"
@@ -95,7 +97,7 @@ dependencies {
 
     // Kotlin
     implementation "androidx.core:core-ktx:1.1.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc02"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc03'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {

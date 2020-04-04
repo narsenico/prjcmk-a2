@@ -1,6 +1,5 @@
 package it.amonshore.comikkua.data.release;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Bundle;
 
@@ -37,11 +36,11 @@ public class ReleaseViewModel extends AndroidViewModel {
                                                         @NonNull @Size(8) String refNextDate,
                                                         @NonNull @Size(8) String refOtherDate,
                                                         long retainStart) {
-        return mRepository.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
+        return mRepository.getComicsReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 
     public LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
-        return mRepository.getAllReleases(comicsId);
+        return mRepository.getComicsReleasesByComicsId(comicsId);
     }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems() {
@@ -99,6 +98,10 @@ public class ReleaseViewModel extends AndroidViewModel {
 
     public LiveData<Release> getRelease(long id) {
         return mRepository.getRelease(id);
+    }
+
+    public LiveData<List<ComicsRelease>> getOneTimeComicsReleases(Iterable<Long> ids) {
+        return mRepository.getOneTimeComicsReleases(Utility.toArray(ids));
     }
 
     public void insert(Release release) {

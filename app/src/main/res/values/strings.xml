@@ -13,6 +13,7 @@
     <string name="menu_comics_remove_image">Remove image</string>
     <string name="menu_releases_save">Save releases</string>
     <string name="menu_delete">Remove</string>
+    <string name="menu_share">Share</string>
     <string name="menu_delete_all">Remove all</string>
     <string name="menu_create">Create new</string>
     <string name="menu_purchase">Purchase</string>
@@ -120,4 +121,8 @@
     <string name="permission_import_backup_read_explanation">Read external storage permission is required to import backup data.</string>
 
     <string name="confirm_delete_multi_release">Remove all %d releases?</string>
+
+    <string name="share_chooser_title">Share</string>
+    <string name="share_release">%s #%d (%s) %s</string>
+    <string name="share_release_nodate">%s #%d %s</string>
 </resources>

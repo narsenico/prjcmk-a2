@@ -8,6 +8,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
 public class ReleaseRepository {
@@ -23,58 +24,69 @@ public class ReleaseRepository {
         return mReleaseDao.getReleases(comicsId);
     }
 
-    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
-                                                 @NonNull @Size(8) String refNextDate,
-                                                 @NonNull @Size(8) String refOtherDate,
-                                                 long retainStart) {
-        return mReleaseDao.getAllReleases(refDate, refNextDate, refOtherDate, retainStart);
+    /**
+     * @param refDate      data di riferimento nel formato yyyyMMdd
+     * @param refNextDate  data di riferimento del periodo successivo nel formato yyyyMMdd
+     * @param refOtherDate data di riferimento per altri periodi nel formato yyyyMMdd
+     * @param retainStart  limite inferiore per lastUpdate in ms
+     * @return elenco ordinato di release
+     */
+    LiveData<List<ComicsRelease>> getComicsReleases(@NonNull @Size(8) String refDate,
+                                                    @NonNull @Size(8) String refNextDate,
+                                                    @NonNull @Size(8) String refOtherDate,
+                                                    long retainStart) {
+        return mReleaseDao.getComicsReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 
-    LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
-        return mReleaseDao.getAllReleases(comicsId);
+    LiveData<List<ComicsRelease>> getComicsReleasesByComicsId(long comicsId) {
+        return mReleaseDao.getComicsReleasesByComicsId(comicsId);
     }
 
-    public LiveData<Release> getRelease(long id) {
+    LiveData<List<ComicsRelease>> getOneTimeComicsReleases(Long... ids) {
+        return LiveEvent.toSingleEvent(mReleaseDao.getComicsReleases(ids));
+    }
+
+    LiveData<Release> getRelease(long id) {
         return mReleaseDao.getRelease(id);
     }
 
-    public void insert (Release release) {
+    void insert(Release release) {
         new InsertAsyncTask(mReleaseDao).execute(release);
     }
 
-    public long insertSync(Release release) {
+    long insertSync(Release release) {
         return mReleaseDao.insert(release);
     }
 
-    public Long[] insertSync(Release... release) {
+    Long[] insertSync(Release... release) {
         return mReleaseDao.insert(release);
     }
 
-    public void update(Release release) {
+    void update(Release release) {
         new UpdateAsyncTask(mReleaseDao).execute(release);
     }
 
-    public void updatePurchased(boolean purchased, long lastUpdate, Long... id) {
+    void updatePurchased(boolean purchased, long lastUpdate, Long... id) {
         new UpdatePurchasedAsyncTask(mReleaseDao, purchased, lastUpdate).execute(id);
     }
 
-    public void togglePurchased(long lastUpdate, Long... id) {
+    void togglePurchased(long lastUpdate, Long... id) {
         new TogglePurchasedAsyncTask(mReleaseDao, lastUpdate).execute(id);
     }
 
-    public void updateOrdered(boolean ordered, long lastUpdate, Long... id) {
+    void updateOrdered(boolean ordered, long lastUpdate, Long... id) {
         new UpdateOrderedAsyncTask(mReleaseDao, ordered, lastUpdate).execute(id);
     }
 
-    public void toggleOrdered(long lastUpdate, Long... id) {
+    void toggleOrdered(long lastUpdate, Long... id) {
         new ToggleOrderedAsyncTask(mReleaseDao, lastUpdate).execute(id);
     }
 
-    public void delete(Long... id) {
+    void delete(Long... id) {
         new DeleteAsyncTask(mReleaseDao).execute(id);
     }
 
-    public int deleteByNumberSync(long comicsId, int... number) {
+    int deleteByNumberSync(long comicsId, int... number) {
         return mReleaseDao.deleteByNumber(comicsId, number);
     }
 

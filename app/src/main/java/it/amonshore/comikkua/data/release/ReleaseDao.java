@@ -86,15 +86,18 @@ public interface ReleaseDao {
             "SELECT " + MissingRelease.TYPE + " as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
             "ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber")
     @Transaction
-    LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
-                                                 @NonNull @Size(8) String refNextDate,
-                                                 @NonNull @Size(8) String refOtherDate,
-                                                 long retainStart);
+    LiveData<List<ComicsRelease>> getComicsReleases(@NonNull @Size(8) String refDate,
+                                                    @NonNull @Size(8) String refNextDate,
+                                                    @NonNull @Size(8) String refOtherDate,
+                                                    long retainStart);
 
     @Query("SELECT " + NotPurchasedRelease.TYPE + " as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId " +
             "UNION " +
             "SELECT " + PurchasedRelease.TYPE + " as type, * FROM vPurchasedReleases WHERE cid = :comicsId " +
             "ORDER BY type, rnumber")
     @Transaction
-    LiveData<List<ComicsRelease>> getAllReleases(long comicsId);
+    LiveData<List<ComicsRelease>> getComicsReleasesByComicsId(long comicsId);
+
+    @Query("SELECT 0 as type, * FROM vComicsReleases WHERE rid in (:ids)")
+    LiveData<List<ComicsRelease>> getComicsReleases(Long... ids);
 }

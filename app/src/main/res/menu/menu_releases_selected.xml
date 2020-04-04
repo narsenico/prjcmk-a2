@@ -20,4 +20,10 @@
         android:title="@string/menu_delete"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/shareReleases"
+        android:icon="@drawable/ic_share"
+        android:title="@string/menu_share"
+        app:showAsAction="never" />
+
 </menu>

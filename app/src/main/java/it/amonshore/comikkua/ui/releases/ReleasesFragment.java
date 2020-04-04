@@ -31,6 +31,7 @@ import it.amonshore.comikkua.data.release.MultiRelease;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import it.amonshore.comikkua.ui.ShareHelper;
 
 
 public class ReleasesFragment extends Fragment {
@@ -86,6 +87,11 @@ public class ReleasesFragment extends Fragment {
                         }
                         tracker.clearSelection();
                         return true;
+                    case R.id.shareReleases:
+                        mReleaseViewModel.getOneTimeComicsReleases(tracker.getSelection()).observe(getViewLifecycleOwner(),
+                                items -> ShareHelper.shareReleases(requireActivity(), items));
+                        // mantengo la selezione
+                        return true;
                 }
                 return false;
             }
@@ -140,6 +146,9 @@ public class ReleasesFragment extends Fragment {
                         switch (item.getItemId()) {
                             case R.id.gotoComics:
                                 openComicsDetail(view, release);
+                                break;
+                            case R.id.share:
+                                ShareHelper.shareRelease(requireActivity(), release);
                                 break;
                             case R.id.deleteRelease:
                                 deleteRelease(release);

@@ -28,6 +28,7 @@ import it.amonshore.comikkua.ui.ColorFilterTransformationEx;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
 import it.amonshore.comikkua.ui.GlideHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import it.amonshore.comikkua.ui.ShareHelper;
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter;
 import jp.wasabeef.glide.transformations.BlurTransformation;
 import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
@@ -120,6 +121,11 @@ public class ComicsDetailFragment extends Fragment {
                             mReleaseViewModel.delete(tracker.getSelection());
                         }
                         tracker.clearSelection();
+                        return true;
+                    case R.id.shareReleases:
+                        mReleaseViewModel.getOneTimeComicsReleases(tracker.getSelection()).observe(getViewLifecycleOwner(),
+                                items -> ShareHelper.shareReleases(requireActivity(), items));
+                        // mantengo la selezione
                         return true;
                 }
                 return false;
