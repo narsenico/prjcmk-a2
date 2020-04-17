@@ -47,11 +47,8 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             ComikkuDatabase.class, "comikku_database")
 //                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
-//                            .addMigrations(MIGRATION_1_2)
-//                            .addMigrations(new FakeMigration(1, 2))
+                            .addMigrations(new FakeMigration(1, 2))
                             .addMigrations(MIGRATION_2_3)
-//                            .addMigrations(new FakeMigration(4, 5))
-//                            .addMigrations(new FakeMigration(5, 6))
                             .addCallback(new DatabaseCallback(context))
                             .build();
                 }
@@ -100,7 +97,6 @@ public abstract class ComikkuDatabase extends RoomDatabase {
             if (BuildConfig.DEBUG) {
 //                new PopulateDbWithTestAsync(INSTANCE).execute();
 //                new ClearDbWithTestAsync(INSTANCE).execute();
-//                new ImportAsyncTask(mContext.getAssets(), INSTANCE).execute("backup.json");
             }
         }
     }
@@ -159,25 +155,6 @@ public abstract class ComikkuDatabase extends RoomDatabase {
             mReleaseDao.deleteAll();
             mComicsDao.deleteAll();
             return null;
-        }
-    }
-
-    private static class ImportAsyncTask extends AsyncTask<String, Void, Integer> {
-
-        private final AssetManager mAssetManager;
-        private final ComicsDao mComicsDao;
-        private final ReleaseDao mReleaseDao;
-
-        ImportAsyncTask(AssetManager assetManager, ComikkuDatabase db) {
-            mAssetManager = assetManager;
-            mComicsDao = db.comicsDao();
-            mReleaseDao = db.releaseDao();
-        }
-
-        @Override
-        protected Integer doInBackground(final String... params) {
-            final BackupImporter importer = new BackupImporter(mComicsDao, mReleaseDao);
-            return importer.importFromAssets(mAssetManager, params[0], true);
         }
     }
 }

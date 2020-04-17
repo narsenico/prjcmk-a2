@@ -127,8 +127,8 @@ public class ComicsViewModel extends AndroidViewModel {
         mRepository.delete(id);
     }
 
-    public void delete(Iterable<Long> ids) {
-        mRepository.delete(Utility.toArray(ids));
+    public void delete(Long... ids) {
+        mRepository.delete(ids);
     }
 
     public void deleteAll() {

@@ -113,7 +113,7 @@ public class ComicsRepository {
         }
     }
 
-    private static class DeleteAsyncTask extends AsyncTask<Long, Void, Void> {
+    private static class DeleteAsyncTask extends AsyncTask<Long, Void, Integer> {
 
         private ComicsDao mAsyncTaskDao;
 
@@ -122,13 +122,12 @@ public class ComicsRepository {
         }
 
         @Override
-        protected Void doInBackground(final Long... params) {
-            mAsyncTaskDao.delete(params);
-            return null;
+        protected Integer doInBackground(final Long... params) {
+            return mAsyncTaskDao.delete(params);
         }
     }
 
-    private static class DeleteAllAsyncTask extends AsyncTask<Void, Void, Void> {
+    private static class DeleteAllAsyncTask extends AsyncTask<Void, Void, Integer> {
 
         private ComicsDao mAsyncTaskDao;
 
@@ -137,9 +136,8 @@ public class ComicsRepository {
         }
 
         @Override
-        protected Void doInBackground(final Void... params) {
-            mAsyncTaskDao.deleteAll();
-            return null;
+        protected Integer doInBackground(final Void... params) {
+            return mAsyncTaskDao.deleteAll();
         }
     }
 }

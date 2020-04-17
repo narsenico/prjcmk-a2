@@ -7,20 +7,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
-import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
@@ -107,7 +105,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
             mInitial.setText("");
             requestManager
                     .load(Uri.parse(comics.comics.image))
-                    .apply(GlideHelper.getCircleOptions())
+                    .apply(ImageHelper.getGlideCircleOptions())
                     .into(new DrawableTextViewTarget(mInitial));
         } else {
             mInitial.setText(comics.comics.getInitial());

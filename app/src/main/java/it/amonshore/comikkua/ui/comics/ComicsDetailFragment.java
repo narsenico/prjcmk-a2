@@ -1,8 +1,6 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -24,14 +22,11 @@ import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
-import it.amonshore.comikkua.ui.ColorFilterTransformationEx;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter;
-import jp.wasabeef.glide.transformations.BlurTransformation;
-import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
 
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
@@ -40,13 +35,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.annotation.GlideOption;
-import com.bumptech.glide.load.MultiTransformation;
-import com.bumptech.glide.request.RequestOptions;
 
 
 public class ComicsDetailFragment extends Fragment {
@@ -195,7 +186,7 @@ public class ComicsDetailFragment extends Fragment {
                     mInitial.setText("");
                     Glide.with(this)
                             .load(Uri.parse(comics.comics.image))
-                            .apply(GlideHelper.getCircleOptions())
+                            .apply(ImageHelper.getGlideCircleOptions())
                             .into(new DrawableTextViewTarget(mInitial));
                 } else {
                     mInitial.setText(comics.comics.getInitial());

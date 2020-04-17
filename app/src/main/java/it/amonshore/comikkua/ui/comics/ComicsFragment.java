@@ -27,9 +27,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
+import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
@@ -69,7 +71,9 @@ public class ComicsFragment extends Fragment {
                 if (item.getItemId() == R.id.deleteComics) {
                     final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
                     if (tracker.hasSelection()) {
-                        mComicsViewModel.delete(tracker.getSelection());
+                        final Long[] ids = Utility.toArray(tracker.getSelection());
+                        mComicsViewModel.delete(ids);
+                        ImageHelper.deleteImageFiles(context, ids);
                     }
                     tracker.clearSelection();
                     return true;

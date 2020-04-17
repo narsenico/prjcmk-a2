@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -12,12 +11,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.ViewGroup;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
@@ -30,10 +26,8 @@ import java.util.List;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
-import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 
 public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
@@ -188,7 +182,7 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
                 final FixedPreloadSizeProvider<ComicsWithReleases> sizeProvider =
-                        new FixedPreloadSizeProvider<>(GlideHelper.getDefaultSize(), GlideHelper.getDefaultSize());
+                        new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
                 final ComicsPreloadModelProvider modelProvider =
                         new ComicsPreloadModelProvider(adapter, mRequestManager);
                 final RecyclerViewPreloader<ComicsWithReleases> preloader =
@@ -246,8 +240,8 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             if (item.comics.hasImage()) {
                 return mRequestManager
                         .load(Uri.parse(item.comics.image))
-                        .listener(GlideHelper.drawableRequestListener)
-                        .apply(GlideHelper.getCircleOptions());
+                        .listener(ImageHelper.drawableRequestListener)
+                        .apply(ImageHelper.getGlideCircleOptions());
 
             } else {
                 return null;

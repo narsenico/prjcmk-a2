@@ -27,14 +27,14 @@ public interface ComicsDao {
     int update(Comics... comics);
 
     @Query("DELETE FROM tComics")
-    void deleteAll();
+    int deleteAll();
 
     @Query("DELETE FROM tComics WHERE id = :id")
-    void delete(long id);
+    int delete(long id);
 
     @Query("DELETE FROM tComics WHERE id in (:id)")
     @Transaction
-    void delete(Long... id);
+    int delete(Long... id);
 
     @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     LiveData<List<Comics>> getComics();
@@ -50,6 +50,10 @@ public interface ComicsDao {
 
     @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     List<Comics> getRawComics();
+
+    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Transaction
+    List<ComicsWithReleases> getRawComicsWithReleases();
 
     @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
     @Transaction

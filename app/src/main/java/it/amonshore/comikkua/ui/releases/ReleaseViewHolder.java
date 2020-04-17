@@ -2,7 +2,6 @@ package it.amonshore.comikkua.ui.releases;
 
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.MultiRelease;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 
 import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 
@@ -119,7 +118,7 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         if (requestManager != null && item.comics.hasImage()) {
             requestManager
                     .load(Uri.parse(item.comics.image))
-                    .apply(GlideHelper.getSquareOptions())
+                    .apply(ImageHelper.getGlideSquareOptions())
                     .into(new DrawableTextViewTarget(mNumbers));
         } else {
             mNumbers.setBackgroundColor(itemView.getContext().getResources().getColor(R.color.colorItemBackgroundAlt));

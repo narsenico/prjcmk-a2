@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.ui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,21 +21,28 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.BackupImporter;
+import it.amonshore.comikkua.data.BackupHelper;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsViewModel;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 456;
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 684;
     private static final String BACKUP_FILE_NAME = "comikku_data.bck";
 
     @Override
@@ -91,6 +99,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case R.id.importBackup:
                 importBackup();
                 return true;
+            case R.id.exportBackup:
+                exportBackup();
+                return true;
+            case R.id.fixImages:
+                fixImages();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -144,8 +158,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         .setTitle("Import backup")
                         .setMessage("Do you want to import the backup?\nExisting data will be removed.")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            final BackupImporter importer = new BackupImporter(requireActivity().getApplication());
-                            new ImportAsyncTask(context, importer).execute(bckFile);
+                            final BackupHelper backupHelper = new BackupHelper(requireActivity().getApplication());
+                            new ImportAsyncTask(context, backupHelper).execute(bckFile);
                         })
                         .setNegativeButton(android.R.string.cancel, null)
                         .show();
@@ -162,16 +176,78 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         }
     }
 
+    private void exportBackup() {
+        final Context context = requireContext();
+        final File bckFile = Utility.getExternalFile(Environment.DIRECTORY_DOWNLOADS, BACKUP_FILE_NAME);
+        LogHelper.d("Try export to " + bckFile);
+
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // non ho il permesso: contollo se posso mostrare il perché serve
+            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                new android.app.AlertDialog.Builder(context, R.style.DialogTheme)
+                        .setTitle(R.string.permission_export_backup_write_title)
+                        .setMessage(R.string.permission_export_backup_write_explanation)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                        MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE))
+                        .show();
+            } else {
+                // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
+
+                final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_export_backup_write_denied,
+                        Snackbar.LENGTH_LONG);
+                snackbar.setAction(R.string.permission_export_backup_write_settings, v ->
+                        startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                .setData(Uri.fromParts("package", context.getPackageName(), null)))
+                );
+                snackbar.show();
+            }
+
+        } else {
+            // ho il permesso: avvio la procedura di import
+            new AlertDialog.Builder(context, R.style.DialogTheme)
+                    .setTitle("Export backup")
+                    .setMessage("Do you want to backup data to file?\nExisting file will be overwritten.")
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                        final BackupHelper backupHelper = new BackupHelper(requireActivity().getApplication());
+                        new ExportAsyncTask(context, backupHelper).execute(bckFile);
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
+    }
+
+    private void fixImages() {
+        final ComicsViewModel comicsViewModel = new ViewModelProvider(requireActivity())
+                .get(ComicsViewModel.class);
+        final Context context = requireContext();
+
+        LiveEvent.toSingleEvent(comicsViewModel.getComics()).observe(this, list -> {
+            for (Comics comics : list) {
+                if (comics.hasImage() && !ImageHelper.isValidImageFileName(comics.image, comics.id)) {
+                    final File srcFile = new File(Uri.parse(comics.image).getPath());
+                    final File dstFile = new File(context.getFilesDir(), ImageHelper.newImageFileName(comics.id));
+                    LogHelper.d("======> move file from '%s' to '%s'", srcFile, dstFile);
+                    comics.image = Uri.fromFile(dstFile).toString();
+                    comicsViewModel.update(comics);
+                }
+            }
+        });
+    }
+
     private static class ImportAsyncTask extends AsyncTask<File, Void, Integer> {
 
         // TODO: mostrare dialog con barra progressione (infinita)
 
         private WeakReference<Context> mWeakContext;
-        private BackupImporter mImporter;
+        private BackupHelper mHeper;
 
-        ImportAsyncTask(@NonNull Context context, @NonNull BackupImporter importer) {
+        ImportAsyncTask(@NonNull Context context, @NonNull BackupHelper importer) {
             mWeakContext = new WeakReference<>(context);
-            mImporter = importer;
+            mHeper = importer;
         }
 
         @Override
@@ -186,15 +262,55 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         LogHelper.w("Cannot delete " + file);
                     }
                 }
+                return mHeper.importFromFile(context, files[0], true);
             }
-            return mImporter.importFromFile(files[0], true);
+            return BackupHelper.RETURN_ERR;
         }
 
         @Override
-        protected void onPostExecute(Integer integer) {
+        protected void onPostExecute(Integer count) {
             final Context context = mWeakContext.get();
             if (context != null) {
-                Toast.makeText(context, "Import completed", Toast.LENGTH_LONG).show();
+                if (count == BackupHelper.RETURN_ERR) {
+                    Toast.makeText(context, "There was a problem importing data from file.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(context, "Import completed.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    private static class ExportAsyncTask extends AsyncTask<File, Void, Integer> {
+
+        // TODO: mostrare dialog con barra progressione (infinita)
+
+        private WeakReference<Context> mWeakContext;
+        private BackupHelper mHelper;
+
+        ExportAsyncTask(@NonNull Context context, @NonNull BackupHelper importer) {
+            mWeakContext = new WeakReference<>(context);
+            mHelper = importer;
+        }
+
+        @Override
+        protected Integer doInBackground(File... files) {
+            final Context context = mWeakContext.get();
+            if (context == null) {
+                return BackupHelper.RETURN_ERR;
+            } else {
+                return mHelper.exportToFile(context, files[0]);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer count) {
+            final Context context = mWeakContext.get();
+            if (context != null) {
+                if (count == BackupHelper.RETURN_ERR) {
+                    Toast.makeText(context, "There was a problem exporting data to file.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(context, "Export completed.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }

@@ -1,52 +1,36 @@
 package it.amonshore.comikkua.ui.comics;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.transition.TransitionInflater;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.material.snackbar.Snackbar;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
@@ -56,7 +40,6 @@ import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
-import jp.wasabeef.glide.transformations.CropCircleWithBorderTransformation;
 
 import static android.app.Activity.RESULT_OK;
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
@@ -164,9 +147,8 @@ public class ComicsEditFragment extends Fragment {
                     if (valid) {
                         // eseguo il salvataggio in manera asincrona
                         //  al termine navigo vergo la destinazione
-                        new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper.isNew())
-                                // prima di salvare scrivo i dati nel comics
-                                .execute(mHelper.writeComics().comics);
+                        new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
+                                .execute();
                     }
                 });
 
@@ -189,14 +171,8 @@ public class ComicsEditFragment extends Fragment {
             final CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 final Uri resultUri = result.getUri();
-                LogHelper.d("Crop result " + resultUri);
-
-                // TODO: rinominare il file e salvare il percorso in comics
-                //  il nome del file deve contenere una parte variabile progressiva
-                //  in modo che la cache per la vecchia immagine venga invalidata
-
+                LogHelper.d("Crop result saved to %s", resultUri);
                 mHelper.setComicsImage(resultUri);
-
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 LogHelper.e("Crop error", result.getError());
             }
@@ -244,6 +220,7 @@ public class ComicsEditFragment extends Fragment {
         } else {
             // ho il permesso: avvio la procedura di selezione e crop dell'immagine
             // il risultato è gestito in onActivityResult
+            // l'immagine è salvata nella cache
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setCropShape(CropImageView.CropShape.OVAL)
@@ -252,30 +229,42 @@ public class ComicsEditFragment extends Fragment {
         }
     }
 
-    private static class InsertOrUpdateAsyncTask extends AsyncTask<Comics, Void, Long> {
+    private static class InsertOrUpdateAsyncTask extends AsyncTask<Void, Void, Long> {
 
         private WeakReference<View> mWeakView;
         private ComicsViewModel mComicsViewModel;
+        private ComicsEditFragmentHelper mHelper;
         private boolean mIsNew;
 
-        InsertOrUpdateAsyncTask(View view, ComicsViewModel comicsViewModel, boolean isNew) {
+        InsertOrUpdateAsyncTask(View view, ComicsViewModel comicsViewModel,
+                                ComicsEditFragmentHelper helper) {
             mWeakView = new WeakReference<>(view);
             mComicsViewModel = comicsViewModel;
-            mIsNew = isNew;
+            mHelper = helper;
+            mIsNew = mHelper.isNew();
         }
 
         @Override
-        protected Long doInBackground(final Comics... params) {
+        protected Long doInBackground(final Void... params) {
+            // prima di salvare sul DB applico le modifiche su Comics
+            final Comics comics =  mHelper.writeComics().comics;
             // eseguo l'insert o l'updatePurchased asincroni, perché sono già in un thread separato
             if (mIsNew) {
                 // ritorna il nuovo id
-                return mComicsViewModel.insertSync(params[0]);
+                long id = mComicsViewModel.insertSync(comics);
+                comics.id = id;
+                mHelper.complete(true);
+                mComicsViewModel.updateSync(comics);
+                return id;
             } else {
                 // ritorna il numero dei record aggiornati
-                if (mComicsViewModel.updateSync(params[0]) == 1) {
-                    return params[0].id;
+                if (mComicsViewModel.updateSync(comics) == 1) {
+                    mHelper.complete(true);
+                    mComicsViewModel.updateSync(comics);
+                    return comics.id;
                 } else {
                     // c'è stato qualche problema
+                    mHelper.complete(false);
                     return Comics.NO_COMICS_ID;
                 }
             }

@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements
         NotificationUtils.setupNotifications(this, this);
 
         // preparo le opzioni per Glide da poter usare in tutta l'app
-        GlideHelper.prepareOptions(this);
+        ImageHelper.prepareGlideOptions(this);
     }
 
     @Override

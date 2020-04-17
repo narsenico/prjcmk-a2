@@ -43,7 +43,7 @@ import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
 
@@ -305,7 +305,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
                 final FixedPreloadSizeProvider<IReleaseViewModelItem> sizeProvider =
-                        new FixedPreloadSizeProvider<>(GlideHelper.getDefaultSize(), GlideHelper.getDefaultSize());
+                        new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
                 final ReleasePreloadModelProvider modelProvider =
                         new ReleasePreloadModelProvider(adapter, mRequestManager);
                 final RecyclerViewPreloader<IReleaseViewModelItem> preloader =
@@ -506,8 +506,8 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 //                        comicsRelease.comics.name, comicsRelease.comics.image);
                 return mRequestManager
                         .load(Uri.parse(comicsRelease.comics.image))
-                        .listener(GlideHelper.drawableRequestListener)
-                        .apply(GlideHelper.getSquareOptions());
+                        .listener(ImageHelper.drawableRequestListener)
+                        .apply(ImageHelper.getGlideSquareOptions());
 
             } else {
                 return null;

@@ -20,6 +20,14 @@ public class LogHelper {
         Log.d(mTag, String.format(message, args));
     }
 
+    public static void i(String message) {
+        Log.i(mTag, message);
+    }
+
+    public static void i(String message, Object... args) {
+        Log.i(mTag, String.format(message, args));
+    }
+
     public static void w(String message) {
         Log.w(mTag, message);
     }

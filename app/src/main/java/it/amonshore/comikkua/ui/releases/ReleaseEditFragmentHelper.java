@@ -1,12 +1,10 @@
 package it.amonshore.comikkua.ui.releases;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.method.DigitsKeyListener;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.target.CustomViewTarget;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -37,19 +33,16 @@ import androidx.lifecycle.LifecycleOwner;
 import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.GlideHelper;
+import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
 
 public class ReleaseEditFragmentHelper {
-
-    interface ValidationCallback {
-        void onValidation(boolean valid);
-    }
 
     static ReleaseEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
                                           @NonNull ReleaseViewModel viewModel,
@@ -237,7 +230,7 @@ public class ReleaseEditFragmentHelper {
         if (comics.comics.hasImage()) {
             mGlideRequestManager
                     .load(Uri.parse(comics.comics.image))
-                    .apply(GlideHelper.getSquareOptions())
+                    .apply(ImageHelper.getGlideSquareOptions())
                     .into(new DrawableTextViewTarget(preview.numbers));
         }
 
@@ -343,13 +336,13 @@ public class ReleaseEditFragmentHelper {
         outState.putBoolean("ordered", editor.ordered.isChecked());
     }
 
-    void isValid(@NonNull final ValidationCallback callback) {
+    void isValid(@NonNull final ICallback<Boolean> callback) {
         boolean valid = true;
         // TODO: verificare che numbers contenga una sequenza valida
         //  es: 4-3 non deve essere valido (modificare comportamento di Utility.parseInterval)
         //  es: 4-5-6 NO
         //  es: 4- NO etc.
         // TODO: controllo se esistono già certe uscite? nel vecchio non lo facevo
-        callback.onValidation(valid);
+        callback.onCallback(valid);
     }
 }
