@@ -38,6 +38,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 
 public class ComicsDetailFragment extends Fragment {
@@ -48,6 +50,7 @@ public class ComicsDetailFragment extends Fragment {
             mLast, mNext, mMissing;
     private ReleaseAdapter mAdapter;
     private RecyclerView mRecyclerView;
+    private Snackbar mUndoSnackBar;
 
     private ComicsViewModel mComicsViewModel;
     private ReleaseViewModel mReleaseViewModel;
@@ -109,7 +112,9 @@ public class ComicsDetailFragment extends Fragment {
                         return true;
                     case R.id.deleteReleases:
                         if (tracker.hasSelection()) {
-                            mReleaseViewModel.delete(tracker.getSelection());
+                            // prima elimino eventuali release ancora in fase di undo
+                            mReleaseViewModel.deleteRemoved();
+                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndoForReleases(count));
                         }
                         tracker.clearSelection();
                         return true;
@@ -291,5 +296,29 @@ public class ComicsDetailFragment extends Fragment {
                 .setReleaseId(release.release.id);
 
         Navigation.findNavController(view).navigate(directions);
+    }
+
+    private void showUndoForReleases(int count) {
+        if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
+            LogHelper.d("UNDO: dismiss snack");
+            mUndoSnackBar.dismiss();
+        }
+
+        // mostro messaggio per undo
+        mUndoSnackBar = Snackbar.make(requireView(), getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
+                // con il pulsante azione ripristino gli elementi rimossi
+                .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        // procedo alla cancellazione effettiva solo dopo il timeout
+                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
+                            mReleaseViewModel.deleteRemoved();
+                        }
+                        LogHelper.d("UNDO: dismissed event=%s", event);
+                    }
+                });
+        LogHelper.d("UNDO: show snack");
+        mUndoSnackBar.show();
     }
 }

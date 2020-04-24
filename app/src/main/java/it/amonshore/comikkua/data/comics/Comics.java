@@ -29,6 +29,7 @@ public class Comics {
     public String image;
     public long lastUpdate;
     public long refJsonId;
+    public boolean removed;
 
     @NonNull
     public String getInitial() {

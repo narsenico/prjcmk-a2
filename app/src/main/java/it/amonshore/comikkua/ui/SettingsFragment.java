@@ -1,7 +1,6 @@
 package it.amonshore.comikkua.ui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,19 +15,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import it.amonshore.comikkua.LiveEvent;
@@ -145,7 +141,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
                     final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_import_backup_read_denied,
                             Snackbar.LENGTH_LONG);
-                    snackbar.setAction(R.string.permission_import_backup_read_settings, v ->
+                    snackbar.setAction(R.string.settings, v ->
                             startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                                     .setData(Uri.fromParts("package", context.getPackageName(), null)))
                     );
@@ -199,7 +195,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
                 final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_export_backup_write_denied,
                         Snackbar.LENGTH_LONG);
-                snackbar.setAction(R.string.permission_export_backup_write_settings, v ->
+                snackbar.setAction(R.string.settings, v ->
                         startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                                 .setData(Uri.fromParts("package", context.getPackageName(), null)))
                 );
@@ -231,8 +227,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     final File srcFile = new File(Uri.parse(comics.image).getPath());
                     final File dstFile = new File(context.getFilesDir(), ImageHelper.newImageFileName(comics.id));
                     LogHelper.d("======> move file from '%s' to '%s'", srcFile, dstFile);
-                    comics.image = Uri.fromFile(dstFile).toString();
-                    comicsViewModel.update(comics);
+                    if (srcFile.renameTo(dstFile)) {
+                        comics.image = Uri.fromFile(dstFile).toString();
+                        comicsViewModel.update(comics);
+                    }
                 }
             }
         });
@@ -254,14 +252,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         protected Integer doInBackground(File... files) {
             final Context context = mWeakContext.get();
             if (context != null) {
-                Glide.get(context).clearDiskCache();
-                // elimino singolarmente tutti i file creati durante il crop dell'immagine dei comics
-                final File[] croppedFiles = context.getCacheDir().listFiles((dir, name) -> name.startsWith("cropped"));
-                for (File file : croppedFiles) {
-                    if (!file.delete()) {
-                        LogHelper.w("Cannot delete " + file);
-                    }
-                }
                 return mHeper.importFromFile(context, files[0], true);
             }
             return BackupHelper.RETURN_ERR;

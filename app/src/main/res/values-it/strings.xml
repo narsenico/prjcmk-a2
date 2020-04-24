@@ -81,4 +81,8 @@
     <string name="today_releases_channel_description">Uscite</string>
 
     <string name="confirm_delete_multi_release">Rimuovere tutte le %d uscite?</string>
+    <string name="share_chooser_title">Condividi</string>
+    <string name="settings">Impostazioni</string>
+    <string name="menu_share">Condividi</string>
+    <string name="menu_export_backup">Crea backup</string>
 </resources>

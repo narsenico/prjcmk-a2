@@ -13,6 +13,7 @@ import androidx.annotation.Size;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 
@@ -164,4 +165,27 @@ public class ReleaseViewModel extends AndroidViewModel {
         return mRepository.deleteByNumberSync(comicsId, number);
     }
 
+    public void remove(Iterable<Long> ids, ICallback<Integer> callback) {
+        remove(Utility.toArray(ids), callback);
+    }
+
+    public void remove(Long... ids) {
+        mRepository.remove(ids);
+    }
+
+    public void remove(Long id, ICallback<Integer> callback) {
+        remove(new Long[] { id }, callback);
+    }
+
+    public void remove(Long[] ids, ICallback<Integer> callback) {
+        mRepository.remove(ids, callback);
+    }
+
+    public void undoRemoved() {
+        mRepository.undoRemoved();
+    }
+
+    public void deleteRemoved() {
+        mRepository.deleteRemoved();
+    }
 }

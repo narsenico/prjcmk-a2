@@ -211,7 +211,7 @@ public class ComicsEditFragment extends Fragment {
 
                 final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_camera_comics_denied,
                         Snackbar.LENGTH_LONG);
-                snackbar.setAction(R.string.permission_camera_comics_settings, v ->
+                snackbar.setAction(R.string.settings, v ->
                         startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                                 .setData(Uri.fromParts("package", context.getPackageName(), null)))
                 );

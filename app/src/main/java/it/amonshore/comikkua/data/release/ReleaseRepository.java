@@ -8,6 +8,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
@@ -88,6 +89,26 @@ public class ReleaseRepository {
 
     int deleteByNumberSync(long comicsId, int... number) {
         return mReleaseDao.deleteByNumber(comicsId, number);
+    }
+
+    void remove(Long... id) {
+        new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.REMOVE, null)
+                .execute(id);
+    }
+
+    void remove(Long[] id, ICallback<Integer> callback) {
+        new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.REMOVE, callback)
+                .execute(id);
+    }
+
+    void undoRemoved() {
+        new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.UNDO, null)
+                .execute();
+    }
+
+    void deleteRemoved() {
+        new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.DELETE, null)
+                .execute();
     }
 
     private static class InsertAsyncTask extends AsyncTask<Release, Void, Void> {
@@ -209,6 +230,41 @@ public class ReleaseRepository {
         @Override
         protected Void doInBackground(final Long... params) {
             mAsyncTaskDao.delete(params);
+            return null;
+        }
+    }
+
+    private static class RemoveAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        final static int REMOVE = 0;
+        final static int UNDO = 1;
+        final static int DELETE = 2;
+
+        private ReleaseDao mAsyncTaskDao;
+        private ICallback<Integer> mCallback;
+        private int mAction;
+
+        RemoveAsyncTask(ReleaseDao dao, int action, ICallback<Integer> callback) {
+            mAsyncTaskDao = dao;
+            mAction = action;
+            mCallback = callback;
+        }
+
+        @Override
+        protected Void doInBackground(Long... params) {
+            int count = 0;
+            if (mAction == UNDO) {
+                count = mAsyncTaskDao.undoRemoved();
+            } else if (mAction == DELETE) {
+                count = mAsyncTaskDao.deleteRemoved();
+            } else if (mAction == REMOVE) {
+                count = mAsyncTaskDao.updateRemoved(true, params);
+            }
+
+            if (mCallback != null) {
+                mCallback.onCallback(count);
+            }
+
             return null;
         }
     }

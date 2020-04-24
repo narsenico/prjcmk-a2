@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "74c1f190be3a7fb5759b48298c0f0e19",
+    "identityHash": "2582375053598ec754bd97e079c898e5",
     "entities": [
       {
         "tableName": "tComics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `series` TEXT, `publisher` TEXT, `authors` TEXT, `price` REAL NOT NULL, `periodicity` TEXT, `reserved` INTEGER NOT NULL, `notes` TEXT, `image` TEXT, `lastUpdate` INTEGER NOT NULL, `refJsonId` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `series` TEXT, `publisher` TEXT, `authors` TEXT, `price` REAL NOT NULL, `periodicity` TEXT, `reserved` INTEGER NOT NULL, `notes` TEXT, `image` TEXT, `lastUpdate` INTEGER NOT NULL, `refJsonId` INTEGER NOT NULL, `removed` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -79,6 +79,12 @@
             "columnName": "refJsonId",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -101,7 +107,7 @@
       },
       {
         "tableName": "tReleases",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `comicsId` INTEGER NOT NULL, `number` INTEGER NOT NULL, `date` TEXT, `price` REAL NOT NULL, `purchased` INTEGER NOT NULL, `ordered` INTEGER NOT NULL, `notes` TEXT, `lastUpdate` INTEGER NOT NULL, FOREIGN KEY(`comicsId`) REFERENCES `tComics`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `comicsId` INTEGER NOT NULL, `number` INTEGER NOT NULL, `date` TEXT, `price` REAL NOT NULL, `purchased` INTEGER NOT NULL, `ordered` INTEGER NOT NULL, `notes` TEXT, `lastUpdate` INTEGER NOT NULL, `removed` INTEGER NOT NULL, FOREIGN KEY(`comicsId`) REFERENCES `tComics`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -156,6 +162,12 @@
             "columnName": "lastUpdate",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -192,21 +204,33 @@
     ],
     "views": [
       {
+        "viewName": "vComicsReleases",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId"
+      },
+      {
         "viewName": "vMissingReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is null or date = '')"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is null or date = '')"
       },
       {
         "viewName": "vLostReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '')"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '')"
       },
       {
         "viewName": "vDatedReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '')"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE (date is not null and date <> '')"
+      },
+      {
+        "viewName": "vPurchasedReleases",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE purchased = 1"
+      },
+      {
+        "viewName": "vNotPurchasedReleases",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.removed as rremoved FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE purchased = 0"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '74c1f190be3a7fb5759b48298c0f0e19')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2582375053598ec754bd97e079c898e5')"
     ]
   }
 }

@@ -31,6 +31,7 @@ public class Release {
     public boolean ordered;
     public String notes;
     public long lastUpdate;
+    public boolean removed;
 
     public boolean hasNotes() {
         return !TextUtils.isEmpty(this.notes);

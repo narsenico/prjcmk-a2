@@ -26,6 +26,14 @@ public interface ComicsDao {
     @Update
     int update(Comics... comics);
 
+    @Query("UPDATE tComics SET removed = :removed WHERE id IN (:id)")
+    @Transaction
+    void updateRemoved(boolean removed, Long... id);
+
+    @Query("UPDATE tComics SET removed = 0")
+    @Transaction
+    void undoRemoved();
+
     @Query("DELETE FROM tComics")
     int deleteAll();
 
@@ -36,42 +44,45 @@ public interface ComicsDao {
     @Transaction
     int delete(Long... id);
 
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("DELETE FROM tComics WHERE removed = 1")
+    @Transaction
+    int deleteRemoved();
+
+    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     LiveData<List<Comics>> getComics();
 
-    @Query("SELECT * FROM tComics WHERE id = :id")
+    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0")
     LiveData<Comics> getComics(long id);
 
-    @Query("SELECT * FROM tComics WHERE name = :name")
+    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0")
     LiveData<Comics> getComics(String name);
 
-    @Query("SELECT * FROM tComics WHERE refJsonId = :refJsonId")
-    Comics getRawComicsByRefJsonId(long refJsonId);
-
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     List<Comics> getRawComics();
 
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     List<ComicsWithReleases> getRawComicsWithReleases();
 
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleases();
 
-    @Query("SELECT * FROM tComics ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory();
 
-    @Query("SELECT * FROM tComics WHERE name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND " +
+            "(name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName) " +
+            "ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory(String likeName);
 
-    @Query("SELECT * FROM tComics WHERE name = :name")
+    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleasesByName(String name);
 
-    @Query("SELECT * FROM tComics WHERE id = :id")
+    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0")
     @Transaction
     LiveData<ComicsWithReleases> getComicsWithReleases(long id);
 

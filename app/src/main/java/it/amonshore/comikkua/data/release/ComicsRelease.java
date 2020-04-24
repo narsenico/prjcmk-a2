@@ -33,7 +33,8 @@ import it.amonshore.comikkua.data.comics.Comics;
                 "tReleases.notes as rnotes, " +
                 "tReleases.lastUpdate as rlastUpdate " +
                 "FROM tComics INNER JOIN tReleases " +
-                "ON tComics.id = tReleases.comicsId"
+                "ON tComics.id = tReleases.comicsId " +
+                "WHERE tComics.removed = 0 AND tReleases.removed = 0"
 )
 public class ComicsRelease implements IReleaseViewModelItem {
     public final static int ITEM_TYPE = 2;

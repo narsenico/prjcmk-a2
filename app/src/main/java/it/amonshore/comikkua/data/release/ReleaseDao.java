@@ -35,6 +35,14 @@ public interface ReleaseDao {
     @Transaction
     void updateOrdered(boolean ordered, long lastUpdate, Long... id);
 
+    @Query("UPDATE tReleases SET removed = :removed WHERE id IN (:id)")
+    @Transaction
+    int updateRemoved(boolean removed, Long... id);
+
+    @Query("UPDATE tReleases SET removed = 0")
+    @Transaction
+    int undoRemoved();
+
     @Query("DELETE FROM tReleases")
     void deleteAll();
 
@@ -49,13 +57,17 @@ public interface ReleaseDao {
     @Transaction
     int deleteByNumber(long comicsId, int... number);
 
-    @Query("SELECT * FROM tReleases WHERE id = :id")
+    @Query("DELETE FROM tReleases WHERE removed = 1")
+    @Transaction
+    int deleteRemoved();
+
+    @Query("SELECT * FROM tReleases WHERE id = :id AND removed = 0")
     LiveData<Release> getRelease(long id);
 
-    @Query("SELECT * FROM tReleases WHERE comicsId = :comicsId ORDER BY number ASC")
+    @Query("SELECT * FROM tReleases WHERE comicsId = :comicsId AND removed = 0 ORDER BY number ASC")
     LiveData<List<Release>> getReleases(long comicsId);
 
-    @Query("SELECT * FROM tReleases WHERE id = :id")
+    @Query("SELECT * FROM tReleases WHERE id = :id AND removed = 0")
     Release getRawRelease(long id);
 
     @Query("SELECT " + DatedRelease.TYPE + " as type, * FROM vDatedReleases WHERE rpurchased = 0 AND rdate BETWEEN :startDate AND :endDate")

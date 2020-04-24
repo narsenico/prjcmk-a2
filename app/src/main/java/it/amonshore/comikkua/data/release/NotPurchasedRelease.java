@@ -30,7 +30,7 @@ import androidx.room.DatabaseView;
                 "tReleases.lastUpdate as rlastUpdate " +
                 "FROM tComics INNER JOIN tReleases " +
                 "ON tComics.id = tReleases.comicsId " +
-                "WHERE purchased = 0"
+                "WHERE tComics.removed = 0 AND tReleases.removed = 0 AND purchased = 0"
 )
 public class NotPurchasedRelease extends ComicsRelease {
     public final static int TYPE = 23;

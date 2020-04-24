@@ -19,8 +19,6 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -188,7 +186,7 @@ public class ReleaseEditFragmentHelper {
         return mRelease.id == Release.NEW_RELEASE_ID;
     }
 
-    void setRelease(@NonNull Context context, @NotNull ComicsWithReleases comics, @Nullable Release release, Bundle savedInstanceState) {
+    void setRelease(@NonNull Context context, @NonNull ComicsWithReleases comics, @Nullable Release release, Bundle savedInstanceState) {
         mComics = comics;
         if (release == null) {
             // creo una release nuova impostando in automatico numero e data uscita (in base alla periodicità)

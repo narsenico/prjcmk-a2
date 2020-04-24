@@ -1,6 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-android'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
@@ -26,7 +24,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "develop"
     productFlavors {
+        safe {
+            dimension "develop"
+        }
+        tryme {
+            applicationIdSuffix '.tryme'
+            versionNameSuffix '-tryme'
+            dimension "develop"
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -64,7 +71,7 @@ dependencies {
 
     // Room components
     implementation "androidx.room:room-runtime:$rootProject.roomVersion"
-    implementation 'androidx.preference:preference:1.1.0'
+    implementation "androidx.preference:preference:$rootProject.preferenceVersion"
     annotationProcessor "androidx.room:room-compiler:$rootProject.roomVersion"
     androidTestImplementation "androidx.room:room-testing:$rootProject.roomVersion"
 
@@ -94,11 +101,6 @@ dependencies {
     androidTestImplementation "androidx.arch.core:core-testing:$rootProject.coreTestingVersion"
     androidTestImplementation "androidx.work:work-testing:$rootProject.workVersion"
     testImplementation 'junit:junit:4.12'
-
-    // Kotlin
-    implementation "androidx.core:core-ktx:1.1.0"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc03'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {
     mavenCentral()

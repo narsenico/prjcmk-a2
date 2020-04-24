@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Objects;
 
@@ -42,6 +44,7 @@ public class ReleasesFragment extends Fragment {
     private ReleaseAdapter mAdapter;
     private ReleaseViewModel mReleaseViewModel;
     private RecyclerView mRecyclerView;
+    private Snackbar mUndoSnackBar;
 
     public ReleasesFragment() {
     }
@@ -83,13 +86,16 @@ public class ReleasesFragment extends Fragment {
                         return true;
                     case R.id.deleteReleases:
                         if (tracker.hasSelection()) {
-                            mReleaseViewModel.delete(tracker.getSelection());
+                            // prima elimino eventuali release ancora in fase di undo
+                            mReleaseViewModel.deleteRemoved();
+                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndoForReleases(count));
                         }
                         tracker.clearSelection();
                         return true;
                     case R.id.shareReleases:
-                        mReleaseViewModel.getOneTimeComicsReleases(tracker.getSelection()).observe(getViewLifecycleOwner(),
-                                items -> ShareHelper.shareReleases(requireActivity(), items));
+                        mReleaseViewModel.getOneTimeComicsReleases(tracker.getSelection())
+                                .observe(getViewLifecycleOwner(),
+                                        items -> ShareHelper.shareReleases(requireActivity(), items));
                         // mantengo la selezione
                         return true;
                 }
@@ -271,12 +277,41 @@ public class ReleasesFragment extends Fragment {
             new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
                     .setTitle(release.comics.name)
                     .setMessage(getString(R.string.confirm_delete_multi_release, multiRelease.size()))
-                    .setPositiveButton(android.R.string.yes, (dialog, which) ->
-                            mReleaseViewModel.delete(multiRelease.getAllReleaseId()))
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        // prima elimino eventuali release ancora in fase di undo
+                        mReleaseViewModel.deleteRemoved();
+                        mReleaseViewModel.remove(multiRelease.getAllReleaseId(), this::showUndoForReleases);
+                    })
                     .setNegativeButton(android.R.string.no, null)
                     .show();
         } else {
-            mReleaseViewModel.delete(release.release.id);
+            // prima elimino eventuali release ancora in fase di undo
+            mReleaseViewModel.deleteRemoved();
+            mReleaseViewModel.remove(release.release.id, this::showUndoForReleases);
         }
+    }
+
+    private void showUndoForReleases(int count) {
+        if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
+            LogHelper.d("UNDO: dismiss snack");
+            mUndoSnackBar.dismiss();
+        }
+
+        // mostro messaggio per undo
+        mUndoSnackBar = Snackbar.make(requireView(), getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
+                // con il pulsante azione ripristino gli elementi rimossi
+                .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        // procedo alla cancellazione effettiva solo dopo il timeout
+                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
+                            mReleaseViewModel.deleteRemoved();
+                        }
+                        LogHelper.d("UNDO: dismissed event=%s", event);
+                    }
+                });
+        LogHelper.d("UNDO: show snack");
+        mUndoSnackBar.show();
     }
 }
