@@ -200,7 +200,11 @@ public class BackupHelper {
         // salvo i file nella cache mantenendo il nome del file
         // verranno spostati nella cartella corretta solo se il parsing di tutto il JSON andrà a buon fine
         if (comics.hasImage()) {
-            final Uri uri = Uri.withAppendedPath(Uri.fromFile(context.getCacheDir()), Uri.parse(comics.image).getLastPathSegment());
+            // per sicurezza aggiorno il percorso dell'immagine, perché potrebbe non essere compatibile con questo device
+            final Uri imgUri = Uri.fromFile(new File(context.getFilesDir(), ImageHelper.newImageFileName(comics.id)));
+            comics.image = imgUri.toString();
+
+            final Uri uri = Uri.withAppendedPath(Uri.fromFile(context.getCacheDir()), imgUri.getLastPathSegment());
             // salvo l'immagine direttamente nel JSON in Base64
             final byte[] bytes = Base64.decode(tryGetString(object, FIELD_IMAGE_DATA), Base64.DEFAULT);
             OutputStream os = null;
