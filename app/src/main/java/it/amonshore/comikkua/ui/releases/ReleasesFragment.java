@@ -88,7 +88,7 @@ public class ReleasesFragment extends Fragment {
                         if (tracker.hasSelection()) {
                             // prima elimino eventuali release ancora in fase di undo
                             mReleaseViewModel.deleteRemoved();
-                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndoForReleases(count));
+                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
                         }
                         tracker.clearSelection();
                         return true;
@@ -280,25 +280,27 @@ public class ReleasesFragment extends Fragment {
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
                         // prima elimino eventuali release ancora in fase di undo
                         mReleaseViewModel.deleteRemoved();
-                        mReleaseViewModel.remove(multiRelease.getAllReleaseId(), this::showUndoForReleases);
+                        mReleaseViewModel.remove(multiRelease.getAllReleaseId(), this::showUndo);
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .show();
         } else {
             // prima elimino eventuali release ancora in fase di undo
             mReleaseViewModel.deleteRemoved();
-            mReleaseViewModel.remove(release.release.id, this::showUndoForReleases);
+            mReleaseViewModel.remove(release.release.id, this::showUndo);
         }
     }
 
-    private void showUndoForReleases(int count) {
+    private void showUndo(int count) {
         if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
             LogHelper.d("UNDO: dismiss snack");
             mUndoSnackBar.dismiss();
         }
 
         // mostro messaggio per undo
-        mUndoSnackBar = Snackbar.make(requireView(), getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
+        // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
+        mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
+                getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
                 // con il pulsante azione ripristino gli elementi rimossi
                 .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
                 .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {

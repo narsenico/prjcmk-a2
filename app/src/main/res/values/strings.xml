@@ -126,6 +126,10 @@
 
     <string name="confirm_delete_multi_release">Remove all %d releases?</string>
 
+    <plurals name="comics_deleted">
+        <item quantity="one">Comics deleted</item>
+        <item quantity="other">%d comics deleted</item>
+    </plurals>
     <plurals name="release_deleted">
         <item quantity="one">Release deleted</item>
         <item quantity="other">%d releases deleted</item>

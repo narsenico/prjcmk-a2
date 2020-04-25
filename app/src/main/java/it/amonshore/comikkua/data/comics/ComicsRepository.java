@@ -8,6 +8,8 @@ import java.util.List;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.DataSource;
+import it.amonshore.comikkua.ICallback;
+import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
 public class ComicsRepository {
@@ -55,32 +57,52 @@ public class ComicsRepository {
         return mComicsDao.getComicsName();
     }
 
-    public void insert(Comics comics) {
+    void insert(Comics comics) {
         new InsertAsyncTask(mComicsDao).execute(comics);
     }
 
-    public long insertSync(Comics comics) {
+    long insertSync(Comics comics) {
         return mComicsDao.insert(comics);
     }
 
-    public void update(Comics comics) {
+    void update(Comics comics) {
         new UpdateAsyncTask(mComicsDao).execute(comics);
     }
 
-    public int updateSync(Comics comics) {
+    int updateSync(Comics comics) {
         return mComicsDao.update(comics);
     }
 
-    public void delete(long id) {
+    void delete(long id) {
         new DeleteAsyncTask(mComicsDao).execute(id);
     }
 
-    public void delete(Long... id) {
+    void delete(Long... id) {
         new DeleteAsyncTask(mComicsDao).execute(id);
     }
 
-    public void deleteAll() {
+    void deleteAll() {
         new DeleteAllAsyncTask(mComicsDao).execute();
+    }
+
+    void remove(Long... id) {
+        new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.REMOVE, null)
+                .execute(id);
+    }
+
+    void remove(Long[] id, ICallback2<Long[], Integer> callback) {
+        new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.REMOVE, callback)
+                .execute(id);
+    }
+
+    void undoRemoved() {
+        new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.UNDO, null)
+                .execute();
+    }
+
+    void deleteRemoved() {
+        new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.DELETE, null)
+                .execute();
     }
 
     private static class InsertAsyncTask extends AsyncTask<Comics, Void, Void> {
@@ -138,6 +160,41 @@ public class ComicsRepository {
         @Override
         protected Integer doInBackground(final Void... params) {
             return mAsyncTaskDao.deleteAll();
+        }
+    }
+
+    private static class RemoveAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        final static int REMOVE = 0;
+        final static int UNDO = 1;
+        final static int DELETE = 2;
+
+        private ComicsDao mAsyncTaskDao;
+        private ICallback2<Long[], Integer> mCallback;
+        private int mAction;
+
+        RemoveAsyncTask(ComicsDao dao, int action, ICallback2<Long[], Integer> callback) {
+            mAsyncTaskDao = dao;
+            mAction = action;
+            mCallback = callback;
+        }
+
+        @Override
+        protected Void doInBackground(Long... params) {
+            int count = 0;
+            if (mAction == UNDO) {
+                count = mAsyncTaskDao.undoRemoved();
+            } else if (mAction == DELETE) {
+                count = mAsyncTaskDao.deleteRemoved();
+            } else if (mAction == REMOVE) {
+                count = mAsyncTaskDao.updateRemoved(true, params);
+            }
+
+            if (mCallback != null) {
+                mCallback.onCallback(params, count);
+            }
+
+            return null;
         }
     }
 }

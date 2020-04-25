@@ -28,11 +28,11 @@ public interface ComicsDao {
 
     @Query("UPDATE tComics SET removed = :removed WHERE id IN (:id)")
     @Transaction
-    void updateRemoved(boolean removed, Long... id);
+    int updateRemoved(boolean removed, Long... id);
 
     @Query("UPDATE tComics SET removed = 0")
     @Transaction
-    void undoRemoved();
+    int undoRemoved();
 
     @Query("DELETE FROM tComics")
     int deleteAll();

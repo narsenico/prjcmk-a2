@@ -14,6 +14,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
+import it.amonshore.comikkua.ICallback;
+import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 
@@ -133,5 +135,29 @@ public class ComicsViewModel extends AndroidViewModel {
 
     public void deleteAll() {
         mRepository.deleteAll();
+    }
+
+    public void remove(Iterable<Long> ids, ICallback2<Long[], Integer> callback) {
+        remove(Utility.toArray(ids), callback);
+    }
+
+    public void remove(Long... ids) {
+        mRepository.remove(ids);
+    }
+
+    public void remove(Long id, ICallback2<Long[], Integer> callback) {
+        remove(new Long[] { id }, callback);
+    }
+
+    public void remove(Long[] ids, ICallback2<Long[], Integer> callback) {
+        mRepository.remove(ids, callback);
+    }
+
+    public void undoRemoved() {
+        mRepository.undoRemoved();
+    }
+
+    public void deleteRemoved() {
+        mRepository.deleteRemoved();
     }
 }

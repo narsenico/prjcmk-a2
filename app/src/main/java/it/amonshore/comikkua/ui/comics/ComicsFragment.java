@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Objects;
 
@@ -46,6 +48,7 @@ public class ComicsFragment extends Fragment {
     private PagedListComicsAdapter mAdapter;
     private ComicsViewModel mComicsViewModel;
     private RecyclerView mRecyclerView;
+    private Snackbar mUndoSnackBar;
 
     public ComicsFragment() { }
 
@@ -71,9 +74,9 @@ public class ComicsFragment extends Fragment {
                 if (item.getItemId() == R.id.deleteComics) {
                     final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
                     if (tracker.hasSelection()) {
-                        final Long[] ids = Utility.toArray(tracker.getSelection());
-                        mComicsViewModel.delete(ids);
-                        ImageHelper.deleteImageFiles(context, ids);
+                        // prima elimino eventuali release ancora in fase di undo
+                        mComicsViewModel.deleteRemoved();
+                        mComicsViewModel.remove(tracker.getSelection(), (ids, count) -> showUndo(ids, count));
                     }
                     tracker.clearSelection();
                     return true;
@@ -256,5 +259,34 @@ public class ComicsFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showUndo(Long[] ids, int count) {
+        if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
+            LogHelper.d("UNDO: dismiss snack");
+            mUndoSnackBar.dismiss();
+        }
+
+        // mostro messaggio per undo
+        // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
+        mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
+                getResources().getQuantityString(R.plurals.comics_deleted, count, count), 7_000)
+                // con il pulsante azione ripristino gli elementi rimossi
+                .setAction(android.R.string.cancel, v -> mComicsViewModel.undoRemoved())
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        // procedo alla cancellazione effettiva solo dopo il timeout
+                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
+                            mComicsViewModel.deleteRemoved();
+                            // elimino anche le immagini
+                            // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
+                            ImageHelper.deleteImageFiles(requireContext(), ids);
+                        }
+                        LogHelper.d("UNDO: dismissed event=%s", event);
+                    }
+                });
+        LogHelper.d("UNDO: show snack");
+        mUndoSnackBar.show();
     }
 }
