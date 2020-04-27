@@ -15,6 +15,7 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.DateFormatterHelper;
+import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
@@ -119,7 +120,7 @@ public class ComicsDetailFragment extends Fragment {
                         tracker.clearSelection();
                         return true;
                     case R.id.shareReleases:
-                        mReleaseViewModel.getOneTimeComicsReleases(tracker.getSelection()).observe(getViewLifecycleOwner(),
+                        LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
                                 items -> ShareHelper.shareReleases(requireActivity(), items));
                         // mantengo la selezione
                         return true;

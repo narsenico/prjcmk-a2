@@ -27,6 +27,8 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import it.amonshore.comikkua.LiveDataEx;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
@@ -50,7 +52,8 @@ public class ComicsFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private Snackbar mUndoSnackBar;
 
-    public ComicsFragment() { }
+    public ComicsFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -248,15 +251,34 @@ public class ComicsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.createNewComics) {
-            final NavDirections directions = ComicsFragmentDirections
-                    .actionDestComicsFragmentToComicsEditFragment()
-                    .setComicsId(NEW_COMICS_ID)
-                    .setSubtitle(R.string.title_comics_create);
+        switch (item.getItemId()) {
+            case R.id.createNewComics:
+                final NavDirections directions = ComicsFragmentDirections
+                        .actionDestComicsFragmentToComicsEditFragment()
+                        .setComicsId(NEW_COMICS_ID)
+                        .setSubtitle(R.string.title_comics_create);
 
-            Navigation.findNavController(requireView()).navigate(directions);
+                Navigation.findNavController(requireView()).navigate(directions);
 
-            return true;
+                return true;
+            case R.id.retrieveComics:
+                // TODO: test test test
+                LiveDataEx.observeOnce(mComicsViewModel.retrieveComics(), getViewLifecycleOwner(),
+                        resource -> {
+                            switch (resource.status) {
+                                case LOADING:
+                                    LogHelper.d("LOADING");
+                                    break;
+                                case ERROR:
+                                    LogHelper.e("ERROR: %s", resource.message);
+                                    break;
+                                case SUCCESS:
+                                    LogHelper.d("SUCCESS: data=%s", resource.data);
+                                    break;
+                            }
+                        });
+
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

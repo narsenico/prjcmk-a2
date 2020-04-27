@@ -23,6 +23,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import it.amonshore.comikkua.LiveDataEx;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
@@ -84,27 +86,16 @@ public class ReleaseEditFragment extends Fragment {
         mHelper.getRootView().findViewById(R.id.release).setTransitionName("release_tx_" + mReleaseId);
 
         // prima di tutto devo recupera il comics
-        final LiveData<ComicsWithReleases> ldComics = mComicsViewModel.getComicsWithReleases(mComicsId);
-        ldComics.observe(getViewLifecycleOwner(), new Observer<ComicsWithReleases>() {
-            @Override
-            public void onChanged(ComicsWithReleases comicsWithReleases) {
-                mComics = comicsWithReleases;
-                if (mReleaseId == Release.NEW_RELEASE_ID) {
-                    mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
-                } else {
-                    final LiveData<Release> ldRelease = mReleaseViewModel.getRelease(mReleaseId);
-                    ldRelease.observe(getViewLifecycleOwner(), new Observer<Release>() {
-                        @Override
-                        public void onChanged(Release release) {
-                            mHelper.setRelease(requireContext(), mComics, release, savedInstanceState);
-                            ldRelease.removeObserver(this);
-                        }
-                    });
-                }
-
-                ldComics.removeObserver(this);
-            }
-        });
+        LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(mComicsId), getViewLifecycleOwner(),
+                comicsWithReleases -> {
+                    mComics = comicsWithReleases;
+                    if (mReleaseId == Release.NEW_RELEASE_ID) {
+                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
+                    } else {
+                        LiveDataEx.observeOnce(mReleaseViewModel.getRelease(mReleaseId), getViewLifecycleOwner(),
+                                release -> mHelper.setRelease(requireContext(), mComics, release, savedInstanceState));
+                    }
+                });
 
         return mHelper.getRootView();
     }

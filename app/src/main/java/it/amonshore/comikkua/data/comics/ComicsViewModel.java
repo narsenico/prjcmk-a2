@@ -18,13 +18,15 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.CustomData;
 
 public class ComicsViewModel extends AndroidViewModel {
 
-    private ComicsRepository mRepository;
-    private String mLastFilter;
+    private final ComicsRepository mRepository;
+    private final CmkWebRepository mCmkWebRepository;
     private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
     private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
+    private String mLastFilter;
 
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
 
@@ -34,6 +36,7 @@ public class ComicsViewModel extends AndroidViewModel {
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
+        mCmkWebRepository = new CmkWebRepository(application);
         states = new Bundle();
 
         final PagedList.Config config = new PagedList.Config.Builder()
@@ -159,5 +162,10 @@ public class ComicsViewModel extends AndroidViewModel {
 
     public void deleteRemoved() {
         mRepository.deleteRemoved();
+    }
+
+    // TODO: cambiare nome
+    public CustomData<List<Comics>> retrieveComics() {
+        return mCmkWebRepository.getComics();
     }
 }

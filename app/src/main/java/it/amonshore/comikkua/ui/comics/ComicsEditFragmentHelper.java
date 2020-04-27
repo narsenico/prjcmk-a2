@@ -30,6 +30,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import it.amonshore.comikkua.LiveDataEx;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.ICallback;
@@ -154,28 +156,36 @@ class ComicsEditFragmentHelper {
         });
 
         // passo l'elenco dei publisher all'autocompletamento
-        viewModel.getPublishers().observe(lifecycleOwner, new Observer<List<String>>() {
-            @Override
-            public void onChanged(List<String> strings) {
-                editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+        LiveDataEx.observeOnce(viewModel.getPublishers(), lifecycleOwner,
+                publishers -> editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
                         android.R.layout.simple_dropdown_item_1line,
-                        strings));
-                // non mi serve più osservare l'elenco dei publisher
-                viewModel.getPublishers().removeObserver(this);
-            }
-        });
+                        publishers)));
+//        viewModel.getPublishers().observe(lifecycleOwner, new Observer<List<String>>() {
+//            @Override
+//            public void onChanged(List<String> strings) {
+//                editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+//                        android.R.layout.simple_dropdown_item_1line,
+//                        strings));
+//                // non mi serve più osservare l'elenco dei publisher
+//                viewModel.getPublishers().removeObserver(this);
+//            }
+//        });
 
         // passo l'elenco degli autori all'autocompletamento
-        viewModel.getAuthors().observe(lifecycleOwner, new Observer<List<String>>() {
-            @Override
-            public void onChanged(List<String> strings) {
-                editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+        LiveDataEx.observeOnce(viewModel.getAuthors(), lifecycleOwner,
+                authors -> editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
                         android.R.layout.simple_dropdown_item_1line,
-                        strings));
-                // non mi serve più osservare l'elenco degli autori
-                viewModel.getAuthors().removeObserver(this);
-            }
-        });
+                        authors)));
+//        viewModel.getAuthors().observe(lifecycleOwner, new Observer<List<String>>() {
+//            @Override
+//            public void onChanged(List<String> strings) {
+//                editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+//                        android.R.layout.simple_dropdown_item_1line,
+//                        strings));
+//                // non mi serve più osservare l'elenco degli autori
+//                viewModel.getAuthors().removeObserver(this);
+//            }
+//        });
 
         mComicsImageViewTarget = new DrawableTextViewTarget(preview.initial);
     }
@@ -323,6 +333,13 @@ class ComicsEditFragmentHelper {
 
     void complete(boolean result) {
         if (result) {
+            // proseguo solo se l'immagine non è cambiata
+            if (preview.comicsImageUri != null &&
+                    preview.comicsImageUri.toString().equals(mComics.comics.image)) {
+                LogHelper.d("image not changed");
+                return;
+            }
+
             // elimino l'eventuale vecchia immagine
             if (mComics.comics.hasImage()) {
                 for (File file : mRootView.getContext().getFilesDir().listFiles((dir, name) -> ImageHelper.isValidImageFileName(name, mComics.comics.id))) {
@@ -373,22 +390,39 @@ class ComicsEditFragmentHelper {
             // potrei aggiungere la condizione
             // name.equals(mComics.comics.name)
             // ma non funzionerebbe nel malaugurato caso di chiamare writeComics prima di isValid
-            final LiveData<Comics> ld = mViewModel.getComics(name);
-            ld.observe(mLifecycleOwner, new Observer<Comics>() {
-                @Override
-                public void onChanged(Comics comics) {
-                    ld.removeObserver(this);
-                    // il nome è valido se non è usato da nessun comics
-                    // oppure quello che usa è lo stesso comics che sto modificando
-                    if (comics == null || comics.id == mComics.comics.id) {
-                        editor.nameLayout.setErrorEnabled(false);
-                        callback.onCallback(true);
-                    } else {
-                        editor.nameLayout.setError(editor.nameLayout.getContext().getText(R.string.comics_name_notunique_error));
-                        callback.onCallback(false);
-                    }
-                }
-            });
+//            final LiveData<Comics> ld = mViewModel.getComics(name);
+//            ld.observe(mLifecycleOwner, new Observer<Comics>() {
+//                @Override
+//                public void onChanged(Comics comics) {
+//                    ld.removeObserver(this);
+//                    // il nome è valido se non è usato da nessun comics
+//                    // oppure quello che usa è lo stesso comics che sto modificando
+//                    if (comics == null || comics.id == mComics.comics.id) {
+//                        editor.nameLayout.setErrorEnabled(false);
+//                        callback.onCallback(true);
+//                    } else {
+//                        editor.nameLayout.setError(editor.nameLayout.getContext().getText(R.string.comics_name_notunique_error));
+//                        callback.onCallback(false);
+//                    }
+//                }
+//            });
+
+            LiveDataEx.observeOnce(mViewModel.getComics(name), mLifecycleOwner,
+                    comics -> {
+                        // il nome è valido se non è usato da nessun comics
+                        // oppure quello che usa è lo stesso comics che sto modificando
+
+                        // TODO: potrebbe cmq esserci la necessità di censire un comics con lo stesso nome,
+                        //  magari di una casa editrice diversa
+
+                        if (comics == null || comics.id == mComics.comics.id) {
+                            editor.nameLayout.setErrorEnabled(false);
+                            callback.onCallback(true);
+                        } else {
+                            editor.nameLayout.setError(editor.nameLayout.getContext().getText(R.string.comics_name_notunique_error));
+                            callback.onCallback(false);
+                        }
+                    });
         }
     }
 }

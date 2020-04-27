@@ -34,8 +34,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
+import it.amonshore.comikkua.LiveDataEx;
+import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
@@ -93,15 +96,8 @@ public class ComicsEditFragment extends Fragment {
         if (mComicsId == NEW_COMICS_ID) {
             mHelper.setComics(requireContext(), null, savedInstanceState);
         } else {
-            // recupero l'istanza e poi rimuovo subito l'observer altrimenti verrebbe notificato il salvataggio
-            final LiveData<ComicsWithReleases> ld = mComicsViewModel.getComicsWithReleases(mComicsId);
-            ld.observe(getViewLifecycleOwner(), new Observer<ComicsWithReleases>() {
-                @Override
-                public void onChanged(ComicsWithReleases comicsWithReleases) {
-                    mHelper.setComics(requireContext(), comicsWithReleases, savedInstanceState);
-                    ld.removeObserver(this);
-                }
-            });
+            LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(mComicsId), getViewLifecycleOwner(),
+                    comicsWithReleases -> mHelper.setComics(requireContext(), comicsWithReleases, savedInstanceState));
         }
 
         return mHelper.getRootView();
@@ -145,6 +141,7 @@ public class ComicsEditFragment extends Fragment {
                 // controllo che i dati siano validi
                 mHelper.isValid(valid -> {
                     if (valid) {
+                        LogHelper.d("SAVE isValid view=%s", getView());
                         // eseguo il salvataggio in manera asincrona
                         //  al termine navigo vergo la destinazione
                         new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
@@ -247,7 +244,7 @@ public class ComicsEditFragment extends Fragment {
         @Override
         protected Long doInBackground(final Void... params) {
             // prima di salvare sul DB applico le modifiche su Comics
-            final Comics comics =  mHelper.writeComics().comics;
+            final Comics comics = mHelper.writeComics().comics;
             // eseguo l'insert o l'updatePurchased asincroni, perché sono già in un thread separato
             if (mIsNew) {
                 // ritorna il nuovo id
@@ -282,6 +279,8 @@ public class ComicsEditFragment extends Fragment {
                     final NavDirections directions = ComicsEditFragmentDirections
                             .actionDestComicsEditFragmentToComicsDetailFragment()
                             .setComicsId(comicsId);
+
+                    LogHelper.d("SAVE onPostExecute isMainLoop=%s", Utility.isMainLoop());
 
                     if (mIsNew) {
                         // se è nuovo navigo al dettaglio ma elimino questa destinazione dal back stack

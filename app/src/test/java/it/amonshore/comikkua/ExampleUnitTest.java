@@ -101,4 +101,20 @@ public class ExampleUnitTest {
         assertEquals(test.get(Calendar.HOUR_OF_DAY), 8);
         assertEquals(test.get(Calendar.MINUTE), 0);
     }
+
+    @Test
+    public void isEquals() {
+        String a = "x";
+        String b = "x";
+
+        assertTrue(Utility.isEquals(a, b));
+
+        assertTrue(Utility.isEquals("x", "x"));
+
+        assertTrue(Utility.isEquals(null,null));
+
+        assertFalse(Utility.isEquals(null, "a"));
+
+        assertFalse(Utility.isEquals("a", null));
+    }
 }

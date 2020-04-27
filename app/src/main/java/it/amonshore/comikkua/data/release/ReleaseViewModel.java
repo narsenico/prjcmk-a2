@@ -19,7 +19,7 @@ import it.amonshore.comikkua.Utility;
 
 public class ReleaseViewModel extends AndroidViewModel {
 
-    private ReleaseRepository mRepository;
+    private final ReleaseRepository mRepository;
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
@@ -101,8 +101,8 @@ public class ReleaseViewModel extends AndroidViewModel {
         return mRepository.getRelease(id);
     }
 
-    public LiveData<List<ComicsRelease>> getOneTimeComicsReleases(Iterable<Long> ids) {
-        return mRepository.getOneTimeComicsReleases(Utility.toArray(ids));
+    public LiveData<List<ComicsRelease>> getComicsReleases(Iterable<Long> ids) {
+        return mRepository.getComicsReleases(Utility.toArray(ids));
     }
 
     public void insert(Release release) {

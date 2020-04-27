@@ -3,6 +3,7 @@ package it.amonshore.comikkua;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -26,6 +27,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class Utility {
+
+    public static  boolean isMainLoop() {
+        return Looper.getMainLooper() == Looper.myLooper();
+    }
+
+    public static <T> boolean isEquals(T a, T b) {
+        if (a == b) {
+            return true;
+        } else if (a == null || b == null) {
+            return false;
+        } else {
+            return a.equals(b);
+        }
+    }
 
     public static List<Long> toList(@NonNull Iterable<Long> iterable) {
         final ArrayList<Long> list = new ArrayList<>();

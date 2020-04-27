@@ -12,7 +12,7 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
-public class ComicsRepository {
+class ComicsRepository {
 
     private ComicsDao mComicsDao;
 

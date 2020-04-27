@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -221,7 +222,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 .get(ComicsViewModel.class);
         final Context context = requireContext();
 
-        LiveEvent.toSingleEvent(comicsViewModel.getComics()).observe(this, list -> {
+        LiveDataEx.observeOnce(comicsViewModel.getComics(), this, list -> {
             for (Comics comics : list) {
                 if (comics.hasImage() && !ImageHelper.isValidImageFileName(comics.image, comics.id)) {
                     final File srcFile = new File(Uri.parse(comics.image).getPath());

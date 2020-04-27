@@ -12,7 +12,7 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
-public class ReleaseRepository {
+class ReleaseRepository {
 
     private ReleaseDao mReleaseDao;
 
@@ -43,8 +43,8 @@ public class ReleaseRepository {
         return mReleaseDao.getComicsReleasesByComicsId(comicsId);
     }
 
-    LiveData<List<ComicsRelease>> getOneTimeComicsReleases(Long... ids) {
-        return LiveEvent.toSingleEvent(mReleaseDao.getComicsReleases(ids));
+    LiveData<List<ComicsRelease>> getComicsReleases(Long... ids) {
+        return mReleaseDao.getComicsReleases(ids);
     }
 
     LiveData<Release> getRelease(long id) {

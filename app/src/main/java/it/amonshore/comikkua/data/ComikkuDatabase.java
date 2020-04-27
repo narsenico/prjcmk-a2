@@ -41,6 +41,8 @@ public abstract class ComikkuDatabase extends RoomDatabase {
     private static volatile ComikkuDatabase INSTANCE;
 
     public static ComikkuDatabase getDatabase(final Context context) {
+        // NB: la vecchia applicazione ha un db chiamato comikkua.db alla versione 3
+        // questo ha un nome diverso quindi non dovrebbe fare casino (ho provato, mantiene i database con nomi diversi)
         if (INSTANCE == null) {
             synchronized (ComikkuDatabase.class) {
                 if (INSTANCE == null) {
