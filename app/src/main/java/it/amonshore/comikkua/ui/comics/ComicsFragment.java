@@ -251,34 +251,15 @@ public class ComicsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.createNewComics:
-                final NavDirections directions = ComicsFragmentDirections
-                        .actionDestComicsFragmentToComicsEditFragment()
-                        .setComicsId(NEW_COMICS_ID)
-                        .setSubtitle(R.string.title_comics_create);
+        if (item.getItemId() == R.id.createNewComics) {
+            final NavDirections directions = ComicsFragmentDirections
+                    .actionDestComicsFragmentToComicsEditFragment()
+                    .setComicsId(NEW_COMICS_ID)
+                    .setSubtitle(R.string.title_comics_create);
 
-                Navigation.findNavController(requireView()).navigate(directions);
+            Navigation.findNavController(requireView()).navigate(directions);
 
-                return true;
-            case R.id.retrieveComics:
-                // TODO: test test test
-                LiveDataEx.observeOnce(mComicsViewModel.retrieveComics(), getViewLifecycleOwner(),
-                        resource -> {
-                            switch (resource.status) {
-                                case LOADING:
-                                    LogHelper.d("LOADING");
-                                    break;
-                                case ERROR:
-                                    LogHelper.e("ERROR: %s", resource.message);
-                                    break;
-                                case SUCCESS:
-                                    LogHelper.d("SUCCESS: data=%s", resource.data);
-                                    break;
-                            }
-                        });
-
-                return true;
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

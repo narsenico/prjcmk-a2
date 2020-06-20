@@ -23,6 +23,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;

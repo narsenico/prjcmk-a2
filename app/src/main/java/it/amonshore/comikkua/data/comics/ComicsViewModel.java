@@ -2,23 +2,20 @@ package it.amonshore.comikkua.data.comics;
 
 import android.app.Application;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
 import java.util.List;
 
-import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
-import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.CustomData;
 
 public class ComicsViewModel extends AndroidViewModel {
 
@@ -29,6 +26,7 @@ public class ComicsViewModel extends AndroidViewModel {
     private String mLastFilter;
 
     public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
+    public final MediatorLiveData<List<String>> comicBookTitles;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
     public final Bundle states;
@@ -56,6 +54,25 @@ public class ComicsViewModel extends AndroidViewModel {
                 return mAllComics;
             } else {
                 return new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(input), config).build();
+            }
+        });
+
+        // carico la lista dei titoli dalla rete
+        // posto il valore solo in caso di SUCCESS perché se uso LiveDataEx.observeOnce()
+        //  riceverei solo il primo valore, che sarà a livello LOADING (oppure ERROR), visto che l'observer verrebbe subito rimosso
+        comicBookTitles = new MediatorLiveData<>();
+        comicBookTitles.addSource(mCmkWebRepository.getTitles(), resource -> {
+            LogHelper.d("comicBookTitles status=%s", resource.status);
+            switch (resource.status) {
+                case SUCCESS:
+                    comicBookTitles.postValue(resource.data);
+                    break;
+                case LOADING:
+                    // non mi interessa
+                    break;
+                case ERROR:
+                    LogHelper.e("error retrieving web comics: " + resource.message);
+                    break;
             }
         });
     }
@@ -162,10 +179,5 @@ public class ComicsViewModel extends AndroidViewModel {
 
     public void deleteRemoved() {
         mRepository.deleteRemoved();
-    }
-
-    // TODO: cambiare nome
-    public CustomData<List<Comics>> retrieveComics() {
-        return mCmkWebRepository.getComics();
     }
 }

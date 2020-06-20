@@ -28,10 +28,7 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import it.amonshore.comikkua.LiveDataEx;
-import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.ICallback;
@@ -69,9 +66,9 @@ class ComicsEditFragmentHelper {
 
     final class Editor {
         TextInputLayout nameLayout;
-        EditText name, series, price,
+        EditText series, price,
                 notes;
-        AutoCompleteTextView publisher, authors;
+        AutoCompleteTextView name, publisher, authors;
         MaterialSpinner periodicity;
     }
 
@@ -89,7 +86,6 @@ class ComicsEditFragmentHelper {
     @NonNull
     private RequestManager mGlideRequestManager;
     private CustomViewTarget<TextView, Drawable> mComicsImageViewTarget;
-    boolean mMoveImageFromCache;
 
     private void bind(@NonNull View view, @NonNull ComicsViewModel viewModel, @NonNull LifecycleOwner lifecycleOwner) {
         mRootView = view;
@@ -108,7 +104,7 @@ class ComicsEditFragmentHelper {
 
         editor = new Editor();
         editor.nameLayout = view.findViewById(R.id.til_name);
-        editor.name = editor.nameLayout.getEditText();
+        editor.name = (AutoCompleteTextView) editor.nameLayout.getEditText();
         editor.publisher = (AutoCompleteTextView) ((TextInputLayout) view.findViewById(R.id.til_publisher)).getEditText();
         editor.series = ((TextInputLayout) view.findViewById(R.id.til_series)).getEditText();
         editor.authors = (AutoCompleteTextView) ((TextInputLayout) view.findViewById(R.id.til_authors)).getEditText();
@@ -155,37 +151,23 @@ class ComicsEditFragmentHelper {
             }
         });
 
+        // passo l'elenco dei titoli prelevati dalla rete
+        viewModel.comicBookTitles.observe(lifecycleOwner,
+                webComics -> editor.name.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
+                        android.R.layout.simple_dropdown_item_1line,
+                        webComics)));
+
         // passo l'elenco dei publisher all'autocompletamento
-        LiveDataEx.observeOnce(viewModel.getPublishers(), lifecycleOwner,
+        viewModel.getPublishers().observe(lifecycleOwner,
                 publishers -> editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
                         android.R.layout.simple_dropdown_item_1line,
                         publishers)));
-//        viewModel.getPublishers().observe(lifecycleOwner, new Observer<List<String>>() {
-//            @Override
-//            public void onChanged(List<String> strings) {
-//                editor.publisher.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
-//                        android.R.layout.simple_dropdown_item_1line,
-//                        strings));
-//                // non mi serve più osservare l'elenco dei publisher
-//                viewModel.getPublishers().removeObserver(this);
-//            }
-//        });
 
         // passo l'elenco degli autori all'autocompletamento
-        LiveDataEx.observeOnce(viewModel.getAuthors(), lifecycleOwner,
+        viewModel.getAuthors().observe(lifecycleOwner,
                 authors -> editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
                         android.R.layout.simple_dropdown_item_1line,
                         authors)));
-//        viewModel.getAuthors().observe(lifecycleOwner, new Observer<List<String>>() {
-//            @Override
-//            public void onChanged(List<String> strings) {
-//                editor.authors.setAdapter(new ArrayAdapter<>(mRootView.getContext(),
-//                        android.R.layout.simple_dropdown_item_1line,
-//                        strings));
-//                // non mi serve più osservare l'elenco degli autori
-//                viewModel.getAuthors().removeObserver(this);
-//            }
-//        });
 
         mComicsImageViewTarget = new DrawableTextViewTarget(preview.initial);
     }
@@ -293,7 +275,6 @@ class ComicsEditFragmentHelper {
      * @param uri l'uri dell'immagine, può essere null
      */
     void setComicsImage(@Nullable Uri uri) {
-        mMoveImageFromCache = true;
         updateComicsImageAndInitial(uri, editor.name.getText().toString());
     }
 

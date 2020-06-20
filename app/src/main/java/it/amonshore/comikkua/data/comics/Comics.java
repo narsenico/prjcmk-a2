@@ -2,8 +2,6 @@ package it.amonshore.comikkua.data.comics;
 
 import android.text.TextUtils;
 
-import com.google.gson.annotations.SerializedName;
-
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Index;
@@ -19,10 +17,8 @@ public class Comics {
     @PrimaryKey(autoGenerate = true)
     public long id;
     @NonNull
-    @SerializedName("title")
     public String name;
     public String series;
-    @SerializedName("editor")
     public String publisher;
     public String authors;
     public double price;

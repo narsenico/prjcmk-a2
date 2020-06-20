@@ -73,7 +73,7 @@ public interface ComicsDao {
     DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory();
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND " +
-            "(name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName) " +
+            "(name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName OR notes LIKE :likeName) " +
             "ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory(String likeName);

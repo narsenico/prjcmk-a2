@@ -317,6 +317,8 @@ public class BackupHelper {
                         }
                     }
                 }
+            } catch (Exception ex) {
+                LogHelper.e("Error during backup of '%s'", comics.name);
             } finally {
                 if (is != null) {
                     try {

@@ -17,10 +17,4 @@
         android:title="@string/menu_create"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/retrieveComics"
-        android:orderInCategory="100"
-        android:title="Retrieve comics"
-        app:showAsAction="never" />
-
 </menu>

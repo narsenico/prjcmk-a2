@@ -23,6 +23,14 @@
         </activity>
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
+
+        <!-- Necessario per risolvere il problema di
+            java.lang.ClassNotFoundException: Didn't find class "org.apache.http.ProtocolVersion" ...
+            Dovrebbe essere relavito a questo https://github.com/google/volley/issues/200
+            (volley + targetSdkVersion=28)
+            -->
+        <uses-library android:name="org.apache.http.legacy"
+            android:required="false"/>
     </application>
 
 </manifest>
