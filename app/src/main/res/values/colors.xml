@@ -52,4 +52,12 @@
     <color name="colorItemBackgroundY">#FFEE58</color>
     <color name="colorItemBackgroundZ">#FFEB3B</color>
     <color name="colorItemBackground_">#8D6E63</color>
+
+    <!-- chiaki colors -->
+
+    <color name="colorPrimary_chiaki">#C95C3C</color>
+    <color name="colorPrimaryDark_chiaki">#C95C31</color>
+    <color name="colorAccent_chiaki">#ed8f8d</color>
+    <color name="colorText_chiaki">#4F4B45</color>
+
 </resources>

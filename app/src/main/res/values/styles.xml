@@ -10,6 +10,13 @@
         <item name="android:textColorPrimary">@color/colorText</item>
     </style>
 
+    <style name="AppTheme.TryMe" parent="AppTheme">
+        <item name="colorPrimary">@color/colorPrimary_chiaki</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark_chiaki</item>
+        <item name="colorAccent">@color/colorAccent_chiaki</item>
+        <item name="android:textColorPrimary">@color/colorText_chiaki</item>
+    </style>
+
     <style name="WindowActionMode" parent="Widget.AppCompat.ActionMode">
         <item name="background">?attr/colorPrimaryDark</item>
     </style>

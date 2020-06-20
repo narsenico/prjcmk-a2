@@ -109,6 +109,15 @@ public class ComicsWithReleases {
         return nextRelease;
     }
 
+    public int getNextReleaseNumber() {
+        final Release lastRelease = getLastRelease();
+        if (lastRelease == null) {
+            return 0;
+        } else {
+            return lastRelease.number + 1;
+        }
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this) return true;

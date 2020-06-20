@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -172,6 +174,24 @@ public class Utility {
             }
             sb.append(text);
         }
+        return sb.toString();
+    }
+
+    public interface ReplaceWithRegexCallback {
+        @NonNull String replace(@NonNull Matcher matcher);
+    }
+
+    public static String replaceWithRegex(@NonNull String regex, @NonNull String input, @NonNull ReplaceWithRegexCallback callback) {
+        return replaceWithRegex(Pattern.compile(regex), input, callback);
+    }
+
+    public static String replaceWithRegex(@NonNull Pattern pattern, @NonNull String input, @NonNull ReplaceWithRegexCallback callback) {
+        final Matcher matcher = pattern.matcher(input);
+        final StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, callback.replace(matcher));
+        }
+        matcher.appendTail(sb);
         return sb.toString();
     }
 

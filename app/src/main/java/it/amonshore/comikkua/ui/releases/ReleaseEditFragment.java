@@ -32,6 +32,7 @@ import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
+import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
 public class ReleaseEditFragment extends Fragment {
@@ -91,7 +92,17 @@ public class ReleaseEditFragment extends Fragment {
                 comicsWithReleases -> {
                     mComics = comicsWithReleases;
                     if (mReleaseId == Release.NEW_RELEASE_ID) {
-                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
+//                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
+                        // cerco le nuove release sul web
+                        LiveDataEx.observeOnce(mReleaseViewModel.searchForNewReleases(mComics.comics.name, mComics.getNextReleaseNumber()), getViewLifecycleOwner(),
+                                releases -> {
+                                    LogHelper.d("Search for '%s' new releases (>=%s): found %s", mComics.comics.name, mComics.getNextReleaseNumber(), releases.size());
+                                    if (releases.size() == 0) {
+                                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
+                                    } else {
+                                        mHelper.setRelease(requireContext(), mComics, Release.from(mComicsId, releases.get(0)), savedInstanceState);
+                                    }
+                                });
                     } else {
                         LiveDataEx.observeOnce(mReleaseViewModel.getRelease(mReleaseId), getViewLifecycleOwner(),
                                 release -> mHelper.setRelease(requireContext(), mComics, release, savedInstanceState));

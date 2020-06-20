@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data.comics;
+package it.amonshore.comikkua.data.web;
 
 import com.google.gson.annotations.SerializedName;
 

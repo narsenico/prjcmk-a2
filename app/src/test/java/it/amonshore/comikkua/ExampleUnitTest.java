@@ -18,6 +18,8 @@ import java.time.temporal.WeekFields;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -116,5 +118,21 @@ public class ExampleUnitTest {
         assertFalse(Utility.isEquals(null, "a"));
 
         assertFalse(Utility.isEquals("a", null));
+    }
+
+    @Test
+    public void replaceWithRegex() {
+        final String url = Utility.replaceWithRegex(":([^/?:0-9]+)(/|\\?|$)", "http://192.168.0.4:5000/v1/title/:title/releases?numberFrom=:numberFrom", matcher -> {
+            System.out.println(matcher.group());
+            if (matcher.group(1).equals("title")) {
+                return "TITOLO$2";
+            } else if (matcher.group(1).equals("numberFrom")) {
+                return "999999$2";
+            } else {
+                return "";
+            }
+        });
+
+        System.out.println(url);
     }
 }

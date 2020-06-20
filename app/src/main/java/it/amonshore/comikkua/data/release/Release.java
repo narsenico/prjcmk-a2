@@ -9,6 +9,7 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.web.CmkWebRelease;
 
 @Entity(tableName = "tReleases",
         foreignKeys = @ForeignKey(entity = Comics.class,
@@ -80,6 +81,14 @@ public class Release {
         clone.ordered = release.ordered;
         clone.notes = release.notes;
         clone.lastUpdate = lastUpdate;
+        return clone;
+    }
+
+    public static Release from(long comicsId, CmkWebRelease release) {
+        final Release clone = new Release();
+        clone.comicsId = comicsId;
+        clone.number = release.number;
+        clone.date = release.date;
         return clone;
     }
 

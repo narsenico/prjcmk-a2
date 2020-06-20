@@ -16,10 +16,13 @@ import androidx.lifecycle.MediatorLiveData;
 import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.web.CmkWebRelease;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 
 public class ReleaseViewModel extends AndroidViewModel {
 
     private final ReleaseRepository mRepository;
+    private final CmkWebRepository mCmkWebRepository;
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
@@ -29,6 +32,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
+        mCmkWebRepository = new CmkWebRepository(application);
         mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();
     }
@@ -188,4 +192,24 @@ public class ReleaseViewModel extends AndroidViewModel {
     public void deleteRemoved() {
         mRepository.deleteRemoved();
     }
+
+    public LiveData<List<CmkWebRelease>> searchForNewReleases(String title, int numberFrom) {
+        final MediatorLiveData<List<CmkWebRelease>> data = new MediatorLiveData<>();
+        data.addSource(mCmkWebRepository.getReleases(title, numberFrom), resource -> {
+            LogHelper.d("searchForNewReleases status=%s", resource.status);
+            switch (resource.status) {
+                case SUCCESS:
+                    data.postValue(resource.data);
+                    break;
+                case LOADING:
+                    // non mi interessa
+                    break;
+                case ERROR:
+                    LogHelper.e("error retrieving web comics releases: " + resource.message);
+                    break;
+            }
+        });
+        return data;
+    }
+
 }

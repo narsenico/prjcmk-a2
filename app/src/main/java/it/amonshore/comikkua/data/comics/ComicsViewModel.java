@@ -16,6 +16,7 @@ import androidx.paging.PagedList;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 
 public class ComicsViewModel extends AndroidViewModel {
 
