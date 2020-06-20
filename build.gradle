@@ -7,7 +7,7 @@ buildscript {
         
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
+        classpath 'com.android.tools.build:gradle:4.0.0'
         classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:1.0.0"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -19,24 +19,11 @@ allprojects {
     repositories {
         google()
         jcenter()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-ext {
-    roomVersion = '2.2.5'
-    archLifecycleVersion = '2.2.0'
-    coreTestingVersion = '2.1.0'
-    materialVersion = '1.2.0-alpha06'
-    pagingVersion = '2.1.2'
-    supportVersion = "1.0.0"
-    recyclerVersion = '1.2.0-alpha02'
-    navVersion = "2.2.2"
-    workVersion = "2.3.4"
-    coordinatorlayoutVersion = '1.1.0'
-    preferenceVersion = '1.1.1'
 }
