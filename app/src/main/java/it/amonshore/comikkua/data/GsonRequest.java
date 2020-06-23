@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.Cache;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
@@ -10,13 +11,16 @@ import com.google.gson.GsonBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
+import it.amonshore.comikkua.LogHelper;
 
 public class GsonRequest<T> extends JsonRequest<T> {
     private final Class<T> clazz;
     private final Type type;
+    private Map<String, String> mHeaders;
 
     public GsonRequest(int method, @NonNull String url, @NonNull Class<T> clazz,
                        @NonNull CustomData<T> customData) {
@@ -43,6 +47,15 @@ public class GsonRequest<T> extends JsonRequest<T> {
         customData.postValue(Resource.loading(null));
     }
 
+    public void setHeaders(Map<String, String> headers) {
+        mHeaders = headers;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        return mHeaders == null || mHeaders.size() == 0 ? Collections.emptyMap() : mHeaders;
+    }
+
     @Override
     protected Map<String, String> getParams() throws AuthFailureError {
         return super.getParams();
@@ -58,8 +71,14 @@ public class GsonRequest<T> extends JsonRequest<T> {
             } else {
                 result = new GsonBuilder().create().fromJson(json, clazz);
             }
-            return Response.success(result,
-                    HttpHeaderParser.parseCacheHeaders(response));
+
+            final Cache.Entry entry = HttpHeaderParser.parseCacheHeaders(response);
+
+//            LogHelper.d("GSON: etag=%s date=%s isExpired=%s cache-control=%s",
+//                    entry.etag, "" + entry.serverDate, entry.isExpired(),
+//                    response.headers.get("Cache-Control"));
+
+            return Response.success(result, entry);
         } catch (UnsupportedEncodingException e) {
             return Response.error(new ParseError(e));
         }

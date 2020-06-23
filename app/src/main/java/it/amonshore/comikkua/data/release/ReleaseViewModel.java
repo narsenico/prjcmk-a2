@@ -16,6 +16,7 @@ import androidx.lifecycle.MediatorLiveData;
 import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
 
@@ -193,13 +194,21 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.deleteRemoved();
     }
 
-    public LiveData<List<CmkWebRelease>> searchForNewReleases(String title, int numberFrom) {
-        final MediatorLiveData<List<CmkWebRelease>> data = new MediatorLiveData<>();
-        data.addSource(mCmkWebRepository.getReleases(title, numberFrom), resource -> {
-            LogHelper.d("searchForNewReleases status=%s", resource.status);
+    public LiveData<Release> searchForNextRelease(@NonNull ComicsWithReleases comics) {
+        final MediatorLiveData<Release> data = new MediatorLiveData<>();
+        // cerco le release in base al titolo del comics
+        // che potrebbe anche portare a risultati spiacevoli
+        // ad es. se ci sono più edizioni dello stesso comics
+        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
+            LogHelper.d("searchForNextRelease status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:
-                    data.postValue(resource.data);
+                    // se non ci sono release la creo in base ai dati già in mio possesso
+                    if (resource.data == null || resource.data.size() == 0) {
+                        data.postValue(comics.createNextRelease());
+                    } else {
+                        data.postValue(Release.from(comics.comics.id, resource.data.get(0)));
+                    }
                     break;
                 case LOADING:
                     // non mi interessa

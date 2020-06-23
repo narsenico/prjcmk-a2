@@ -186,14 +186,9 @@ public class ReleaseEditFragmentHelper {
         return mRelease.id == Release.NEW_RELEASE_ID;
     }
 
-    void setRelease(@NonNull Context context, @NonNull ComicsWithReleases comics, @Nullable Release release, Bundle savedInstanceState) {
+    void setRelease(@NonNull ComicsWithReleases comics, @NonNull Release release, Bundle savedInstanceState) {
         mComics = comics;
-        if (release == null) {
-            // creo una release nuova impostando in automatico numero e data uscita (in base alla periodicità)
-            mRelease = mComics.createNextRelease();
-        } else {
-            mRelease = release;
-        }
+        mRelease = release;
 
         if (savedInstanceState != null) {
             preview.numbers.setText(savedInstanceState.getString("numbers"));

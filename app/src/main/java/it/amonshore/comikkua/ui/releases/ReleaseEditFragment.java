@@ -92,20 +92,13 @@ public class ReleaseEditFragment extends Fragment {
                 comicsWithReleases -> {
                     mComics = comicsWithReleases;
                     if (mReleaseId == Release.NEW_RELEASE_ID) {
-//                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
-                        // cerco le nuove release sul web
-                        LiveDataEx.observeOnce(mReleaseViewModel.searchForNewReleases(mComics.comics.name, mComics.getNextReleaseNumber()), getViewLifecycleOwner(),
-                                releases -> {
-                                    LogHelper.d("Search for '%s' new releases (>=%s): found %s", mComics.comics.name, mComics.getNextReleaseNumber(), releases.size());
-                                    if (releases.size() == 0) {
-                                        mHelper.setRelease(requireContext(), mComics, null, savedInstanceState);
-                                    } else {
-                                        mHelper.setRelease(requireContext(), mComics, Release.from(mComicsId, releases.get(0)), savedInstanceState);
-                                    }
-                                });
+                        // cerco la prossima release
+                        // TODO: potrebbe metterci qualche secondo
+                        LiveDataEx.observeOnce(mReleaseViewModel.searchForNextRelease(mComics), getViewLifecycleOwner(),
+                                release -> mHelper.setRelease(mComics, release, savedInstanceState));
                     } else {
                         LiveDataEx.observeOnce(mReleaseViewModel.getRelease(mReleaseId), getViewLifecycleOwner(),
-                                release -> mHelper.setRelease(requireContext(), mComics, release, savedInstanceState));
+                                release -> mHelper.setRelease(mComics, release, savedInstanceState));
                     }
                 });
 
