@@ -6,7 +6,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,11 +60,12 @@ public class CmkWebRepository {
         // quindi non posso passargli un Class<List<CmkWebComics>>
         // ma con uno specifito tipo Type invece ci riesce
         // https://sites.google.com/site/gson/gson-user-guide#TOC-Serializing-and-Deserializing-Generic-Types
-        final Type type = new TypeToken<List<CmkWebComics>>() {}.getType();
+        final Type type = new TypeToken<List<CmkWebComics>>() {
+        }.getType();
+        final CustomData<List<CmkWebComics>> liveData = new CustomData<>();
 
         LogHelper.d("CMKWEB " + GET_COMICS_URL);
 
-        final CustomData<List<CmkWebComics>> liveData = new CustomData<>();
         final GsonRequest<List<CmkWebComics>> request = new GsonRequest<>(GsonRequest.Method.GET,
                 GET_COMICS_URL,
                 type,
@@ -79,11 +83,12 @@ public class CmkWebRepository {
      */
     public CustomData<List<String>> getTitles() {
         // la richiesta ritorna un array di stringhe
-        final Type type = new TypeToken<List<String>>() {}.getType();
+        final Type type = new TypeToken<List<String>>() {
+        }.getType();
+        final CustomData<List<String>> liveData = new CustomData<>();
 
         LogHelper.d("CMKWEB " + GET_TITLES_URL);
 
-        final CustomData<List<String>> liveData = new CustomData<>();
         final GsonRequest<List<String>> request = new GsonRequest<>(GsonRequest.Method.GET,
                 GET_TITLES_URL,
                 type,
@@ -94,23 +99,35 @@ public class CmkWebRepository {
         return liveData;
     }
 
+    /**
+     * Cerca la nuova release di un comics a partire da un dato numero (compreso).
+     *
+     * @param title      titolo del comics per cui cercare la nuova release
+     * @param numberFrom numero da cui iniziare la ricerca (compreso)
+     * @return nuova release
+     */
     public CustomData<List<CmkWebRelease>> getReleases(String title, int numberFrom) {
-        final Type type = new TypeToken<List<CmkWebRelease>>() {}.getType();
-
-        final String url = GET_RELEASES_TEMPLATE
-                .replace(":title", title)
-                .replace(":numberFrom", Integer.toString(numberFrom));
-
-        LogHelper.d("CMKWEB " + url);
-
+        final Type type = new TypeToken<List<CmkWebRelease>>() {
+        }.getType();
         final CustomData<List<CmkWebRelease>> liveData = new CustomData<>();
-        final GsonRequest<List<CmkWebRelease>> request = new GsonRequest<>(GsonRequest.Method.GET,
-                url,
-                type,
-                liveData);
-        request.setHeaders(HEADERS);
 
-        mRequestQueue.add(request);
+        try {
+            final String url = GET_RELEASES_TEMPLATE
+                    .replace(":title", URLEncoder.encode(title, "utf-8"))
+                    .replace(":numberFrom", Integer.toString(numberFrom));
+
+            LogHelper.d("CMKWEB " + url);
+
+            final GsonRequest<List<CmkWebRelease>> request = new GsonRequest<>(GsonRequest.Method.GET,
+                    url,
+                    type,
+                    liveData);
+            request.setHeaders(HEADERS);
+
+            mRequestQueue.add(request);
+        } catch (UnsupportedEncodingException ueex) {
+            liveData.onErrorResponse(ueex);
+        }
         return liveData;
     }
 }

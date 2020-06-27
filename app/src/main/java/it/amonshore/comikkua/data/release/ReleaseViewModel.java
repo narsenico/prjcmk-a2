@@ -215,6 +215,7 @@ public class ReleaseViewModel extends AndroidViewModel {
                     break;
                 case ERROR:
                     LogHelper.e("error retrieving web comics releases: " + resource.message);
+                    // TODO: bisogna dare qualche segnalazione all'utente
                     break;
             }
         });

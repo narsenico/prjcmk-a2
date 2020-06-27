@@ -13,6 +13,10 @@ public class CustomData<T> extends MutableLiveData<Resource<T>>
         postValue(Resource.error(null, error.getMessage()));
     }
 
+    public void onErrorResponse(Exception error) {
+        postValue(Resource.error(null, error.getMessage()));
+    }
+
     @Override
     public void onResponse(T response) {
         postValue(Resource.success(response));

@@ -37,7 +37,7 @@ android {
             dimension "develop"
             applicationIdSuffix '.tryme'
             versionNameSuffix '-tryme'
-            buildConfigField "String", "CMKWEB", "\"RAPIDAPI\""
+            buildConfigField "String", "CMKWEB", "\"LOCAL\""
         }
     }
     compileOptions {
