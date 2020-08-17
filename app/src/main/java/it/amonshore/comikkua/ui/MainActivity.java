@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -21,6 +22,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
+import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.NotificationUtils;
 import it.amonshore.comikkua.R;
@@ -66,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements
 
         // preparo le opzioni per Glide da poter usare in tutta l'app
         ImageHelper.prepareGlideOptions(this);
+
+        if (BuildConfig.DEBUG) {
+            Toast.makeText(this, String.format("Lading from: %s", BuildConfig.CMKWEB), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

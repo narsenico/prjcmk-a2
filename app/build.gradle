@@ -27,17 +27,23 @@ android {
     buildFeatures {
         dataBinding = true
     }
-    flavorDimensions "develop"
+    flavorDimensions "develop", "remote"
     productFlavors {
         safe {
             dimension "develop"
-            buildConfigField "String", "CMKWEB", "\"HEROKU\""
         }
         tryme {
             dimension "develop"
             applicationIdSuffix '.tryme'
             versionNameSuffix '-tryme'
+        }
+        local {
+            dimension "remote"
             buildConfigField "String", "CMKWEB", "\"LOCAL\""
+        }
+        heroku {
+            dimension "remote"
+            buildConfigField "String", "CMKWEB", "\"HEROKU\""
         }
     }
     compileOptions {
