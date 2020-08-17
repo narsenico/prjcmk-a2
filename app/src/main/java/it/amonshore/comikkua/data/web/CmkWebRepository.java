@@ -8,14 +8,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.URLEncoder;
 import it.amonshore.comikkua.data.CustomData;
 import it.amonshore.comikkua.data.GsonRequest;
 
