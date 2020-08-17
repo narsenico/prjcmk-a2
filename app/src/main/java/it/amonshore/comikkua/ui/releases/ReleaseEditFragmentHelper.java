@@ -1,6 +1,5 @@
 package it.amonshore.comikkua.ui.releases;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,6 +25,7 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LifecycleOwner;
 import it.amonshore.comikkua.DateFormatterHelper;
@@ -84,6 +84,7 @@ public class ReleaseEditFragmentHelper {
     @NonNull
     private LifecycleOwner mLifecycleOwner;
     private RequestManager mGlideRequestManager;
+    private ContentLoadingProgressBar mProgressBar;
 
     private void bind(@NonNull View view, @NonNull ReleaseViewModel viewModel,
                       @NonNull LifecycleOwner lifecycleOwner,
@@ -165,6 +166,15 @@ public class ReleaseEditFragmentHelper {
             editor.date.setText("");
             preview.date.setText("");
         });
+
+        mProgressBar = view.findViewById(R.id.progress_bar);
+        viewModel.loading.observe(lifecycleOwner, loading -> {
+            if (loading) {
+                mProgressBar.show();
+            } else {
+                mProgressBar.hide();
+            }
+        });
     }
 
     @NonNull
@@ -186,13 +196,32 @@ public class ReleaseEditFragmentHelper {
         return mRelease.id == Release.NEW_RELEASE_ID;
     }
 
-    void setRelease(@NonNull ComicsWithReleases comics, @NonNull Release release, Bundle savedInstanceState) {
+    void setComics(@NonNull ComicsWithReleases comics) {
         mComics = comics;
+
+        preview.title.setText(mComics.comics.name);
+        preview.notes.setText(mComics.comics.notes);
+        preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
+        preview.purchased.setVisibility(View.INVISIBLE);
+        preview.ordered.setVisibility(View.INVISIBLE);
+        preview.menu.setVisibility(View.INVISIBLE);
+        updatePurchased(false);
+
+        if (comics.comics.hasImage()) {
+            mGlideRequestManager
+                    .load(Uri.parse(comics.comics.image))
+                    .apply(ImageHelper.getGlideSquareOptions())
+                    .into(new DrawableTextViewTarget(preview.numbers));
+        }
+    }
+
+    void setRelease(/*@NonNull ComicsWithReleases comics, */@NonNull Release release, Bundle savedInstanceState) {
+//        mComics = comics;
         mRelease = release;
 
         if (savedInstanceState != null) {
             preview.numbers.setText(savedInstanceState.getString("numbers"));
-            preview.notes.setText(savedInstanceState.getString("notes", mComics.comics.notes));
+//            preview.notes.setText(savedInstanceState.getString("notes", mComics.comics.notes));
             preview.purchased.setVisibility(savedInstanceState.getBoolean("purchased") ? View.VISIBLE : View.INVISIBLE);
             preview.ordered.setVisibility(savedInstanceState.getBoolean("ordered") ? View.VISIBLE : View.INVISIBLE);
             editor.numbers.setText(savedInstanceState.getString("numbers"));
@@ -203,7 +232,7 @@ public class ReleaseEditFragmentHelper {
             prepareDatePicker(savedInstanceState.getLong("dateUtc"));
         } else {
             preview.numbers.setText(String.format(Locale.getDefault(), "%d", mRelease.number));
-            preview.notes.setText(Utility.nvl(mRelease.notes, mComics.comics.notes));
+//            preview.notes.setText(Utility.nvl(mRelease.notes, mComics.comics.notes));
             preview.purchased.setVisibility(mRelease.purchased ? View.VISIBLE : View.INVISIBLE);
             preview.ordered.setVisibility(mRelease.ordered ? View.VISIBLE : View.INVISIBLE);
             editor.numbers.setText(String.format(Locale.getDefault(), "%d", mRelease.number));
@@ -216,18 +245,18 @@ public class ReleaseEditFragmentHelper {
 
         updatePurchased(editor.purchased.isChecked());
 
-        // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
-        preview.title.setText(mComics.comics.name);
-        preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
+//        // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
+//        preview.title.setText(mComics.comics.name);
+//        preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
 
-        if (comics.comics.hasImage()) {
-            mGlideRequestManager
-                    .load(Uri.parse(comics.comics.image))
-                    .apply(ImageHelper.getGlideSquareOptions())
-                    .into(new DrawableTextViewTarget(preview.numbers));
-        }
+//        if (comics.comics.hasImage()) {
+//            mGlideRequestManager
+//                    .load(Uri.parse(comics.comics.image))
+//                    .apply(ImageHelper.getGlideSquareOptions())
+//                    .into(new DrawableTextViewTarget(preview.numbers));
+//        }
 
-        preview.menu.setVisibility(View.INVISIBLE);
+//        preview.menu.setVisibility(View.INVISIBLE);
     }
 
     private void updatePurchased(boolean isChecked) {

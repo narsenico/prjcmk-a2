@@ -91,14 +91,14 @@ public class ReleaseEditFragment extends Fragment {
         LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(mComicsId), getViewLifecycleOwner(),
                 comicsWithReleases -> {
                     mComics = comicsWithReleases;
+                    mHelper.setComics(mComics);
                     if (mReleaseId == Release.NEW_RELEASE_ID) {
                         // cerco la prossima release
-                        // TODO: potrebbe metterci qualche secondo
                         LiveDataEx.observeOnce(mReleaseViewModel.searchForNextRelease(mComics), getViewLifecycleOwner(),
-                                release -> mHelper.setRelease(mComics, release, savedInstanceState));
+                                release -> mHelper.setRelease(/*mComics, */release, savedInstanceState));
                     } else {
                         LiveDataEx.observeOnce(mReleaseViewModel.getRelease(mReleaseId), getViewLifecycleOwner(),
-                                release -> mHelper.setRelease(mComics, release, savedInstanceState));
+                                release -> mHelper.setRelease(/*mComics, */release, savedInstanceState));
                     }
                 });
 

@@ -13,6 +13,7 @@ import androidx.annotation.Size;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
@@ -24,11 +25,14 @@ public class ReleaseViewModel extends AndroidViewModel {
 
     private final ReleaseRepository mRepository;
     private final CmkWebRepository mCmkWebRepository;
+
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
+    private ReleaseViewModelGroupHelper mGroupHelper;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
     public final Bundle states;
-    private ReleaseViewModelGroupHelper mGroupHelper;
+    // indica se è in corso un caricamento di dati da remoto
+    public final MutableLiveData<Boolean> loading;
 
     public ReleaseViewModel(Application application) {
         super(application);
@@ -36,6 +40,7 @@ public class ReleaseViewModel extends AndroidViewModel {
         mCmkWebRepository = new CmkWebRepository(application);
         mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();
+        loading = new MutableLiveData<>();
     }
 
     public LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
@@ -209,13 +214,16 @@ public class ReleaseViewModel extends AndroidViewModel {
                     } else {
                         data.postValue(Release.from(comics.comics.id, resource.data.get(0)));
                     }
+                    loading.postValue(false);
                     break;
                 case LOADING:
-                    // non mi interessa
+                    loading.postValue(true);
                     break;
                 case ERROR:
                     LogHelper.e("error retrieving web comics releases: " + resource.message);
                     // TODO: bisogna dare qualche segnalazione all'utente
+                    data.postValue(comics.createNextRelease());
+                    loading.postValue(false);
                     break;
             }
         });
