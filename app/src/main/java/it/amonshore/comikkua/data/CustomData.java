@@ -12,6 +12,10 @@ public class CustomData<T> extends MutableLiveData<Resource<T>>
 
     @Override
     public void onErrorResponse(VolleyError error) {
+        onErrorResponse((Exception) error);
+    }
+
+    public void onErrorResponse(Exception error) {
         final String message = error.getMessage();
         if (Utility.isNullOrEmpty(message)) {
             if (error instanceof TimeoutError) {
@@ -22,10 +26,6 @@ public class CustomData<T> extends MutableLiveData<Resource<T>>
         } else {
             postValue(Resource.error(null, error.getMessage()));
         }
-    }
-
-    public void onErrorResponse(Exception error) {
-        postValue(Resource.error(null, error.getMessage()));
     }
 
     @Override
