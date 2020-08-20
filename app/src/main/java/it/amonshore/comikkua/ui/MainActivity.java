@@ -24,9 +24,9 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.NotificationUtils;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.workers.ReleaseNotificationWorker;
 
 public class MainActivity extends AppCompatActivity implements
         OnNavigationFragmentListener,
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements
                 appBarConfiguration);*/
 
         // prearo il sistema di notifiche
-        NotificationUtils.setupNotifications(this, this);
+        ReleaseNotificationWorker.setupNotifications(this, this);
 
         // preparo le opzioni per Glide da poter usare in tutta l'app
         ImageHelper.prepareGlideOptions(this);
