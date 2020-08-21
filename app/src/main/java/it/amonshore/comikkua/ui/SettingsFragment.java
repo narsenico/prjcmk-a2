@@ -28,13 +28,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import it.amonshore.comikkua.LiveDataEx;
-import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.BackupHelper;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
+
+import static it.amonshore.comikkua.workers.ReleaseNotificationWorker.KEY_NOTIFICATIONS_ENABLED;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
@@ -56,7 +57,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         // solo per API >= 26
         final Preference prefNotifications = findPreference("notifications");
         // solo per API < 26
-        final Preference prefNotificationEnabled = findPreference("notifications_enabled");
+        final Preference prefNotificationEnabled = findPreference(KEY_NOTIFICATIONS_ENABLED);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // nascondo "vecchie"

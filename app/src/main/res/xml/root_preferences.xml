@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory app:title="@string/settings_general_header">
+
+        <SwitchPreferenceCompat
+            app:icon="@drawable/ic_auto_update"
+            app:key="auto_update_enabled"
+            app:title="@string/settings_auto_update_enabled" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/settings_notifications_header">
 
         <SwitchPreferenceCompat
