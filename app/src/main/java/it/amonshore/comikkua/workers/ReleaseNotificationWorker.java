@@ -44,6 +44,10 @@ public class ReleaseNotificationWorker extends Worker {
 
     private final static String NOTIFICATION_GROUP = "it.amonshore.comikkua.RELEASE_NOTIFICATION";
     private final static int NOTIFICATION_GROUP_ID = 1;
+    private final static String CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_RELEASES";
+    private final static String WORK_NAME = "it.amonshore.comikkua.RELEASE_NOTIFICATION_WORK";
+
+    public final static String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
 
     public ReleaseNotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -139,11 +143,7 @@ public class ReleaseNotificationWorker extends Worker {
         }
     }
 
-    public final static String CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_RELEASES";
-    private final static String NOTIFICATION_WORK_NAME = "it.amonshore.comikkua.RELEASE_NOTIFICATION_WORK";
-    private final static String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
-
-    public static void setupNotifications(@NonNull final Context context, @NonNull LifecycleOwner lifecycleOwner) {
+    public static void setup(@NonNull final Context context, @NonNull LifecycleOwner lifecycleOwner) {
         if (lifecycleOwner.getLifecycle().getCurrentState() == DESTROYED) {
             return;
         }
@@ -163,11 +163,11 @@ public class ReleaseNotificationWorker extends Worker {
             enabled = notificationManager.areNotificationsEnabled();
         } else {
             final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            enabled = sharedPreferences.getBoolean("notifications_enabled", false);
+            enabled = sharedPreferences.getBoolean(KEY_NOTIFICATIONS_ENABLED, false);
             // rimango in ascolto dei cambiamenti da SettingsFragment
             final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences1, key) -> {
                 if (key.equals(KEY_NOTIFICATIONS_ENABLED)) {
-                    setupNotificationWork(context, sharedPreferences1.getBoolean(KEY_NOTIFICATIONS_ENABLED, false));
+                    setupWorker(context, sharedPreferences1.getBoolean(KEY_NOTIFICATIONS_ENABLED, false));
                 }
             };
             // il listener è tolto quando l'app non è più attiva, e rimessa quando ritorna attiva
@@ -184,13 +184,13 @@ public class ReleaseNotificationWorker extends Worker {
             });
         }
 
-        setupNotificationWork(context, enabled);
+        setupWorker(context, enabled);
     }
 
-    private static void setupNotificationWork(@NonNull Context context, boolean enabled) {
+    private static void setupWorker(@NonNull Context context, boolean enabled) {
         final WorkManager workManager = WorkManager.getInstance(context);
 
-        LogHelper.d("setupNotificationWork enabled=" + enabled);
+        LogHelper.d("%s enabled=%s", WORK_NAME, enabled);
 
         if (enabled) {
             // calcolo il delay al prossimo 08:00AM
@@ -210,11 +210,11 @@ public class ReleaseNotificationWorker extends Worker {
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                     .build();
 
-            workManager.enqueueUniquePeriodicWork(NOTIFICATION_WORK_NAME,
+            workManager.enqueueUniquePeriodicWork(WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP, // mantengo l'eventuale work già schedulato con lo stesso nome
                     work);
         } else {
-            workManager.cancelUniqueWork(NOTIFICATION_WORK_NAME);
+            workManager.cancelUniqueWork(WORK_NAME);
         }
     }
 }

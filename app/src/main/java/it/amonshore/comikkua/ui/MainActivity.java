@@ -27,6 +27,7 @@ import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.workers.ReleaseNotificationWorker;
+import it.amonshore.comikkua.workers.UpdateReleasesWorker;
 
 public class MainActivity extends AppCompatActivity implements
         OnNavigationFragmentListener,
@@ -63,8 +64,10 @@ public class MainActivity extends AppCompatActivity implements
         /*NavigationUI.setupActionBarWithNavController(this, navController,
                 appBarConfiguration);*/
 
-        // prearo il sistema di notifiche
-        ReleaseNotificationWorker.setupNotifications(this, this);
+        // preparo il worker per le notifiche sulle nuove uscite
+        ReleaseNotificationWorker.setup(this, this);
+        // preparo il worker per aggiornare le uscite da remoto
+        UpdateReleasesWorker.setup(this, this);
 
         // preparo le opzioni per Glide da poter usare in tutta l'app
         ImageHelper.prepareGlideOptions(this);
