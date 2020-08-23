@@ -1,7 +1,12 @@
 package it.amonshore.comikkua.workers;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -16,6 +21,9 @@ import java.util.concurrent.TimeoutException;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
@@ -28,6 +36,7 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 import it.amonshore.comikkua.data.CustomData;
 import it.amonshore.comikkua.data.Resource;
@@ -37,13 +46,17 @@ import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
+import it.amonshore.comikkua.ui.MainActivity;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
+import static it.amonshore.comikkua.Constants.NOTIFICATION_GROUP;
 
 public class UpdateReleasesWorker extends Worker {
 
+    private final static String CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_AUTO_UPDATE";
     private final static String WORK_NAME = UpdateReleasesWorker.class.getName();
     private final static String KEY_AUTO_UPDATE_ENABLED = "auto_update_enabled";
+    private static final int NOTIFICATION_ID = 150;
 
     public UpdateReleasesWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -62,7 +75,8 @@ public class UpdateReleasesWorker extends Worker {
 
             // le operazioni di inserimento su DB verranno eseguite da questo executor
             final ExecutorService dbExecutor = Executors.newFixedThreadPool(10);
-            final CompletionService<Void> completionService = new ExecutorCompletionService<>(dbExecutor);
+            // le operazioni ritornarno il numero di nuove release inserite
+            final CompletionService<Integer> completionService = new ExecutorCompletionService<>(dbExecutor);
 
             // estraggo tutte le testate e per ognuna di esse cerco se ci sono nuove uscite
             final List<ComicsWithReleases> ccs = comicsDao.getRawComicsWithReleases();
@@ -73,13 +87,15 @@ public class UpdateReleasesWorker extends Worker {
                         cs, releaseDao, completionService));
             }
 
-            // mi aspetto che per ogni titolo venga eseguita una operazione (sia in caso di successo che di errore)
+            // mi aspetto che per ogni titolo venga eseguita una operazione (anche in caso di errore)
+            // ogni operazione ritorna il numero di nuove release inserite
             LogHelper.d("%s waiting for %s future/s", WORK_NAME, ccs.size());
+            int newReleasesCount = 0;
             try {
                 for (int ii = 0; ii < ccs.size(); ii++) {
-                    Future<Void> f = completionService.poll(10, TimeUnit.SECONDS);
+                    Future<Integer> futureInsert = completionService.poll(10, TimeUnit.SECONDS);
                     try {
-                        f.get(10, TimeUnit.SECONDS);
+                        newReleasesCount += futureInsert.get(10, TimeUnit.SECONDS);
                     } catch (TimeoutException tex) {
                         //
                     }
@@ -92,6 +108,34 @@ public class UpdateReleasesWorker extends Worker {
 
             dbExecutor.shutdown();
             dbExecutor.awaitTermination(10, TimeUnit.SECONDS);
+
+            // se sono state inserite nuove release lo notifico
+            if (newReleasesCount > 0) {
+                final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                if (notificationManager.areNotificationsEnabled()) {
+                    // creo l'intent per l'activity
+                    final Intent resultIntent = new Intent(context, MainActivity.class);
+                    final TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+                    stackBuilder.addNextIntentWithParentStack(resultIntent);
+                    final PendingIntent resultPendingIntent =
+                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    final String title = context.getResources().getQuantityString(R.plurals.notification_auto_update,
+                            newReleasesCount, newReleasesCount);
+
+                    final NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher5f) // TODO: icona app
+                            .setContentTitle(title)
+//                            .setContentText(text)
+                            .setNumber(newReleasesCount) // TODO: non appare da nessuna parte!
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setAutoCancel(true)
+                            .setContentIntent(resultPendingIntent)
+                            .setGroup(NOTIFICATION_GROUP);
+
+                    notificationManager.notify(NOTIFICATION_ID, notification.build());
+                }
+            }
 
             LogHelper.d("%s end", WORK_NAME);
 
@@ -106,7 +150,7 @@ public class UpdateReleasesWorker extends Worker {
     private void observe(final CustomData<List<CmkWebRelease>> source,
                          final ComicsWithReleases comics,
                          final ReleaseDao releaseDao,
-                         final CompletionService<Void> completionService) {
+                         final CompletionService<Integer> completionService) {
         final Observer<Resource<List<CmkWebRelease>>> observer = new Observer<Resource<List<CmkWebRelease>>>() {
             @Override
             public void onChanged(final Resource<List<CmkWebRelease>> resource) {
@@ -120,14 +164,16 @@ public class UpdateReleasesWorker extends Worker {
                                     LogHelper.i("%s '%s' new release #%s", WORK_NAME,
                                             comics.comics.name, release.number);
                                 }
+                                return resource.data.size();
+                            } else {
+                                return 0;
                             }
-                        }, null);
+                        });
                         source.removeObserver(this);
                         break;
                     case ERROR:
-                        completionService.submit(() -> {
-                            //
-                        }, null);
+                        // 0 inserimenti
+                        completionService.submit(() -> 0);
                         LogHelper.e("%s error=%s", WORK_NAME, resource.message);
                         source.removeObserver(this);
                         break;
@@ -144,10 +190,19 @@ public class UpdateReleasesWorker extends Worker {
             return;
         }
 
-        boolean enabled;
+        // con Android O è obbligatorio usare un canale per le notifiche
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            final NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    context.getString(R.string.auto_update_channel_name),
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(context.getString(R.string.auto_update_channel_description));
+
+            final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        enabled = sharedPreferences.getBoolean(KEY_AUTO_UPDATE_ENABLED, false);
+        final boolean enabled = sharedPreferences.getBoolean(KEY_AUTO_UPDATE_ENABLED, false);
         // rimango in ascolto dei cambiamenti da SettingsFragment
         final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences1, key) -> {
             if (key.equals(KEY_AUTO_UPDATE_ENABLED)) {

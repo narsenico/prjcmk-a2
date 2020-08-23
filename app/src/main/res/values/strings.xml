@@ -106,6 +106,15 @@
         <item quantity="one">There is a new release today</item>
         <item quantity="other">There are %d new releases today</item>
     </plurals>
+
+    <string name="auto_update_channel_name">Auto update</string>
+    <string name="auto_update_channel_description">Auto update</string>
+
+    <plurals name="notification_auto_update">
+        <item quantity="one">New release available</item>
+        <item quantity="other">%d new relelases available</item>
+    </plurals>
+
     <string name="title_activity_settings">Settings</string>
 
     <string name="settings_general_header">General</string>
