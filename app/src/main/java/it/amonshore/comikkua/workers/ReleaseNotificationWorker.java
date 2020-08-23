@@ -39,13 +39,13 @@ import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.ui.MainActivity;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
+import static it.amonshore.comikkua.Constants.NOTIFICATION_GROUP;
+import static it.amonshore.comikkua.Constants.NOTIFICATION_GROUP_ID;
 
 public class ReleaseNotificationWorker extends Worker {
 
-    private final static String NOTIFICATION_GROUP = "it.amonshore.comikkua.RELEASE_NOTIFICATION";
-    private final static int NOTIFICATION_GROUP_ID = 1;
     private final static String CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_RELEASES";
-    private final static String WORK_NAME = "it.amonshore.comikkua.RELEASE_NOTIFICATION_WORK";
+    private final static String WORK_NAME = ReleaseNotificationWorker.class.getName();
 
     public final static String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
 

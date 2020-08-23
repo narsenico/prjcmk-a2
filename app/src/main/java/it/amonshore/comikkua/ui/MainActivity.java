@@ -22,6 +22,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
+import androidx.work.WorkManager;
 import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -64,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements
         /*NavigationUI.setupActionBarWithNavController(this, navController,
                 appBarConfiguration);*/
 
+        if (BuildConfig.DEBUG && BuildConfig.VERSION_CODE < 2) {
+            WorkManager.getInstance(this).cancelAllWork();
+        }
+
         // preparo il worker per le notifiche sulle nuove uscite
         ReleaseNotificationWorker.setup(this, this);
         // preparo il worker per aggiornare le uscite da remoto
@@ -73,7 +78,10 @@ public class MainActivity extends AppCompatActivity implements
         ImageHelper.prepareGlideOptions(this);
 
         if (BuildConfig.DEBUG) {
-            Toast.makeText(this, String.format("Lading from: %s", BuildConfig.CMKWEB), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    String.format("%s (%s) - host: %s",
+                            BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, BuildConfig.CMKWEB),
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
