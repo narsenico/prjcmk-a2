@@ -29,6 +29,7 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.preference.PreferenceManager;
 import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
@@ -57,6 +58,9 @@ public class UpdateReleasesWorker extends Worker {
     private final static String WORK_NAME = UpdateReleasesWorker.class.getName();
     private final static String KEY_AUTO_UPDATE_ENABLED = "auto_update_enabled";
     private static final int NOTIFICATION_ID = 150;
+
+    public static final String PREVENT_NOTIFICATION = "prevent_notification";
+    public static final String RELEASE_COUNT = "release_count";
 
     public UpdateReleasesWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -110,7 +114,7 @@ public class UpdateReleasesWorker extends Worker {
             dbExecutor.awaitTermination(10, TimeUnit.SECONDS);
 
             // se sono state inserite nuove release lo notifico
-            if (newReleasesCount > 0) {
+            if (newReleasesCount > 0 && !getInputData().getBoolean(PREVENT_NOTIFICATION, false)) {
                 final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
                 if (notificationManager.areNotificationsEnabled()) {
                     // creo l'intent per l'activity
@@ -139,7 +143,10 @@ public class UpdateReleasesWorker extends Worker {
 
             LogHelper.d("%s end", WORK_NAME);
 
-            return Result.success();
+            // rendo disponibile in output il numero di release inserite
+            return Result.success(new Data.Builder()
+                    .putInt(RELEASE_COUNT, newReleasesCount)
+                    .build());
         } catch (Exception ex) {
             LogHelper.e("UpdateReleasesWorker.doWork error", ex);
             return Result.failure();

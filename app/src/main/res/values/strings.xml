@@ -24,6 +24,7 @@
     <string name="menu_import_backup">Import backup</string>
     <string name="menu_export_backup">Export backup</string>
     <string name="menu_release_menu">Release menu</string>
+    <string name="menu_releases_update">Update</string>
 
     <string name="swipe_purchase">Toggle purchase</string>
     <string name="swipe_order">Toggle order</string>
@@ -110,6 +111,7 @@
     <string name="auto_update_channel_name">Auto update</string>
     <string name="auto_update_channel_description">Auto update</string>
 
+    <string name="auto_update_zero">No new releases available</string>
     <plurals name="notification_auto_update">
         <item quantity="one">New release available</item>
         <item quantity="other">%d new relelases available</item>
