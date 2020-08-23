@@ -8,6 +8,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -26,6 +27,15 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.Operation;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -35,6 +45,7 @@ import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
+import it.amonshore.comikkua.workers.UpdateReleasesWorker;
 
 
 public class ReleasesFragment extends Fragment {
@@ -45,6 +56,7 @@ public class ReleasesFragment extends Fragment {
     private ReleaseAdapter mAdapter;
     private ReleaseViewModel mReleaseViewModel;
     private RecyclerView mRecyclerView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private Snackbar mUndoSnackBar;
 
     public ReleasesFragment() {
@@ -65,6 +77,9 @@ public class ReleasesFragment extends Fragment {
         final Context context = requireContext();
         mRecyclerView = view.findViewById(R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+        mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this::performUpdate);
 
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
             @Override
@@ -95,7 +110,7 @@ public class ReleasesFragment extends Fragment {
                         return true;
                     case R.id.shareReleases:
                         LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
-                                        items -> ShareHelper.shareReleases(requireActivity(), items));
+                                items -> ShareHelper.shareReleases(requireActivity(), items));
                         // mantengo la selezione
                         return true;
                 }
@@ -250,7 +265,66 @@ public class ReleasesFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.updateReleases) {
+            // TODO: aggiornamento release da remoto
+            performUpdate();
+
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void performUpdate() {
+        final WorkRequest request = new OneTimeWorkRequest.Builder(UpdateReleasesWorker.class)
+                .setInputData(new Data.Builder()
+                        .putBoolean(UpdateReleasesWorker.PREVENT_NOTIFICATION, true)
+                        .build())
+                .setConstraints(new Constraints.Builder()
+                        // TODO: come si simula?
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build())
+                .build();
+
+        final WorkManager workManager = WorkManager.getInstance(requireContext());
+        workManager.enqueue(request);
+
+        mSwipeRefreshLayout.setRefreshing(true);
+
+        // TODO: quando si verificano gli altri stati? CONTROLLARE SUBITO
+        // TODO: "marchare" le release inserite con un codice, in modo che possano essere visualizzabilit dall'utente su richiesta
+        //  "sono state aggiunte 2 release" => ok ma quali sono? => tap su snackbar => fragment con solo nuove release aggiunte
+
+        workManager.getWorkInfoByIdLiveData(request.getId()).observe(getViewLifecycleOwner(), workInfo -> {
+            if (workInfo != null) {
+                LogHelper.d("Updating releases state=%s", workInfo.getState());
+                switch (workInfo.getState()) {
+                    case SUCCEEDED:
+                        onUpdateSuccess(workInfo.getOutputData().getInt(UpdateReleasesWorker.RELEASE_COUNT, 0));
+                    case FAILED:
+                        mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case BLOCKED:
+                    case CANCELLED:
+                    case ENQUEUED:
+                    case RUNNING:
+                        break;
+                }
+            }
+        });
+    }
+
+    private void onUpdateSuccess(int newReleaseCount) {
+        LogHelper.d("New releases: %s", newReleaseCount);
+
+        if (newReleaseCount == 0) {
+            Toast.makeText(requireContext(),
+                    R.string.auto_update_zero,
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(requireContext(),
+                    getResources().getQuantityString(R.plurals.notification_auto_update, newReleaseCount, newReleaseCount),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {
