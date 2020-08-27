@@ -8,6 +8,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -317,13 +318,24 @@ public class ReleasesFragment extends Fragment {
         LogHelper.d("New releases: %s", newReleaseCount);
 
         if (newReleaseCount == 0) {
-            Toast.makeText(requireContext(),
-                    R.string.auto_update_zero,
-                    Toast.LENGTH_LONG).show();
+            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+                    .setIcon(R.drawable.ic_release)
+                    .setView(R.layout.dialog_no_update)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {})
+                    .show();
         } else {
-            Toast.makeText(requireContext(),
-                    getResources().getQuantityString(R.plurals.notification_auto_update, newReleaseCount, newReleaseCount),
-                    Toast.LENGTH_LONG).show();
+            final View view = getLayoutInflater().inflate(R.layout.dialog_new_update, null);
+            final TextView txtMessage = view.findViewById(R.id.message);
+            txtMessage.setText(getResources().getQuantityString(R.plurals.auto_update_available_message, newReleaseCount, newReleaseCount));
+
+            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+                    .setIcon(R.drawable.ic_release)
+                    .setView(view)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {})
+                    // TODO: mostra elenco nuove release
+//                    .setNeutralButton(R.string.auto_update_view, (dialog, which) -> {
+//                    })
+                    .show();
         }
     }
 

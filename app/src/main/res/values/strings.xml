@@ -111,7 +111,14 @@
     <string name="auto_update_channel_name">Auto update</string>
     <string name="auto_update_channel_description">Auto update</string>
 
-    <string name="auto_update_zero">No new releases available</string>
+    <string name="auto_update_zero">No new releases</string>
+    <string name="auto_update_zero_message">There are no new releases available, please try again later.</string>
+    <string name="auto_update_available">New releases found</string>
+    <plurals name="auto_update_available_message">
+        <item quantity="one">There is a new release available.</item>
+        <item quantity="other">There are %d new relelases available.</item>
+    </plurals>
+    <string name="auto_update_view">View</string>
     <plurals name="notification_auto_update">
         <item quantity="one">New release available</item>
         <item quantity="other">%d new relelases available</item>
