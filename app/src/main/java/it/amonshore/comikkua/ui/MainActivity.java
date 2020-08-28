@@ -155,14 +155,15 @@ public class MainActivity extends AppCompatActivity implements
         LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.getLabel());
         // imposto il sottotitolo che viene passato come argomento della destinazione
         // i singoli fragment possono sovrascrivere il default chiamando direttamente onSubtitleChanged
-        onSubtitleChanged(extractSubtitle(destination));
+        onSubtitleChanged(extractSubtitle(destination, arguments));
         // chiudo sempre la tasteira eventualmente aperta
         Utility.hideKeyboard(getWindow().getDecorView());
         // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment
         if (mActionMode != null) {
             mActionMode.finish();
         }
-        if (canHideNavigation(destination)) {
+
+        if (canHideNavigation(destination, arguments)) {
             mBottomNavigationView.setVisibility(View.GONE);
         } else {
             mBottomNavigationView.setVisibility(View.VISIBLE);
@@ -170,21 +171,25 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @StringRes
-    private int extractSubtitle(@NonNull NavDestination destination) {
+    private int extractSubtitle(@NonNull NavDestination destination, @Nullable Bundle arguments) {
         // visto che non posso impostare il sottotitolo direttamente in nav_graph.xml
         //  lo passo come argomento, di tpo reference (string)
         final NavArgument arg = destination.getArguments().get("subtitle");
+        int defValue = 0;
         if (arg != null) {
             final Object value = arg.getDefaultValue();
             if (value != null) {
-                return (Integer) value;
+                defValue = (Integer) value;
             }
         }
-        return 0;
+        return arguments == null ? defValue : arguments.getInt("subtitle", defValue);
     }
 
-    private boolean canHideNavigation(@NonNull NavDestination destination) {
+    private boolean canHideNavigation(@NonNull NavDestination destination, @Nullable Bundle arguments) {
         final NavArgument arg = destination.getArguments().get("hideNavigation");
-        return arg != null && arg.isDefaultValuePresent() && arg.getDefaultValue().equals(Boolean.TRUE);
+        final boolean defValue = arg != null &&
+                arg.isDefaultValuePresent() &&
+                arg.getDefaultValue().equals(Boolean.TRUE);
+        return arguments == null ? defValue : arguments.getBoolean("hideNavigation", defValue);
     }
 }
