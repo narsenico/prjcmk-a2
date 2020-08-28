@@ -264,11 +264,15 @@ public class ComicsFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void showUndo(Long[] ids, int count) {
+    private void showUndo(final Long[] ids, int count) {
         if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
             LogHelper.d("UNDO: dismiss snack");
             mUndoSnackBar.dismiss();
         }
+
+        // uso il contesto applicativo per eliminare le immagini perché il contesto del fragment
+        // non è più valido se navigo da un'altra parte
+        final Context context = requireContext().getApplicationContext();
 
         // mostro messaggio per undo
         // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
@@ -284,7 +288,7 @@ public class ComicsFragment extends Fragment {
                             mComicsViewModel.deleteRemoved();
                             // elimino anche le immagini
                             // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
-                            ImageHelper.deleteImageFiles(requireContext(), ids);
+                            ImageHelper.deleteImageFiles(context, ids);
                         }
                         LogHelper.d("UNDO: dismissed event=%s", event);
                     }
