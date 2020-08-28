@@ -33,6 +33,7 @@ public class Release {
     public String notes;
     public long lastUpdate;
     public boolean removed;
+    public String tag;
 
     public boolean hasNotes() {
         return !TextUtils.isEmpty(this.notes);

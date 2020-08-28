@@ -27,7 +27,8 @@ import androidx.room.DatabaseView;
                 "tReleases.purchased as rpurchased, " +
                 "tReleases.ordered as rordered, " +
                 "tReleases.notes as rnotes, " +
-                "tReleases.lastUpdate as rlastUpdate " +
+                "tReleases.lastUpdate as rlastUpdate, " +
+                "tReleases.tag as rtag " +
                 "FROM tComics INNER JOIN tReleases " +
                 "ON tComics.id = tReleases.comicsId " +
                 "WHERE tComics.removed = 0 AND tReleases.removed = 0 AND purchased = 0"

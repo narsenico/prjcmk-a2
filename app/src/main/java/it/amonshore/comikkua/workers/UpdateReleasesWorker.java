@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -61,6 +62,7 @@ public class UpdateReleasesWorker extends Worker {
 
     public static final String PREVENT_NOTIFICATION = "prevent_notification";
     public static final String RELEASE_COUNT = "release_count";
+    public static final String RELEASE_TAG = "release_tag";
 
     public UpdateReleasesWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -84,11 +86,13 @@ public class UpdateReleasesWorker extends Worker {
 
             // estraggo tutte le testate e per ognuna di esse cerco se ci sono nuove uscite
             final List<ComicsWithReleases> ccs = comicsDao.getRawComicsWithReleases();
+            // tag per identificare le release create e inserite in questo worker
+            final String tag = UUID.randomUUID().toString();
 
             for (ComicsWithReleases cs : ccs) {
                 // observe deve essere esguita nel main thread
                 handler.post(() -> observe(cmkWebRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
-                        cs, releaseDao, completionService));
+                        cs, releaseDao, tag, completionService));
             }
 
             // mi aspetto che per ogni titolo venga eseguita una operazione (anche in caso di errore)
@@ -144,8 +148,10 @@ public class UpdateReleasesWorker extends Worker {
             LogHelper.d("%s end", WORK_NAME);
 
             // rendo disponibile in output il numero di release inserite
+            // e il tag con cui individuarle facilmente
             return Result.success(new Data.Builder()
                     .putInt(RELEASE_COUNT, newReleasesCount)
+                    .putString(RELEASE_TAG, tag)
                     .build());
         } catch (Exception ex) {
             LogHelper.e("UpdateReleasesWorker.doWork error", ex);
@@ -157,6 +163,7 @@ public class UpdateReleasesWorker extends Worker {
     private void observe(final CustomData<List<CmkWebRelease>> source,
                          final ComicsWithReleases comics,
                          final ReleaseDao releaseDao,
+                         final String tag,
                          final CompletionService<Integer> completionService) {
         final Observer<Resource<List<CmkWebRelease>>> observer = new Observer<Resource<List<CmkWebRelease>>>() {
             @Override
