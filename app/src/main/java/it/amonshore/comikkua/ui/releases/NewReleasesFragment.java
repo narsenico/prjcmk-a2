@@ -34,7 +34,6 @@ import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -47,18 +46,17 @@ import it.amonshore.comikkua.ui.ShareHelper;
 import it.amonshore.comikkua.workers.UpdateReleasesWorker;
 
 
-public class ReleasesFragment extends Fragment {
+public class NewReleasesFragment extends Fragment {
 
-    private final static String BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout";
+    private final static String BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.new_releases.recycler.layout";
 
     private OnNavigationFragmentListener mListener;
     private ReleaseAdapter mAdapter;
     private ReleaseViewModel mReleaseViewModel;
     private RecyclerView mRecyclerView;
     private Snackbar mUndoSnackBar;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
 
-    public ReleasesFragment() {
+    public NewReleasesFragment() {
     }
 
     @Override
@@ -70,15 +68,16 @@ public class ReleasesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_releases, container, false);
+        final View view = inflater.inflate(R.layout.fragment_new_releases, container, false);
 
         final String actionModeName = getClass().getSimpleName() + "_actionMode";
         final Context context = requireContext();
+        final String tag = NewReleasesFragmentArgs.fromBundle(getArguments()).getTag();
+
+        LogHelper.d("NEW RELEASES %s", tag);
+
         mRecyclerView = view.findViewById(R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-        mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
-        mSwipeRefreshLayout.setOnRefreshListener(this::performUpdate);
 
         final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
             @Override
@@ -183,8 +182,14 @@ public class ReleasesFragment extends Fragment {
         // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
         mReleaseViewModel = new ViewModelProvider(requireActivity())
                 .get(ReleaseViewModel.class);
+
+
+        // TODO: vengono generati ComicsRelease con type=0 (dalla query) per cui risultano tutte nel gruppo "altro" con header label "più avanti"
+        //  si potrebbe creare un altro tipo, non connesso ad alcuna vista, per cui l'header è "Nuove uscite"
+
+
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        mReleaseViewModel.getReleaseViewModelItems().observe(getViewLifecycleOwner(), items -> {
+        mReleaseViewModel.getReleaseViewModelItems(tag).observe(getViewLifecycleOwner(), items -> {
             LogHelper.d("release viewmodel data changed size:" + items.size());
             mAdapter.submitList(items);
         });
@@ -262,108 +267,17 @@ public class ReleasesFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.updateReleases) {
-            // TODO: aggiornamento release da remoto
-            performUpdate();
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void performUpdate() {
-        final WorkRequest request = new OneTimeWorkRequest.Builder(UpdateReleasesWorker.class)
-                .setInputData(new Data.Builder()
-                        .putBoolean(UpdateReleasesWorker.PREVENT_NOTIFICATION, true)
-                        .build())
-                .setConstraints(new Constraints.Builder()
-                        // TODO: come si simula?
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build())
-                .build();
-
-        final WorkManager workManager = WorkManager.getInstance(requireContext());
-        workManager.enqueue(request);
-
-        mSwipeRefreshLayout.setRefreshing(true);
-
-        // TODO: quando si verificano gli altri stati? CONTROLLARE SUBITO
-        // TODO: "marchare" le release inserite con un codice, in modo che possano essere visualizzabilit dall'utente su richiesta
-        //  "sono state aggiunte 2 release" => ok ma quali sono? => tap su snackbar => fragment con solo nuove release aggiunte
-
-        workManager.getWorkInfoByIdLiveData(request.getId()).observe(getViewLifecycleOwner(), workInfo -> {
-            if (workInfo != null) {
-                LogHelper.d("Updating releases state=%s", workInfo.getState());
-                switch (workInfo.getState()) {
-                    case SUCCEEDED:
-                        onUpdateSuccess(workInfo.getOutputData());
-                    case FAILED:
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        break;
-                    case BLOCKED:
-                    case CANCELLED:
-                    case ENQUEUED:
-                    case RUNNING:
-                        break;
-                }
-            }
-        });
-    }
-
-    private void onUpdateSuccess(Data data) {
-        final int newReleaseCount = data.getInt(UpdateReleasesWorker.RELEASE_COUNT, 0);
-        final String tag = data.getString(UpdateReleasesWorker.RELEASE_TAG);
-
-        LogHelper.d("New releases: %s with tag '%s'", newReleaseCount, tag);
-
-        if (newReleaseCount == 0) {
-            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-                    .setIcon(R.drawable.ic_release)
-                    .setView(R.layout.dialog_no_update)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    })
-                    .show();
-        } else {
-//            final View view = getLayoutInflater().inflate(R.layout.dialog_new_update, null);
-//            final TextView txtMessage = view.findViewById(R.id.message);
-//            txtMessage.setText(getResources().getQuantityString(R.plurals.auto_update_available_message, newReleaseCount, newReleaseCount));
-//
-//            final AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-//                    .setIcon(R.drawable.ic_release)
-//                    .setView(view)
-//                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-//                    });
-//            if (tag != null) {
-//                builder.setNeutralButton(R.string.auto_update_view, (dialog, which) -> {
-//                    dialog.dismiss();
-//                    openNewReleases(requireView(), tag);
-//                });
-//            }
-//            builder.show();
-            openNewReleases(requireView(), tag);
-        }
-    }
-
     private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionDestReleasesToComicsDetailFragment(release.comics.id);
+        final NavDirections directions = NewReleasesFragmentDirections
+                .actionDestComicsDetail(release.comics.id);
 
         Navigation.findNavController(view).navigate(directions);
     }
 
     private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionReleasesFragmentToReleaseEditFragment(release.comics.id)
+        final NavDirections directions = NewReleasesFragmentDirections
+                .actionReleaseEdit(release.comics.id)
                 .setReleaseId(release.release.id);
-
-        Navigation.findNavController(view).navigate(directions);
-    }
-
-    private void openNewReleases(@NonNull View view, @NonNull String tag) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionReleasesFragmentToNewReleaseFragment(tag);
 
         Navigation.findNavController(view).navigate(directions);
     }
@@ -390,33 +304,28 @@ public class ReleasesFragment extends Fragment {
     }
 
     private void showUndo(int count) {
-        if (BuildConfig.UNDO_DISABLED) {
-            mReleaseViewModel.deleteRemoved();
-            LogHelper.w("UNDO DISABLED: releases deleted");
-        } else {
-            if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
-                LogHelper.d("UNDO: dismiss snack");
-                mUndoSnackBar.dismiss();
-            }
-
-            // mostro messaggio per undo
-            // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
-            mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
-                    getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
-                    // con il pulsante azione ripristino gli elementi rimossi
-                    .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
-                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                        @Override
-                        public void onDismissed(Snackbar transientBottomBar, int event) {
-                            // procedo alla cancellazione effettiva solo dopo il timeout
-                            if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
-                                mReleaseViewModel.deleteRemoved();
-                            }
-                            LogHelper.d("UNDO: dismissed event=%s", event);
-                        }
-                    });
-            LogHelper.d("UNDO: show snack");
-            mUndoSnackBar.show();
+        if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
+            LogHelper.d("UNDO: dismiss snack");
+            mUndoSnackBar.dismiss();
         }
+
+        // mostro messaggio per undo
+        // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
+        mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
+                getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
+                // con il pulsante azione ripristino gli elementi rimossi
+                .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        // procedo alla cancellazione effettiva solo dopo il timeout
+                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
+                            mReleaseViewModel.deleteRemoved();
+                        }
+                        LogHelper.d("UNDO: dismissed event=%s", event);
+                    }
+                });
+        LogHelper.d("UNDO: show snack");
+        mUndoSnackBar.show();
     }
 }

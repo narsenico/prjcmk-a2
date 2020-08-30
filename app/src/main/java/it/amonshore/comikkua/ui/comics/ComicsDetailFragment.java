@@ -281,8 +281,7 @@ public class ComicsDetailFragment extends Fragment {
             case R.id.createNewRelease:
                 Navigation.findNavController(requireView())
                         .navigate(ComicsDetailFragmentDirections
-                                .actionDestComicsDetailFragmentToReleaseEditFragment()
-                                .setComicsId(mComicsId)
+                                .actionDestComicsDetailFragmentToReleaseEditFragment(mComicsId)
                                 .setSubtitle(R.string.title_release_create));
                 return true;
             default:
@@ -292,8 +291,7 @@ public class ComicsDetailFragment extends Fragment {
 
     private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {
         final NavDirections directions = ComicsDetailFragmentDirections
-                .actionDestComicsDetailFragmentToReleaseEditFragment()
-                .setComicsId(release.comics.id)
+                .actionDestComicsDetailFragmentToReleaseEditFragment(release.comics.id)
                 .setReleaseId(release.release.id);
 
         Navigation.findNavController(view).navigate(directions);

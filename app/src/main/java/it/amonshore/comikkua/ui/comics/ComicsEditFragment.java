@@ -277,8 +277,7 @@ public class ComicsEditFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                 } else {
                     final NavDirections directions = ComicsEditFragmentDirections
-                            .actionDestComicsEditFragmentToComicsDetailFragment()
-                            .setComicsId(comicsId);
+                            .actionDestComicsEditFragmentToComicsDetailFragment(comicsId);
 
                     LogHelper.d("SAVE onPostExecute isMainLoop=%s", Utility.isMainLoop());
 

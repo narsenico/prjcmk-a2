@@ -18,10 +18,11 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
 
 public class ReleaseViewModel extends AndroidViewModel {
+
+    private final static long ONE_DAY = 86_400_000L;
 
     private final ReleaseRepository mRepository;
     private final CmkWebRepository mCmkWebRepository;
@@ -77,7 +78,7 @@ public class ReleaseViewModel extends AndroidViewModel {
         final String refOtherDate = dateFormat.format(calendar.getTime());
         // per quanto riguarda le release precedenti estraggo anche quelle aquistate dal giorno prima (rispetto al corrente)
         //  (quelle successive verrebbero cmq estratte in quanto fanno parte del "periodo corrente")
-        final long retainStart = System.currentTimeMillis() - 86400000;
+        final long retainStart = System.currentTimeMillis() - ONE_DAY;
 
         LogHelper.d("prepare notable releases refDate=%s, refNextDate=%s, refOtherDate=%s retainStart=%s",
                 refDate, refNextDate, refOtherDate, retainStart);
@@ -93,7 +94,6 @@ public class ReleaseViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(long comicsId) {
-
         LogHelper.d("prepare releases for detail comicsId=%s",
                 comicsId);
 
@@ -102,6 +102,19 @@ public class ReleaseViewModel extends AndroidViewModel {
         final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
         mediatorLiveData.addSource(getAllReleases(comicsId), comicsReleases -> {
             // TODO: si potrebbero unire tutti i purchased, ma poi al click si devono espandere
+            mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, 0));
+        });
+        return mediatorLiveData;
+    }
+
+    public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(String tag) {
+        LogHelper.d("prepare releases with tag=%s",
+                tag);
+
+        // ogni volta che i dati sottostanti cambiano li riorganizzo aggiungendo gli header di gruppo e raggruppando le release quando necessario
+        // quindi aggiorno mediatorLiveData
+        final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
+        mediatorLiveData.addSource(mRepository.getComicsReleasesByTag(tag), comicsReleases -> {
             mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, 0));
         });
         return mediatorLiveData;
@@ -184,7 +197,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     }
 
     public void remove(Long id, ICallback<Integer> callback) {
-        remove(new Long[] { id }, callback);
+        remove(new Long[]{id}, callback);
     }
 
     public void remove(Long[] ids, ICallback<Integer> callback) {

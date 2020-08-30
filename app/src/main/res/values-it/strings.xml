@@ -31,7 +31,7 @@
     <string name="title_release_edit">Modifica uscita</string>
     <string name="title_release_create">Nuova uscita</string>
 
-    <string name="header_lost">Persi</string>
+    <string name="header_lost">Già usciti</string>
     <string name="header_current_period">Questa settimana</string>
     <string name="header_next_period">Settimana prossima</string>
     <string name="header_other">Più avanti</string>

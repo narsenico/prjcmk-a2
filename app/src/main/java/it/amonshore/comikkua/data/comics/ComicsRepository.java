@@ -6,9 +6,7 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.paging.DataSource;
-import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 

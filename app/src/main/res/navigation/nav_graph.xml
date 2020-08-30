@@ -22,6 +22,36 @@
         <action
             android:id="@+id/action_releasesFragment_to_releaseEditFragment"
             app:destination="@id/releaseEditFragment" />
+        <action
+            android:id="@+id/action_releasesFragment_to_newReleaseFragment"
+            app:destination="@id/newReleasesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newReleasesFragment"
+        android:name="it.amonshore.comikkua.ui.releases.NewReleasesFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_releases">
+        <argument
+            android:name="subtitle"
+            app:argType="reference"
+            android:defaultValue="@string/title_new_releases" />
+        <argument
+            android:name="hideNavigation"
+            app:argType="boolean"
+            android:defaultValue="true" />
+        <argument
+            android:name="tag"
+            app:argType="string"
+            app:nullable="false" />
+        <action
+            android:id="@+id/action_dest_comics"
+            app:destination="@id/comicsFragment" />
+        <action
+            android:id="@+id/action_dest_comics_detail"
+            app:destination="@id/comicsDetailFragment" />
+        <action
+            android:id="@+id/action_release_edit"
+            app:destination="@id/releaseEditFragment" />
     </fragment>
     <fragment
         android:id="@+id/comicsFragment"
@@ -57,7 +87,7 @@
             android:defaultValue="true" />
         <argument
             android:name="comicsId"
-            android:defaultValue="0L"
+            app:nullable="false"
             app:argType="long" />
         <action
             android:id="@+id/action_dest_comicsDetailFragment_to_comicsEditFragment"
@@ -102,7 +132,7 @@
             android:defaultValue="true" />
         <argument
             android:name="comicsId"
-            android:defaultValue="0L"
+            app:nullable="false"
             app:argType="long" />
         <argument
             android:name="releaseId"

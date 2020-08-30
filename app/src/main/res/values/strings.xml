@@ -31,6 +31,7 @@
 
     <string name="title_settings">Settings</string>
     <string name="title_releases">Release list</string>
+    <string name="title_new_releases">Updated release list</string>
     <string name="title_comics">Comics list</string>
     <string name="title_comics_detail">Comics detail</string>
     <string name="title_comics_edit">Edit comics</string>

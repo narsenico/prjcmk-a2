@@ -43,6 +43,10 @@ class ReleaseRepository {
         return mReleaseDao.getComicsReleasesByComicsId(comicsId);
     }
 
+    LiveData<List<ComicsRelease>> getComicsReleasesByTag(String tag) {
+        return mReleaseDao.getComicsReleasesByTag(tag);
+    }
+
     LiveData<List<ComicsRelease>> getComicsReleases(Long... ids) {
         return mReleaseDao.getComicsReleases(ids);
     }

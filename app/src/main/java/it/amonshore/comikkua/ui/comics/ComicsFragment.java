@@ -113,8 +113,7 @@ public class ComicsFragment extends Fragment {
                     @Override
                     public void onComicsClick(@NonNull ComicsWithReleases comics) {
                         final NavDirections directions = ComicsFragmentDirections
-                                .actionDestComicsToComicsDetailFragment()
-                                .setComicsId(comics.comics.id);
+                                .actionDestComicsToComicsDetailFragment(comics.comics.id);
 
                         Navigation.findNavController(requireView()).navigate(directions);
                     }
@@ -122,8 +121,7 @@ public class ComicsFragment extends Fragment {
                     @Override
                     public void onNewRelease(@NonNull ComicsWithReleases comics) {
                         final NavDirections directions = ComicsFragmentDirections
-                                .actionDestComicFragmentToReleaseEditFragment()
-                                .setComicsId(comics.comics.id)
+                                .actionDestComicFragmentToReleaseEditFragment(comics.comics.id)
                                 .setSubtitle(R.string.title_release_create);
 
                         Navigation.findNavController(requireView()).navigate(directions);

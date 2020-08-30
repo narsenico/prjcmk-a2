@@ -29,6 +29,9 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 import it.amonshore.comikkua.ui.ImageHelper;
 
+/**
+ * TODO: è da aggiornare implementando PagedListAdapter, ma non supporta il SelectionTracker a causa di getItemId che è diventato final!!!!!
+ */
 public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
