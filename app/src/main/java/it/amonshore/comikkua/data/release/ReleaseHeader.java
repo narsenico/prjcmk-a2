@@ -3,6 +3,7 @@ package it.amonshore.comikkua.data.release;
 import java.util.Objects;
 
 import androidx.annotation.Nullable;
+import it.amonshore.comikkua.Constants;
 
 public class ReleaseHeader implements IReleaseViewModelItem {
     public final static int ITEM_TYPE = 1;
@@ -18,11 +19,12 @@ public class ReleaseHeader implements IReleaseViewModelItem {
      * @param relativeId questo valore verrà sommato a BASE_ID per ricavare l'id dell'item
      * @param type       tipo dei dati che fanno riferimento a questo header
      */
-    public ReleaseHeader(long relativeId, int type) {
+    public ReleaseHeader(long relativeId, @Constants.ReleaseTypeDef int type) {
         mId = BASE_ID + relativeId;
         mType = type;
     }
 
+    @Constants.ReleaseTypeDef
     public int getType() {
         return mType;
     }

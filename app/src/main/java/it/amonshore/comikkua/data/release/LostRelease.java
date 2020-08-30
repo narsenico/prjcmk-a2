@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data.release;
 
 import androidx.room.DatabaseView;
+import it.amonshore.comikkua.Constants;
 
 /**
  * Vista per le uscite con data non ancora acquistate.
@@ -35,5 +36,6 @@ import androidx.room.DatabaseView;
                 "AND (date is not null and date <> '')"
 )
 public class LostRelease extends ComicsRelease {
-    public final static int TYPE = 10;
+    @Constants.ReleaseTypeDef
+    public final static int TYPE = Constants.RELEASE_LOST;
 }

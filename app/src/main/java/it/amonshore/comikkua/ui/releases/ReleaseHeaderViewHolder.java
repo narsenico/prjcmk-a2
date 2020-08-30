@@ -9,6 +9,7 @@ import com.bumptech.glide.RequestManager;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.DatedRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
@@ -60,6 +61,9 @@ public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
                 break;
             case PurchasedRelease.TYPE:
                 mTitle.setText(R.string.header_purchased);
+                break;
+            case Constants.RELEASE_NEW:
+                mTitle.setText(R.string.header_new_releases);
                 break;
             case DatedRelease.TYPE_OTHER:
             default:

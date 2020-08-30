@@ -11,6 +11,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
+import it.amonshore.comikkua.Constants;
 
 @Dao
 public interface ReleaseDao {
@@ -113,6 +114,6 @@ public interface ReleaseDao {
     @Query("SELECT 0 as type, * FROM vComicsReleases WHERE rid in (:ids)")
     LiveData<List<ComicsRelease>> getComicsReleases(Long... ids);
 
-    @Query("SELECT 0 as type, * FROM vComicsReleases WHERE rtag = :tag")
+    @Query("SELECT " + Constants.RELEASE_NEW +  " as type, * FROM vComicsReleases WHERE rtag = :tag")
     LiveData<List<ComicsRelease>> getComicsReleasesByTag(String tag);
 }

@@ -38,6 +38,7 @@
     <string name="header_missing">Mancanti</string>
     <string name="header_not_purchased">Non acquistati</string>
     <string name="header_purchased">Acquistati</string>
+    <string name="header_new_releases">Novtà</string>
 
     <string name="comics_name">Nome</string>
     <string name="comics_publisher">Editore</string>

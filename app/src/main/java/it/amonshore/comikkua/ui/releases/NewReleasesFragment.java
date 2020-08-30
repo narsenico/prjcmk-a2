@@ -182,12 +182,6 @@ public class NewReleasesFragment extends Fragment {
         // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
         mReleaseViewModel = new ViewModelProvider(requireActivity())
                 .get(ReleaseViewModel.class);
-
-
-        // TODO: vengono generati ComicsRelease con type=0 (dalla query) per cui risultano tutte nel gruppo "altro" con header label "più avanti"
-        //  si potrebbe creare un altro tipo, non connesso ad alcuna vista, per cui l'header è "Nuove uscite"
-
-
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
         mReleaseViewModel.getReleaseViewModelItems(tag).observe(getViewLifecycleOwner(), items -> {
             LogHelper.d("release viewmodel data changed size:" + items.size());
@@ -259,12 +253,6 @@ public class NewReleasesFragment extends Fragment {
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_releases_fragment, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {

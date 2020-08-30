@@ -47,6 +47,7 @@
     <string name="header_missing">Missing</string>
     <string name="header_not_purchased">Not purchased</string>
     <string name="header_purchased">Purchased</string>
+    <string name="header_new_releases">New releases</string>
     <string name="header_count" translatable="false">%d/%d</string>
 
     <string name="comics_name">Name</string>

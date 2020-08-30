@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data.release;
 
 import androidx.room.DatabaseView;
+import it.amonshore.comikkua.Constants;
 
 /**
  * Vista per le uscite non acquistate.
@@ -34,5 +35,6 @@ import androidx.room.DatabaseView;
                 "WHERE tComics.removed = 0 AND tReleases.removed = 0 AND purchased = 0"
 )
 public class NotPurchasedRelease extends ComicsRelease {
-    public final static int TYPE = 23;
+    @Constants.ReleaseTypeDef
+    public final static int TYPE = Constants.RELEASE_NOT_PURCHASED;
 }
