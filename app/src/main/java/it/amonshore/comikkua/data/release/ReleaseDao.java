@@ -114,6 +114,7 @@ public interface ReleaseDao {
     @Query("SELECT 0 as type, * FROM vComicsReleases WHERE rid in (:ids)")
     LiveData<List<ComicsRelease>> getComicsReleases(Long... ids);
 
-    @Query("SELECT " + Constants.RELEASE_NEW +  " as type, * FROM vComicsReleases WHERE rtag = :tag")
+    @Query("SELECT " + Constants.RELEASE_NEW +  " as type, * FROM vComicsReleases WHERE rtag = :tag " +
+            "ORDER BY rdate, cname COLLATE NOCASE ASC, rnumber")
     LiveData<List<ComicsRelease>> getComicsReleasesByTag(String tag);
 }
