@@ -174,6 +174,7 @@ public class UpdateReleasesWorker extends Worker {
                             if (resource.data != null && resource.data.size() > 0) {
                                 for (CmkWebRelease cwr : resource.data) {
                                     final Release release = Release.from(comics.comics.id, cwr);
+                                    release.tag = tag;
                                     releaseDao.insert(release);
                                     LogHelper.i("%s '%s' new release #%s", WORK_NAME,
                                             comics.comics.name, release.number);
