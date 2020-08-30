@@ -81,6 +81,7 @@ public class Release {
         clone.purchased = release.purchased;
         clone.ordered = release.ordered;
         clone.notes = release.notes;
+        clone.tag = release.tag;
         clone.lastUpdate = lastUpdate;
         return clone;
     }
