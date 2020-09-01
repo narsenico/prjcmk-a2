@@ -4,7 +4,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
@@ -24,10 +23,10 @@ import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.TaskStackBuilder;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
+import androidx.navigation.NavDeepLinkBuilder;
 import androidx.preference.PreferenceManager;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -48,7 +47,7 @@ import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
-import it.amonshore.comikkua.ui.MainActivity;
+import it.amonshore.comikkua.ui.releases.NewReleasesFragmentArgs;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
 import static it.amonshore.comikkua.Constants.NOTIFICATION_GROUP;
@@ -122,11 +121,20 @@ public class UpdateReleasesWorker extends Worker {
                 final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
                 if (notificationManager.areNotificationsEnabled()) {
                     // creo l'intent per l'activity
-                    final Intent resultIntent = new Intent(context, MainActivity.class);
-                    final TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-                    stackBuilder.addNextIntentWithParentStack(resultIntent);
-                    final PendingIntent resultPendingIntent =
-                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+//                    final Intent resultIntent = new Intent(context, MainActivity.class);
+//                    final TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+//                    stackBuilder.addNextIntentWithParentStack(resultIntent);
+//                    final PendingIntent resultPendingIntent =
+//                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    // punt direttamente al fragment con le novità, passando il tag come argomento
+                    final PendingIntent resultPendingIntent = new NavDeepLinkBuilder(context)
+                            .setGraph(R.navigation.nav_graph)
+                            .setDestination(R.id.newReleasesFragment)
+                            .setArguments(new NewReleasesFragmentArgs.Builder(tag)
+                                    .build().toBundle())
+                            .createPendingIntent();
 
                     final String title = context.getResources().getQuantityString(R.plurals.notification_auto_update,
                             newReleasesCount, newReleasesCount);
