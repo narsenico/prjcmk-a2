@@ -8,11 +8,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Objects;
 
@@ -34,7 +31,7 @@ import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import it.amonshore.comikkua.BuildConfig;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
@@ -55,7 +52,6 @@ public class ReleasesFragment extends Fragment {
     private ReleaseAdapter mAdapter;
     private ReleaseViewModel mReleaseViewModel;
     private RecyclerView mRecyclerView;
-    private Snackbar mUndoSnackBar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public ReleasesFragment() {
@@ -274,6 +270,9 @@ public class ReleasesFragment extends Fragment {
     }
 
     private void performUpdate() {
+        // prima dell'aggiornamento elimino eventuali release rimosse nel caso fosse ancora in corso l'undo
+        mReleaseViewModel.deleteRemoved();
+
         final WorkRequest request = new OneTimeWorkRequest.Builder(UpdateReleasesWorker.class)
                 .setInputData(new Data.Builder()
                         .putBoolean(UpdateReleasesWorker.PREVENT_NOTIFICATION, true)
@@ -323,6 +322,7 @@ public class ReleasesFragment extends Fragment {
                     .setIcon(R.drawable.ic_release)
                     .setView(R.layout.dialog_no_update)
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                        //
                     })
                     .show();
         } else {
@@ -390,33 +390,16 @@ public class ReleasesFragment extends Fragment {
     }
 
     private void showUndo(int count) {
-        if (BuildConfig.UNDO_DISABLED) {
-            mReleaseViewModel.deleteRemoved();
-            LogHelper.w("UNDO DISABLED: releases deleted");
-        } else {
-            if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
-                LogHelper.d("UNDO: dismiss snack");
-                mUndoSnackBar.dismiss();
-            }
-
-            // mostro messaggio per undo
-            // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
-            mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
-                    getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
-                    // con il pulsante azione ripristino gli elementi rimossi
-                    .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
-                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                        @Override
-                        public void onDismissed(Snackbar transientBottomBar, int event) {
-                            // procedo alla cancellazione effettiva solo dopo il timeout
-                            if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
-                                mReleaseViewModel.deleteRemoved();
-                            }
-                            LogHelper.d("UNDO: dismissed event=%s", event);
-                        }
-                    });
-            LogHelper.d("UNDO: show snack");
-            mUndoSnackBar.show();
-        }
+        mListener.requestSnackbar(getResources().getQuantityString(R.plurals.release_deleted, count, count),
+                Constants.UNDO_TIMEOUT,
+                (canDelete) -> {
+                    if (canDelete) {
+                        LogHelper.d("Delete removed releases");
+                        mReleaseViewModel.deleteRemoved();
+                    } else {
+                        LogHelper.d("Undo removed releases");
+                        mReleaseViewModel.undoRemoved();
+                    }
+                });
     }
 }

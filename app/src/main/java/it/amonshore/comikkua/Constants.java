@@ -30,4 +30,6 @@ public final class Constants {
     public final static int RELEASE_OTHER = 22;
     public final static int RELEASE_NEW = 200;
 
+    public final static int UNDO_TIMEOUT = 7_000;
+
 }

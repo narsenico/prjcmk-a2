@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements
     private ActionMode mActionMode;
     private BottomNavigationView mBottomNavigationView;
     private NavController mNavController;
+    private Snackbar mSnackBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements
         if (mActionMode != null) {
             mActionMode.finish();
         }
+        // chiudo l'eventuale snackbar
+        dismissSnackbar();
 
         if (canHideNavigation(destination, arguments)) {
             mBottomNavigationView.setVisibility(View.GONE);
@@ -187,5 +192,32 @@ public class MainActivity extends AppCompatActivity implements
                 arg.isDefaultValuePresent() &&
                 arg.getDefaultValue().equals(Boolean.TRUE);
         return arguments == null ? defValue : arguments.getBoolean("hideNavigation", defValue);
+    }
+
+    @Override
+    public void requestSnackbar(@NonNull String text, int timeout, @NonNull ICallback<Boolean> callback) {
+        dismissSnackbar();
+
+        mSnackBar = Snackbar.make(findViewById(android.R.id.content), text, timeout)
+                .setAction(android.R.string.cancel, v -> callback.onCallback(false))
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT ||
+                                event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_MANUAL) {
+                            callback.onCallback(true);
+                        }
+                        LogHelper.d("SNACKBAR: dismissed event=%s", event);
+                    }
+                });
+        LogHelper.d("SNACKBAR: show snack");
+        mSnackBar.show();
+    }
+
+    private void dismissSnackbar() {
+        if (mSnackBar != null && mSnackBar.isShown()) {
+            LogHelper.d("SNACKBAR: dismiss snack");
+            mSnackBar.dismiss();
+        }
     }
 }

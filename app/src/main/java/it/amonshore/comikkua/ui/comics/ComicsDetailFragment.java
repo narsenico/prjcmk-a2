@@ -3,6 +3,16 @@ package it.amonshore.comikkua.ui.comics;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.transition.TransitionInflater;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +24,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
@@ -29,19 +40,6 @@ import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter;
 
-import android.transition.TransitionInflater;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-
 
 public class ComicsDetailFragment extends Fragment {
 
@@ -51,7 +49,6 @@ public class ComicsDetailFragment extends Fragment {
             mLast, mNext, mMissing;
     private ReleaseAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private Snackbar mUndoSnackBar;
 
     private ComicsViewModel mComicsViewModel;
     private ReleaseViewModel mReleaseViewModel;
@@ -298,28 +295,16 @@ public class ComicsDetailFragment extends Fragment {
     }
 
     private void showUndo(int count) {
-        if (mUndoSnackBar != null && mUndoSnackBar.isShown()) {
-            LogHelper.d("UNDO: dismiss snack");
-            mUndoSnackBar.dismiss();
-        }
-
-        // mostro messaggio per undo
-        // creo la snackbar a livello di activity così non ho grossi problemi quando cambio fragment
-        mUndoSnackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content),
-                getResources().getQuantityString(R.plurals.release_deleted, count, count), 7_000)
-                // con il pulsante azione ripristino gli elementi rimossi
-                .setAction(android.R.string.cancel, v -> mReleaseViewModel.undoRemoved())
-                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        // procedo alla cancellazione effettiva solo dopo il timeout
-                        if (event == BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_TIMEOUT) {
-                            mReleaseViewModel.deleteRemoved();
-                        }
-                        LogHelper.d("UNDO: dismissed event=%s", event);
+        mListener.requestSnackbar(getResources().getQuantityString(R.plurals.release_deleted, count, count),
+                Constants.UNDO_TIMEOUT,
+                (canDelete) -> {
+                    if (canDelete) {
+                        LogHelper.d("Delete removed releases");
+                        mReleaseViewModel.deleteRemoved();
+                    } else {
+                        LogHelper.d("Undo removed releases");
+                        mReleaseViewModel.undoRemoved();
                     }
                 });
-        LogHelper.d("UNDO: show snack");
-        mUndoSnackBar.show();
     }
 }
