@@ -74,7 +74,6 @@ public class ComicsEditFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final ComicsEditFragmentArgs args = ComicsEditFragmentArgs.fromBundle(requireArguments());
-        mListener.onSubtitleChanged(args.getSubtitle());
 
         // recupero il ViewModel per l'accesso ai dati
         mComicsViewModel = new ViewModelProvider(requireActivity())

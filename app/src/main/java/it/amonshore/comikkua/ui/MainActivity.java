@@ -24,6 +24,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import androidx.work.WorkManager;
 import it.amonshore.comikkua.BuildConfig;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
@@ -106,11 +107,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSubtitleChanged(int resId) {
-        getSupportActionBar().setSubtitle(resId);
-    }
-
-    @Override
     public void onFragmentRequestActionMode(@Nullable ActionMode.Callback callback, String name, CharSequence title) {
         if (mActionMode != null && (!name.equals(mActionMode.getTag()) || callback == null)) {
             mActionMode.finish();
@@ -155,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements
         LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.getLabel());
         // imposto il sottotitolo che viene passato come argomento della destinazione
         // i singoli fragment possono sovrascrivere il default chiamando direttamente onSubtitleChanged
-        onSubtitleChanged(extractSubtitle(destination, arguments));
+        getSupportActionBar().setSubtitle(extractSubtitle(destination, arguments));
         // chiudo sempre la tasteira eventualmente aperta
         Utility.hideKeyboard(getWindow().getDecorView());
         // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment

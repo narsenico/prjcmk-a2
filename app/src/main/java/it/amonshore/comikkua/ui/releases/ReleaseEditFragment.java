@@ -62,7 +62,6 @@ public class ReleaseEditFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final ReleaseEditFragmentArgs args = ReleaseEditFragmentArgs.fromBundle(requireArguments());
-        mListener.onSubtitleChanged(args.getSubtitle());
 
         // recupero il ViewModel per l'accesso ai dati
         mComicsViewModel = new ViewModelProvider(requireActivity())
