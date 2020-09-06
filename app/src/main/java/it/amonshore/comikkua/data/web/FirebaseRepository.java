@@ -2,6 +2,7 @@ package it.amonshore.comikkua.data.web;
 
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -26,9 +27,6 @@ public class FirebaseRepository {
 
     public FirebaseRepository() {
         mFirestore = FirebaseFirestore.getInstance();
-//        mFirestore.setFirestoreSettings(new FirebaseFirestoreSettings.Builder()
-//                .setPersistenceEnabled(true)
-//                .build());
 
         mReleaseDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
     }
@@ -39,7 +37,7 @@ public class FirebaseRepository {
      * @return elenco di titoli
      */
     public CustomData<List<String>> getTitles() {
-        LogHelper.d("CMKWEB read comics titles from firestore");
+        LogHelper.d("CMKWEB/Firestore read all comics");
 
         final CustomData<List<String>> liveData = new CustomData<>();
         liveData.postValue(Resource.loading(null));
@@ -87,7 +85,7 @@ public class FirebaseRepository {
      * @return nuova release
      */
     public CustomData<List<CmkWebRelease>> getReleases(String title, int numberFrom) {
-        LogHelper.d("CMKWEB read '%s' releases >= %s from firestore", title, numberFrom);
+        LogHelper.d("CMKWEB/Firestore read '%s' with release >= %s", title, numberFrom);
 
         final CustomData<List<CmkWebRelease>> liveData = new CustomData<>();
         liveData.postValue(Resource.loading(null));
@@ -98,7 +96,7 @@ public class FirebaseRepository {
         mFirestore.collection("comics")
                 .document(formatComicsId(title, 0))
                 .collection("releases")
-                .whereGreaterThanOrEqualTo(FieldPath.documentId(), Integer.toString(numberFrom))
+                .whereGreaterThanOrEqualTo("releaseNumber", numberFrom)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
