@@ -29,6 +29,7 @@ import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.Operation;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import it.amonshore.comikkua.Constants;
@@ -277,10 +278,11 @@ public class ReleasesFragment extends Fragment {
                 .setInputData(new Data.Builder()
                         .putBoolean(UpdateReleasesWorker.PREVENT_NOTIFICATION, true)
                         .build())
-                .setConstraints(new Constraints.Builder()
-                        // TODO: come si simula?
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build())
+                // TODO: non funziona! in mancanza di connessione la richiesta rimane in ENQUEUED, mi aspetto che vada in uno stato di errore
+                //  in ogni caso Firestore usa la cache se offline quindi mi va bene togliere il constraint
+//                .setConstraints(new Constraints.Builder()
+//                        .setRequiredNetworkType(NetworkType.CONNECTED)
+//                        .build())
                 .build();
 
         final WorkManager workManager = WorkManager.getInstance(requireContext());

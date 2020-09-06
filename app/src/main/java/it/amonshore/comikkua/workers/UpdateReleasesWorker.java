@@ -47,6 +47,7 @@ import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
+import it.amonshore.comikkua.data.web.FirebaseRepository;
 import it.amonshore.comikkua.ui.releases.NewReleasesFragmentArgs;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
@@ -75,7 +76,8 @@ public class UpdateReleasesWorker extends Worker {
             final ComikkuDatabase db = ComikkuDatabase.getDatabase(context);
             final ComicsDao comicsDao = db.comicsDao();
             final ReleaseDao releaseDao = db.releaseDao();
-            final CmkWebRepository cmkWebRepository = new CmkWebRepository(context);
+//            final CmkWebRepository cmkWebRepository = new CmkWebRepository(context);
+            final FirebaseRepository firebaseRepository = new FirebaseRepository();
             final Handler handler = new Handler(Looper.getMainLooper());
 
             // le operazioni di inserimento su DB verranno eseguite da questo executor
@@ -90,7 +92,8 @@ public class UpdateReleasesWorker extends Worker {
 
             for (ComicsWithReleases cs : ccs) {
                 // observe deve essere esguita nel main thread
-                handler.post(() -> observe(cmkWebRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
+//                handler.post(() -> observe(cmkWebRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
+                handler.post(() -> observe(firebaseRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
                         cs, releaseDao, tag, completionService));
             }
 
@@ -255,7 +258,9 @@ public class UpdateReleasesWorker extends Worker {
 
         if (enabled) {
             final Constraints constraints = new Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    // TODO: non funziona! in mancanza di connessione la richiesta rimane in ENQUEUED, mi aspetto che vada in uno stato di errore
+                    //  in ogni caso Firestore usa la cache se offline quindi mi va bene togliere il constraint
+//                    .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build();
 
             final PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(UpdateReleasesWorker.class,
