@@ -11,3 +11,4 @@
 ktlint
 todo.txt
 /tmp/**/*
+/app/**/google-services.json

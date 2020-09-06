@@ -24,15 +24,15 @@ public final class Resource<T> {
         this.message = message;
     }
 
-    static <T> Resource<T> success(@Nullable T data) {
+    public static <T> Resource<T> success(@Nullable T data) {
         return new Resource<>(Status.SUCCESS, data, null);
     }
 
-    static <T> Resource<T> error(@Nullable T data, @Nullable String message) {
+    public static <T> Resource<T> error(@Nullable T data, @Nullable String message) {
         return new Resource<>(Status.ERROR, data, message);
     }
 
-    static <T> Resource<T> loading(@Nullable T data) {
+    public static <T> Resource<T> loading(@Nullable T data) {
         return new Resource<>(Status.LOADING, data, null);
     }
 }

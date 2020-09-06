@@ -2,6 +2,8 @@ package it.amonshore.comikkua.data.release;
 
 import android.text.TextUtils;
 
+import javax.annotation.Nonnull;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Entity;
@@ -86,7 +88,7 @@ public class Release {
         return clone;
     }
 
-    public static Release from(long comicsId, CmkWebRelease release) {
+    public static Release from(long comicsId, @Nonnull CmkWebRelease release) {
         final Release clone = new Release();
         clone.comicsId = comicsId;
         clone.number = release.number;

@@ -17,11 +17,13 @@ import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
+import it.amonshore.comikkua.data.web.FirebaseRepository;
 
 public class ComicsViewModel extends AndroidViewModel {
 
     private final ComicsRepository mRepository;
-    private final CmkWebRepository mCmkWebRepository;
+//    private final CmkWebRepository mCmkWebRepository;
+    private final FirebaseRepository mFirebaseRespository;
     private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
     private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
     private String mLastFilter;
@@ -35,7 +37,8 @@ public class ComicsViewModel extends AndroidViewModel {
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
-        mCmkWebRepository = new CmkWebRepository(application);
+//        mCmkWebRepository = new CmkWebRepository(application);
+        mFirebaseRespository = new FirebaseRepository();
         states = new Bundle();
 
         final PagedList.Config config = new PagedList.Config.Builder()
@@ -62,7 +65,8 @@ public class ComicsViewModel extends AndroidViewModel {
         // posto il valore solo in caso di SUCCESS perché se uso LiveDataEx.observeOnce()
         //  riceverei solo il primo valore, che sarà a livello LOADING (oppure ERROR), visto che l'observer verrebbe subito rimosso
         comicBookTitles = new MediatorLiveData<>();
-        comicBookTitles.addSource(mCmkWebRepository.getTitles(), resource -> {
+//        comicBookTitles.addSource(mCmkWebRepository.getTitles(), resource -> {
+        comicBookTitles.addSource(mFirebaseRespository.getTitles(), resource -> {
             LogHelper.d("comicBookTitles status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:
