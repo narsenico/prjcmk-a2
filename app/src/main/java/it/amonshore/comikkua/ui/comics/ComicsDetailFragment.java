@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -24,12 +25,14 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseViewModel;
@@ -49,10 +52,12 @@ public class ComicsDetailFragment extends Fragment {
             mLast, mNext, mMissing;
     private ReleaseAdapter mAdapter;
     private RecyclerView mRecyclerView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private ComicsViewModel mComicsViewModel;
     private ReleaseViewModel mReleaseViewModel;
     private long mComicsId;
+    private ComicsWithReleases mComics;
 
     public ComicsDetailFragment() {
     }
@@ -75,7 +80,10 @@ public class ComicsDetailFragment extends Fragment {
         mRecyclerView = view.findViewById(R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-        mComicsId = ComicsDetailFragmentArgs.fromBundle(getArguments()).getComicsId();
+        mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this::performUpdate);
+
+        mComicsId = ComicsDetailFragmentArgs.fromBundle(requireArguments()).getComicsId();
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
         view.findViewById(R.id.comics).setTransitionName("comics_tx_" + mComicsId);
@@ -178,6 +186,7 @@ public class ComicsDetailFragment extends Fragment {
         // recupero l'istanza e poi rimuovo subito l'observer altrimenti verrebbe notificato il salvataggio
         // TODO: beh non dovrei cmq aggiornare i tre contatori?
         mComicsViewModel.getComicsWithReleases(mComicsId).observe(getViewLifecycleOwner(), comics -> {
+            mComics = comics;
             if (comics != null) {
 //                mInitial.setText(comics.comics.getInitial());
                 mName.setText(comics.comics.name);
@@ -284,6 +293,31 @@ public class ComicsDetailFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void performUpdate() {
+        // annullo eventuale undo
+        mListener.dismissSnackbar();
+        mSwipeRefreshLayout.setRefreshing(true);
+
+        // cerco tutte le nuove release e le aggiungo direttamente
+        mReleaseViewModel.getNewReleases(mComics).observe(getViewLifecycleOwner(), releases -> {
+            if (releases != null) {
+                final int size = releases.size();
+                if (size > 0) {
+                    mReleaseViewModel.insert(releases.toArray(new Release[size]));
+                    Toast.makeText(requireContext(),
+                            getResources().getQuantityString(R.plurals.auto_update_available_message, size, size),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(requireContext(), R.string.auto_update_zero, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // in realtà è null in caso di errore
+                Toast.makeText(requireContext(), R.string.auto_update_zero, Toast.LENGTH_SHORT).show();
+            }
+            mSwipeRefreshLayout.setRefreshing(false);
+        });
     }
 
     private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {

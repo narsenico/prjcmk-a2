@@ -55,7 +55,7 @@ class ReleaseRepository {
         return mReleaseDao.getRelease(id);
     }
 
-    void insert(Release release) {
+    void insert(Release... release) {
         new InsertAsyncTask(mReleaseDao).execute(release);
     }
 
@@ -125,7 +125,7 @@ class ReleaseRepository {
 
         @Override
         protected Void doInBackground(final Release... params) {
-            mAsyncTaskDao.insert(params[0]);
+            mAsyncTaskDao.insert(params);
             return null;
         }
     }

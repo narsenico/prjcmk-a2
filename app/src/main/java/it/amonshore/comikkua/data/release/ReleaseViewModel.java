@@ -4,7 +4,9 @@ import android.app.Application;
 import android.os.Bundle;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -18,7 +20,7 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.data.web.CmkWebRepository;
+import it.amonshore.comikkua.data.web.CmkWebRelease;
 import it.amonshore.comikkua.data.web.FirebaseRepository;
 
 public class ReleaseViewModel extends AndroidViewModel {
@@ -26,7 +28,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     private final static long ONE_DAY = 86_400_000L;
 
     private final ReleaseRepository mRepository;
-//    private final CmkWebRepository mCmkWebRepository;
+    //    private final CmkWebRepository mCmkWebRepository;
     private final FirebaseRepository mFirebaseRepository;
 
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
@@ -131,7 +133,7 @@ public class ReleaseViewModel extends AndroidViewModel {
         return mRepository.getComicsReleases(Utility.toArray(ids));
     }
 
-    public void insert(Release release) {
+    public void insert(Release... release) {
         mRepository.insert(release);
     }
 
@@ -240,6 +242,42 @@ public class ReleaseViewModel extends AndroidViewModel {
                     LogHelper.e("error retrieving web comics releases: " + resource.message);
                     // TODO: bisogna dare qualche segnalazione all'utente
                     data.postValue(comics.createNextRelease());
+                    loading.postValue(false);
+                    break;
+            }
+        });
+        return data;
+    }
+
+    public LiveData<List<Release>> getNewReleases(@NonNull ComicsWithReleases comics) {
+        final MediatorLiveData<List<Release>> data = new MediatorLiveData<>();
+        // cerco le release in base al titolo del comics
+        // che potrebbe anche portare a risultati spiacevoli
+        // ad es. se ci sono più edizioni dello stesso comics
+//        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
+        data.addSource(mFirebaseRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
+            LogHelper.d("getNewReleases status=%s", resource.status);
+            switch (resource.status) {
+                case SUCCESS:
+                    // se non ci sono release la creo in base ai dati già in mio possesso
+                    if (resource.data != null && resource.data.size() > 0) {
+                        final List<Release> releases = new ArrayList<>();
+                        for (CmkWebRelease cwr : resource.data) {
+                            releases.add(Release.from(comics.comics.id, cwr));
+                        }
+                        data.postValue(releases);
+                    } else {
+                        data.postValue(Collections.emptyList());
+                    }
+                    loading.postValue(false);
+                    break;
+                case LOADING:
+                    loading.postValue(true);
+                    break;
+                case ERROR:
+                    LogHelper.e("error retrieving web comics releases: " + resource.message);
+                    // TODO: bisogna dare qualche segnalazione all'utente
+                    data.postValue(null);
                     loading.postValue(false);
                     break;
             }
