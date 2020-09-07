@@ -31,7 +31,6 @@ import androidx.preference.PreferenceManager;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
@@ -46,7 +45,6 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
-import it.amonshore.comikkua.data.web.CmkWebRepository;
 import it.amonshore.comikkua.data.web.FirebaseRepository;
 import it.amonshore.comikkua.ui.releases.NewReleasesFragmentArgs;
 
