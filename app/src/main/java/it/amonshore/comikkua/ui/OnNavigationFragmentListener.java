@@ -27,4 +27,9 @@ public interface OnNavigationFragmentListener {
      * @param callback callback chiamato ogni quando la snackbar viene dismessa
      */
     void requestSnackbar(@NonNull String text, int timeout, @NonNull ICallback<Boolean> callback);
+
+    /**
+     * Dismette una eventuale snackbar presente.
+     */
+    void dismissSnackbar();
 }

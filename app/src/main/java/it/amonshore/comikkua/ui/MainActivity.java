@@ -214,7 +214,8 @@ public class MainActivity extends AppCompatActivity implements
         mSnackBar.show();
     }
 
-    private void dismissSnackbar() {
+    @Override
+    public void dismissSnackbar() {
         if (mSnackBar != null && mSnackBar.isShown()) {
             LogHelper.d("SNACKBAR: dismiss snack");
             mSnackBar.dismiss();
