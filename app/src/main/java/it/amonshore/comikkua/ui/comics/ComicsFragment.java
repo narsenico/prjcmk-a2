@@ -131,8 +131,8 @@ public class ComicsFragment extends Fragment {
                 .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
         mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
-            LogHelper.d("comics viewmodel data changed size=" + data.size());
-            mAdapter.submitList(data);
+            LogHelper.d("comics viewmodel paging data changed");
+            mAdapter.submitData(getLifecycle(), data);
         });
 
         // ripristino la selezione salvata in onSaveInstanceState

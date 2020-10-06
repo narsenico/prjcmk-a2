@@ -11,13 +11,18 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
+import androidx.lifecycle.ViewModelKt;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
+import androidx.paging.Pager;
+import androidx.paging.PagingConfig;
+import androidx.paging.PagingData;
+import androidx.paging.PagingLiveData;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.web.CmkWebRepository;
 import it.amonshore.comikkua.data.web.FirebaseRepository;
+import kotlinx.coroutines.CoroutineScope;
 
 public class ComicsViewModel extends AndroidViewModel {
 
@@ -25,11 +30,15 @@ public class ComicsViewModel extends AndroidViewModel {
 //    private final CmkWebRepository mCmkWebRepository;
     private final FirebaseRepository mFirebaseRespository;
     private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
-    private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
+//    private final LiveData<PagedList<ComicsWithReleases>> mAllComics;
+    private final LiveData<PagingData<ComicsWithReleases>> mAllComics;
     private String mLastFilter;
 
-    public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
+//    public final LiveData<PagedList<ComicsWithReleases>> comicsWithReleasesList;
+    public final LiveData<PagingData<ComicsWithReleases>> comicsWithReleasesList;
     public final MediatorLiveData<List<String>> comicBookTitles;
+    // indica se è in corso un caricamento di dati da remoto
+    public final MutableLiveData<Boolean> loading;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
     public final Bundle states;
@@ -40,15 +49,22 @@ public class ComicsViewModel extends AndroidViewModel {
 //        mCmkWebRepository = new CmkWebRepository(application);
         mFirebaseRespository = new FirebaseRepository();
         states = new Bundle();
+        loading = new MutableLiveData<>();
 
-        final PagedList.Config config = new PagedList.Config.Builder()
-                .setInitialLoadSizeHint(20)
-                .setPageSize(20)
-                .setEnablePlaceholders(true)
-                .build();
+//        final PagedList.Config config = new PagedList.Config.Builder()
+//                .setInitialLoadSizeHint(20)
+//                .setPageSize(20)
+//                .setEnablePlaceholders(true)
+//                .build();
+
+        final PagingConfig pagingConfig = new PagingConfig(20, 20, true);
 
         // LiveData con l'elenco completo
-        mAllComics = new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(), config).build();
+//        mAllComics = new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(), config).build();
+        final CoroutineScope viewModelScope = ViewModelKt.getViewModelScope(this);
+        final Pager<Integer, ComicsWithReleases> allComicsPager = new Pager<>(pagingConfig,
+                mRepository::getComicsWithReleasesPagingSource);
+        mAllComics = PagingLiveData.cachedIn(PagingLiveData.getLiveData(allComicsPager), viewModelScope);
 
         // è eccitato dal MutableLiveData mFilterComics
         // se il suo valore è vuoto, oppure %%, viene ritornato l'intero set di comics
@@ -57,7 +73,11 @@ public class ComicsViewModel extends AndroidViewModel {
             if (TextUtils.isEmpty(input) || input.equals("%%")) {
                 return mAllComics;
             } else {
-                return new LivePagedListBuilder<>(mRepository.getComicsWithReleasesFactory(input), config).build();
+//                return new LivePagedListBuilder<>(mRepository.getComicsWithReleasesPagingSource(input), config).build();
+                // TODO: deve esserci un modo per farla più performante
+                final Pager<Integer, ComicsWithReleases> filteredComicsPager = new Pager<>(pagingConfig,
+                        () -> mRepository.getComicsWithReleasesPagingSource(input));
+                return PagingLiveData.cachedIn(PagingLiveData.getLiveData(filteredComicsPager), viewModelScope);
             }
         });
 
@@ -71,12 +91,14 @@ public class ComicsViewModel extends AndroidViewModel {
             switch (resource.status) {
                 case SUCCESS:
                     comicBookTitles.postValue(resource.data);
+                    loading.postValue(false);
                     break;
                 case LOADING:
-                    // non mi interessa
+                    loading.postValue(true);
                     break;
                 case ERROR:
                     LogHelper.e("error retrieving web comics: " + resource.message);
+                    loading.postValue(false);
                     break;
             }
         });

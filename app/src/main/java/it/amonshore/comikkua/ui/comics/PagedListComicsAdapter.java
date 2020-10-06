@@ -3,6 +3,7 @@ package it.amonshore.comikkua.ui.comics;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.paging.PagedListAdapter;
+import androidx.paging.PagingDataAdapter;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -32,7 +33,7 @@ import it.amonshore.comikkua.ui.ImageHelper;
 /**
  * TODO: è da aggiornare implementando PagedListAdapter, ma non supporta il SelectionTracker a causa di getItemId che è diventato final!!!!!
  */
-public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases, ComicsViewHolder> {
+public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases, ComicsViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
     private ComicsViewHolderCallback mComicsViewHolderCallback;

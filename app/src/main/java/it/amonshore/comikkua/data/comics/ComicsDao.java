@@ -4,6 +4,7 @@ import java.util.List;
 
 import androidx.lifecycle.LiveData;
 import androidx.paging.DataSource;
+import androidx.paging.PagingSource;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -70,13 +71,13 @@ public interface ComicsDao {
 
     @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
-    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory();
+    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource();
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND " +
             "(name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName OR notes LIKE :likeName) " +
             "ORDER BY name COLLATE NOCASE ASC")
     @Transaction
-    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory(String likeName);
+    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource(String likeName);
 
     @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0")
     @Transaction

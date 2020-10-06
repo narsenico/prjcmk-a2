@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
-import androidx.paging.DataSource;
+import androidx.paging.PagingSource;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
@@ -35,12 +35,12 @@ class ComicsRepository {
         return mComicsDao.getComicsWithReleases(id);
     }
 
-    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory() {
-        return mComicsDao.getComicsWithReleasesFactory();
+    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource() {
+        return mComicsDao.getComicsWithReleasesPagingSource();
     }
 
-    DataSource.Factory<Integer, ComicsWithReleases> getComicsWithReleasesFactory(String likeName) {
-        return mComicsDao.getComicsWithReleasesFactory(likeName);
+    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource(String likeName) {
+        return mComicsDao.getComicsWithReleasesPagingSource(likeName);
     }
 
     LiveData<List<String>> getPublishers() {
