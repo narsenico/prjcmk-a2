@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.net.Uri;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -26,7 +27,6 @@ import java.util.List;
 
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 import it.amonshore.comikkua.ui.ImageHelper;
 
 /**
@@ -58,13 +58,29 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
         return ComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mComicsViewHolderCallback);
     }
 
-    @Override
-    public long getItemId(int position) {
+    public long getSelectionKey(int position) {
         final ComicsWithReleases item = getItem(position);
         if (item == null) {
             return RecyclerView.NO_ID;
         } else {
             return item.comics.id;
+        }
+    }
+
+    public int getPosition(long selectionKey) {
+        long nn = SystemClock.elapsedRealtimeNanos();
+        try {
+            for (int ii = 0; ; ii++) {
+                final ComicsWithReleases item = getItem(ii);
+                if (item == null) {
+                    return RecyclerView.NO_POSITION;
+                } else if (item.comics.id == selectionKey) {
+                    return ii;
+                }
+            }
+        } finally {
+            LogHelper.d("getPosition of %s out of %s in %sns",
+                    selectionKey, getItemCount(), SystemClock.elapsedRealtimeNanos() - nn);
         }
     }
 
@@ -87,7 +103,6 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
 
     static class Builder {
         private final RecyclerView mRecyclerView;
-//        private OnItemActivatedListener<Long> mOnItemActivatedListener;
         private OnItemSelectedListener mOnItemSelectedListener;
         private RequestManager mRequestManager;
         private ComicsCallback comicsCallback;
@@ -95,11 +110,6 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
         Builder(@NonNull RecyclerView recyclerView) {
             mRecyclerView = recyclerView;
         }
-
-//        Builder withOnItemActivatedListener(OnItemActivatedListener<Long> listener) {
-//            mOnItemActivatedListener = listener;
-//            return this;
-//        }
 
         Builder withComcisCallback(@NonNull ComicsCallback callback) {
             comicsCallback = callback;
@@ -121,7 +131,8 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             adapter.mComicsViewHolderCallback = new ComicsViewHolderCallback() {
                 @Override
                 void onComicsClick(long comicsId, int position) {
-                    if (comicsCallback != null) {
+                    // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
+                    if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
                         final ComicsWithReleases comics = adapter.getItem(position);
                         if (comics != null) {
                             comicsCallback.onComicsClick(comics);
@@ -139,14 +150,15 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
                     }
                 }
             };
-            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
-            adapter.setHasStableIds(true);
+//            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
+//            adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
 
+            final MyItemKeProvider itemKeyProvider = new MyItemKeProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED);
             final SelectionTracker.Builder<Long> builder = new SelectionTracker.Builder<>(
                     "comics-selection",
                     mRecyclerView,
-                    new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED),
+                    itemKeyProvider,
                     new ComicsItemDetailsLookup(mRecyclerView),
                     StorageStrategy.createLongStorage());
 
@@ -157,7 +169,7 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             adapter.mSelectionTracker = builder.build();
 
             if (mOnItemSelectedListener != null) {
-                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
                     @Override
                     public void onSelectionChanged() {
                         if (adapter.mSelectionTracker.hasSelection()) {
@@ -196,6 +208,26 @@ public class PagedListComicsAdapter extends PagedListAdapter<ComicsWithReleases,
             }
 
             return adapter;
+        }
+    }
+
+    private static class MyItemKeProvider extends ItemKeyProvider<Long> {
+        private PagedListComicsAdapter mAdapter;
+
+        public MyItemKeProvider(@NonNull RecyclerView recyclerView, int scope) {
+            super(scope);
+            mAdapter = (PagedListComicsAdapter) recyclerView.getAdapter();
+        }
+
+        @Nullable
+        @Override
+        public Long getKey(int position) {
+            return mAdapter == null ? RecyclerView.NO_ID : mAdapter.getSelectionKey(position);
+        }
+
+        @Override
+        public int getPosition(@NonNull Long key) {
+            return mAdapter == null ? RecyclerView.NO_POSITION : mAdapter.getPosition(key);
         }
     }
 

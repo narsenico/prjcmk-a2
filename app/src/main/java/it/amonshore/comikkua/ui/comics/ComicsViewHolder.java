@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 
-import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
@@ -22,9 +21,14 @@ import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
-    private final TextView mInitial, mName, mPublisher, mAuthors, mNotes,
-            mLast, mNext, mMissing;
-    private final View mNewRelease;
+    private final TextView mInitial;
+    private final TextView mName;
+    private final TextView mPublisher;
+    private final TextView mAuthors;
+    private final TextView mNotes;
+    private final TextView mLast;
+    private final TextView mNext;
+    private final TextView mMissing;
     private long mId;
 
     private ComicsViewHolder(View itemView, final ComicsViewHolderCallback callback) {
@@ -37,27 +41,24 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mLast = itemView.findViewById(R.id.txt_comics_release_last);
         mNext = itemView.findViewById(R.id.txt_comics_release_next);
         mMissing = itemView.findViewById(R.id.txt_comics_release_missing);
-        mNewRelease = itemView.findViewById(R.id.img_new_release);
+
+        final View newRelease = itemView.findViewById(R.id.img_new_release);
 
         if (callback != null) {
-            itemView.setOnClickListener(v -> {
-                callback.onComicsClick(mId, getAdapterPosition());
-            });
+            itemView.setOnClickListener(v -> callback.onComicsClick(mId, getLayoutPosition()));
 
-            mNewRelease.setVisibility(View.VISIBLE);
-            mNewRelease.setOnClickListener(v -> {
-                callback.onNewRelease(mId, getAdapterPosition());
-            });
+            newRelease.setVisibility(View.VISIBLE);
+            newRelease.setOnClickListener(v -> callback.onNewRelease(mId, getLayoutPosition()));
         } else {
             itemView.setOnClickListener(null);
-            mNewRelease.setVisibility(View.INVISIBLE);
-            mNewRelease.setOnClickListener(null);
+            newRelease.setVisibility(View.INVISIBLE);
+            newRelease.setOnClickListener(null);
         }
     }
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ComicsItemDetails(getAdapterPosition(), mId);
+        return new ComicsItemDetails(getLayoutPosition(), mId);
     }
 
     void bind(@NonNull ComicsWithReleases comics, boolean selected, RequestManager requestManager) {
@@ -126,67 +127,67 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mMissing.setText("");
     }
 
-    @ColorRes
-    int getInitialColor(char initial) {
-        switch (initial) {
-            case 'A':
-                return R.color.colorItemBackgroundA;
-            case 'B':
-                return R.color.colorItemBackgroundB;
-            case 'C':
-                return R.color.colorItemBackgroundC;
-            case 'D':
-                return R.color.colorItemBackgroundD;
-            case 'E':
-                return R.color.colorItemBackgroundE;
-            case 'F':
-                return R.color.colorItemBackgroundF;
-            case 'G':
-                return R.color.colorItemBackgroundG;
-            case 'H':
-                return R.color.colorItemBackgroundH;
-            case 'I':
-                return R.color.colorItemBackgroundI;
-            case 'J':
-                return R.color.colorItemBackgroundJ;
-            case 'K':
-                return R.color.colorItemBackgroundK;
-            case 'L':
-                return R.color.colorItemBackgroundL;
-            case 'M':
-                return R.color.colorItemBackgroundM;
-            case 'N':
-                return R.color.colorItemBackgroundN;
-            case 'O':
-                return R.color.colorItemBackgroundO;
-            case 'P':
-                return R.color.colorItemBackgroundP;
-            case 'Q':
-                return R.color.colorItemBackgroundQ;
-            case 'R':
-                return R.color.colorItemBackgroundR;
-            case 'S':
-                return R.color.colorItemBackgroundS;
-            case 'T':
-                return R.color.colorItemBackgroundT;
-            case 'U':
-                return R.color.colorItemBackgroundU;
-            case 'V':
-                return R.color.colorItemBackgroundV;
-            case 'W':
-                return R.color.colorItemBackgroundW;
-            case 'X':
-                return R.color.colorItemBackgroundX;
-            case 'Y':
-                return R.color.colorItemBackgroundY;
-            case 'Z':
-                return R.color.colorItemBackgroundZ;
-            case '_':
-                return R.color.colorItemBackground_;
-            default:
-                return R.color.colorItemBackgroundAlt;
-        }
-    }
+//    @ColorRes
+//    int getInitialColor(char initial) {
+//        switch (initial) {
+//            case 'A':
+//                return R.color.colorItemBackgroundA;
+//            case 'B':
+//                return R.color.colorItemBackgroundB;
+//            case 'C':
+//                return R.color.colorItemBackgroundC;
+//            case 'D':
+//                return R.color.colorItemBackgroundD;
+//            case 'E':
+//                return R.color.colorItemBackgroundE;
+//            case 'F':
+//                return R.color.colorItemBackgroundF;
+//            case 'G':
+//                return R.color.colorItemBackgroundG;
+//            case 'H':
+//                return R.color.colorItemBackgroundH;
+//            case 'I':
+//                return R.color.colorItemBackgroundI;
+//            case 'J':
+//                return R.color.colorItemBackgroundJ;
+//            case 'K':
+//                return R.color.colorItemBackgroundK;
+//            case 'L':
+//                return R.color.colorItemBackgroundL;
+//            case 'M':
+//                return R.color.colorItemBackgroundM;
+//            case 'N':
+//                return R.color.colorItemBackgroundN;
+//            case 'O':
+//                return R.color.colorItemBackgroundO;
+//            case 'P':
+//                return R.color.colorItemBackgroundP;
+//            case 'Q':
+//                return R.color.colorItemBackgroundQ;
+//            case 'R':
+//                return R.color.colorItemBackgroundR;
+//            case 'S':
+//                return R.color.colorItemBackgroundS;
+//            case 'T':
+//                return R.color.colorItemBackgroundT;
+//            case 'U':
+//                return R.color.colorItemBackgroundU;
+//            case 'V':
+//                return R.color.colorItemBackgroundV;
+//            case 'W':
+//                return R.color.colorItemBackgroundW;
+//            case 'X':
+//                return R.color.colorItemBackgroundX;
+//            case 'Y':
+//                return R.color.colorItemBackgroundY;
+//            case 'Z':
+//                return R.color.colorItemBackgroundZ;
+//            case '_':
+//                return R.color.colorItemBackground_;
+//            default:
+//                return R.color.colorItemBackgroundAlt;
+//        }
+//    }
 
     static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ComicsViewHolderCallback callback) {
         return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false), callback);

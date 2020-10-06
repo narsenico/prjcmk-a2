@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -42,7 +44,6 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
-import it.amonshore.comikkua.ui.CustomItemKeyProvider;
 import it.amonshore.comikkua.ui.ImageHelper;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
@@ -83,13 +84,29 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         }
     }
 
-    @Override
-    public long getItemId(int position) {
+    public long getSelectionKey(int position) {
         final IReleaseViewModelItem item = getItem(position);
         if (item == null) {
             return RecyclerView.NO_ID;
         } else {
             return item.getId();
+        }
+    }
+
+    public int getPosition(long selectionKey) {
+        long nn = SystemClock.elapsedRealtimeNanos();
+        try {
+            for (int ii = 0; ; ii++) {
+                final IReleaseViewModelItem item = getItem(ii);
+                if (item == null) {
+                    return RecyclerView.NO_POSITION;
+                } else if (item.getId() == selectionKey) {
+                    return ii;
+                }
+            }
+        } finally {
+            LogHelper.d("getPosition of %s out of %s in %sns",
+                    selectionKey, getItemCount(), SystemClock.elapsedRealtimeNanos() - nn);
         }
     }
 
@@ -164,7 +181,8 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             adapter.mReleaseViewHolderCallback = new ReleaseViewHolderCallback(releaseMenuRes) {
                 @Override
                 void onReleaseClick(long comicsId, long id, int position) {
-                    if (releaseCallback != null) {
+                    // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
+                    if (releaseCallback != null && !adapter.mSelectionTracker.hasSelection()) {
                         final IReleaseViewModelItem item = adapter.getItem(position);
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
@@ -184,11 +202,11 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     }
                 }
             };
-            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
-            adapter.setHasStableIds(true);
+//            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
+//            adapter.setHasStableIds(true);
             mRecyclerView.setAdapter(adapter);
 
-            final CustomItemKeyProvider itemKeyProvider = new CustomItemKeyProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED);
+            final MyItemKeProvider itemKeyProvider = new MyItemKeProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED);
             final SelectionTracker.Builder<Long> builder = new SelectionTracker.Builder<>(
                     "release-selection",
                     mRecyclerView,
@@ -222,7 +240,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             adapter.mSelectionTracker = builder.build();
 
             if (mOnItemSelectedListener != null) {
-                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
                     @Override
                     public void onSelectionChanged() {
                         if (adapter.mSelectionTracker.hasSelection()) {
@@ -267,7 +285,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                         // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
 //                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
                         if (adapter.mSelectionTracker.hasSelection()) return 0;
-                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getAdapterPosition());
+                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getLayoutPosition());
                         // escludo header e multi
                         if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
                         return super.getSwipeDirs(recyclerView, viewHolder);
@@ -276,7 +294,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                     @Override
                     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //                    LogHelper.d("Release swiped direction=%s", direction);
-                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getAdapterPosition());
+                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getLayoutPosition());
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
                             if (direction == ItemTouchHelper.RIGHT) {
@@ -316,6 +334,26 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             }
 
             return adapter;
+        }
+    }
+
+    private static class MyItemKeProvider extends ItemKeyProvider<Long> {
+        private ReleaseAdapter mAdapter;
+
+        public MyItemKeProvider(@NonNull RecyclerView recyclerView, int scope) {
+            super(scope);
+            mAdapter = (ReleaseAdapter) recyclerView.getAdapter();
+        }
+
+        @Nullable
+        @Override
+        public Long getKey(int position) {
+            return mAdapter == null ? RecyclerView.NO_ID : mAdapter.getSelectionKey(position);
+        }
+
+        @Override
+        public int getPosition(@NonNull Long key) {
+            return mAdapter == null ? RecyclerView.NO_POSITION : mAdapter.getPosition(key);
         }
     }
 
@@ -369,11 +407,11 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             mLinePaint.setColor(context.getResources().getColor(lineColor));
 
             // uso mutate() in modo che le modifiche vengono apportate solo a questa istanza di drawable
-            mDrawableLeft = context.getResources().getDrawable(drawableLeft).mutate();
+            mDrawableLeft = ResourcesCompat.getDrawable(context.getResources(), drawableLeft, null).mutate();
             mDrawableLeft.setTint(ciDrawableColor);
 
             // uso mutate() in modo che le modifiche vengono apportate solo a questa istanza di drawable
-            mDrawableRight = context.getResources().getDrawable(drawableRight).mutate();
+            mDrawableRight = ResourcesCompat.getDrawable(context.getResources(), drawableRight, null).mutate();
             mDrawableRight.setTint(ciDrawableColor);
 
             mDrawableLeftPadding = drawableLeftPadding;

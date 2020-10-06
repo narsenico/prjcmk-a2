@@ -30,7 +30,10 @@ import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
 
     private final TextView mNumbers, mDate, mTitle, mInfo, mNotes;
-    private final View mPurchased, mOrdered, mMenu, mMainCard, mBackground;
+    private final View mPurchased;
+    private final View mOrdered;
+    private final View mMainCard;
+    private final View mBackground;
 
     private long mComicsId;
     private long mId;
@@ -46,42 +49,36 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         mNotes = itemView.findViewById(R.id.txt_release_notes);
         mPurchased = itemView.findViewById(R.id.img_release_purchased);
         mOrdered = itemView.findViewById(R.id.img_release_ordered);
-        mMenu = itemView.findViewById(R.id.img_release_menu);
         mMainCard = itemView.findViewById(R.id.release_main_card);
         mBackground = itemView.findViewById(R.id.release_background);
 
-//        mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-//                2f,
-//                itemView.getResources().getDisplayMetrics());
         mMainCardElevationPx = mMainCard.getElevation();
 
+        final View menu = itemView.findViewById(R.id.img_release_menu);
+
         if (callback != null) {
-            itemView.setOnClickListener(v -> {
-                callback.onReleaseClick(mComicsId, mId, getAdapterPosition());
-            });
+            itemView.setOnClickListener(v -> callback.onReleaseClick(mComicsId, mId, getLayoutPosition()));
 
             if (callback.mMenuRes != 0) {
-                final PopupMenu popupMenu = new PopupMenu(itemView.getContext(), mMenu);
+                final PopupMenu popupMenu = new PopupMenu(itemView.getContext(), menu);
                 popupMenu.inflate(callback.mMenuRes);
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    callback.onReleaseMenuSelected(item, mComicsId, mId, getAdapterPosition());
+                    callback.onReleaseMenuSelected(item, mComicsId, mId, getLayoutPosition());
                     return true;
                 });
-                mMenu.setVisibility(View.VISIBLE);
-                mMenu.setOnClickListener(v -> {
-                    popupMenu.show();
-                });
+                menu.setVisibility(View.VISIBLE);
+                menu.setOnClickListener(v -> popupMenu.show());
             }
         } else {
             itemView.setOnClickListener(null);
-            mMenu.setVisibility(View.INVISIBLE);
-            mMenu.setOnClickListener(null);
+            menu.setVisibility(View.INVISIBLE);
+            menu.setOnClickListener(null);
         }
     }
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ReleaseItemDetails(getAdapterPosition(), mId);
+        return new ReleaseItemDetails(getLayoutPosition(), mId);
     }
 
     @Override
