@@ -94,7 +94,7 @@ public interface ReleaseDao {
             "UNION " +
             "SELECT " + DatedRelease.TYPE_NEXT + " as type, * FROM vDatedReleases WHERE rdate >= :refNextDate and rdate < :refOtherDate " +   // periodo successivo
             "UNION " +
-            "SELECT " + DatedRelease.TYPE_OTHER + " as type, * FROM vDatedReleases WHERE rdate > :refOtherDate " +                             // oltre
+            "SELECT " + DatedRelease.TYPE_OTHER + " as type, * FROM vDatedReleases WHERE rdate >= :refOtherDate " +                             // oltre
             "UNION " +
             "SELECT " + MissingRelease.TYPE + " as type, * FROM vMissingReleases WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) " +
             "ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber")
