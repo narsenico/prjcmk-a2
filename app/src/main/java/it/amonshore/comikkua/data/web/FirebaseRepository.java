@@ -29,6 +29,8 @@ public class FirebaseRepository {
         mFirestore = FirebaseFirestore.getInstance();
 
         mReleaseDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+
+        LogHelper.d("CMKWEB/Firestore using projectId " + mFirestore.getApp().getOptions().getProjectId());
     }
 
     /**

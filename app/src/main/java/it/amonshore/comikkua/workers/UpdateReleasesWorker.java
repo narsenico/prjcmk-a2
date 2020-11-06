@@ -102,10 +102,15 @@ public class UpdateReleasesWorker extends Worker {
             try {
                 for (int ii = 0; ii < ccs.size(); ii++) {
                     Future<Integer> futureInsert = completionService.poll(10, TimeUnit.SECONDS);
-                    try {
-                        newReleasesCount += futureInsert.get(10, TimeUnit.SECONDS);
-                    } catch (TimeoutException tex) {
-                        //
+                    // se il completamento va in timeout ritorna null
+                    if (futureInsert == null) {
+                        LogHelper.w("Timeout updating release for '%s'", ccs.get(ii).comics.name);
+                    } else {
+                        try {
+                            newReleasesCount += futureInsert.get(10, TimeUnit.SECONDS);
+                        } catch (TimeoutException tex) {
+                            //
+                        }
                     }
                 }
             } catch (InterruptedException iex) {
