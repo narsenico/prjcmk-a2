@@ -28,7 +28,6 @@ public class ReleaseViewModel extends AndroidViewModel {
     private final static long ONE_DAY = 86_400_000L;
 
     private final ReleaseRepository mRepository;
-    //    private final CmkWebRepository mCmkWebRepository;
     private final FirebaseRepository mFirebaseRepository;
 
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
@@ -42,7 +41,6 @@ public class ReleaseViewModel extends AndroidViewModel {
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
-//        mCmkWebRepository = new CmkWebRepository(application);
         mFirebaseRepository = new FirebaseRepository();
         mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();

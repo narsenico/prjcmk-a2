@@ -74,7 +74,6 @@ public class UpdateReleasesWorker extends Worker {
             final ComikkuDatabase db = ComikkuDatabase.getDatabase(context);
             final ComicsDao comicsDao = db.comicsDao();
             final ReleaseDao releaseDao = db.releaseDao();
-//            final CmkWebRepository cmkWebRepository = new CmkWebRepository(context);
             final FirebaseRepository firebaseRepository = new FirebaseRepository();
             final Handler handler = new Handler(Looper.getMainLooper());
 

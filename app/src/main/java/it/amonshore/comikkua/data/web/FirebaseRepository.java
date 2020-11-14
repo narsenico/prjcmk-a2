@@ -159,4 +159,8 @@ public class FirebaseRepository {
         release.date = mReleaseDateFormat.format(document.getTimestamp("releaseDate").toDate());
         return release;
     }
+
+    public static String getProjectId() {
+        return FirebaseFirestore.getInstance().getApp().getOptions().getProjectId();
+    }
 }

@@ -5,13 +5,12 @@ apply plugin: 'com.google.gms.google-services'
 android {
     compileSdkVersion 29
     defaultConfig {
-        applicationId "it.amonshore.comikkua.neon"
+        applicationId "it.amonshore.comikkua"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 2
+        versionCode 3
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionNameSuffix 'neon'
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
         javaCompileOptions {
             annotationProcessorOptions {
@@ -28,23 +27,17 @@ android {
     buildFeatures {
         dataBinding = true
     }
-    flavorDimensions "develop", "remote"
+    flavorDimensions "develop"
     productFlavors {
-        safe {
+        neon {
             dimension "develop"
+            applicationId "it.amonshore.comikkua.neon"
+            versionName "1.0-neon"
         }
         tryme {
             dimension "develop"
-            applicationIdSuffix '.tryme'
-            versionNameSuffix '-tryme'
-        }
-        local {
-            dimension "remote"
-            buildConfigField "String", "CMKWEB", "\"LOCAL\""
-        }
-        heroku {
-            dimension "remote"
-            buildConfigField "String", "CMKWEB", "\"HEROKU\""
+            applicationId "it.amonshore.comikkua.tryme"
+            versionName "1.0-tryme"
         }
     }
     compileOptions {
@@ -59,10 +52,10 @@ ext {
     coreTestingVersion = '2.1.0'
     glideVersion = '4.11.0'
     materialVersion = '1.3.0-alpha03'
-    navVersion = '2.3.0'
-    pagingVersion = '3.0.0-alpha07'
+    navVersion = '2.3.1'
+    pagingVersion = '3.0.0-alpha09'
     recyclerVersion = '1.2.0-alpha06'
-    roomVersion = '2.3.0-alpha02'
+    roomVersion = '2.3.0-alpha03'
     supportVersion = '1.0.0'
     preferenceVersion = '1.1.1'
     workVersion = '2.4.0'
@@ -70,14 +63,14 @@ ext {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation "androidx.legacy:legacy-support-v4:$supportVersion"
     implementation 'com.github.tiper:MaterialSpinner:1.4.0'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
     implementation 'com.android.volley:dc-volley:1.1.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.7.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
 
@@ -122,13 +115,13 @@ dependencies {
     implementation 'jp.wasabeef:glide-transformations:4.1.0'
 
     // firebase
-    implementation 'com.google.firebase:firebase-analytics:17.5.0'
-    implementation 'com.google.firebase:firebase-firestore:21.7.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    implementation 'com.google.firebase:firebase-firestore:22.0.0'
 
     // Testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation "androidx.arch.core:core-testing:$coreTestingVersion"
     androidTestImplementation "androidx.work:work-testing:$workVersion"
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
 }

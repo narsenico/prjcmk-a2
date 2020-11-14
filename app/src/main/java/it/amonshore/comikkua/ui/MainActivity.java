@@ -30,6 +30,7 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.web.FirebaseRepository;
 import it.amonshore.comikkua.workers.ReleaseNotificationWorker;
 import it.amonshore.comikkua.workers.UpdateReleasesWorker;
 
@@ -83,9 +84,10 @@ public class MainActivity extends AppCompatActivity implements
 
         if (BuildConfig.DEBUG) {
             Toast.makeText(this,
-                    String.format("%s (%s) - host: %s",
-                            BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, BuildConfig.CMKWEB),
-                    Toast.LENGTH_SHORT).show();
+                    String.format("%s (%s) - %s",
+                            BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE,
+                            FirebaseRepository.getProjectId()),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
