@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
@@ -30,58 +29,35 @@ import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
 
     private final TextView mNumbers, mDate, mNotes;
-    private final View mPurchased, mOrdered, mMenu, mMainCard, mBackground;
+    private final View mPurchased, mOrdered, mMainCard, mBackground;
 
     private long mComicsId;
     private long mId;
 
-    private float mMainCardElevationPx;
+    private final float mMainCardElevationPx;
 
-    private ReleaseLiteViewHolder(View itemView, final ReleaseViewHolderCallback callback) {
+    private ReleaseLiteViewHolder(View itemView, final IReleaseViewHolderCallback callback) {
         super(itemView);
         mNumbers = itemView.findViewById(R.id.txt_release_numbers);
         mDate = itemView.findViewById(R.id.txt_release_date);
         mNotes = itemView.findViewById(R.id.txt_release_notes);
         mPurchased = itemView.findViewById(R.id.img_release_purchased);
         mOrdered = itemView.findViewById(R.id.img_release_ordered);
-        mMenu = itemView.findViewById(R.id.img_release_menu);
         mMainCard = itemView.findViewById(R.id.release_main_card);
         mBackground = itemView.findViewById(R.id.release_background);
 
-//        mMainCardElevationPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-//                2f,
-//                itemView.getResources().getDisplayMetrics());
         mMainCardElevationPx = mMainCard.getElevation();
 
         if (callback != null) {
-            itemView.setOnClickListener(v -> {
-                callback.onReleaseClick(mComicsId, mId, getAdapterPosition());
-            });
-
-            if (callback.mMenuRes != 0) {
-                final PopupMenu popupMenu = new PopupMenu(itemView.getContext(), mMenu);
-                popupMenu.inflate(callback.mMenuRes);
-                popupMenu.setOnMenuItemClickListener(item -> {
-                    callback.onReleaseMenuSelected(item, mComicsId, mId, getAdapterPosition());
-                    return true;
-                });
-                mMenu.setVisibility(View.VISIBLE);
-                mMenu.setOnClickListener(v -> {
-                    popupMenu.show();
-                });
-            } else {
-                mMenu.setVisibility(View.GONE);
-            }
+            itemView.setOnClickListener(v -> callback.onReleaseClick(mComicsId, mId, getLayoutPosition()));
         } else {
             itemView.setOnClickListener(null);
-            mMenu.setVisibility(View.INVISIBLE);
-            mMenu.setOnClickListener(null);
         }
     }
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ReleaseItemDetails(getAdapterPosition(), mId);
+        return new ReleaseItemDetails(getLayoutPosition(), mId);
     }
 
     @Override
@@ -144,7 +120,7 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         return Utility.formatInterval(null, ",", "~", numbers).toString();
     }
 
-    static ReleaseLiteViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ReleaseViewHolderCallback callback) {
+    static ReleaseLiteViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IReleaseViewHolderCallback callback) {
         return new ReleaseLiteViewHolder(inflater.inflate(R.layout.listitem_release_lite, parent, false), callback);
     }
 

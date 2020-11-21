@@ -33,7 +33,10 @@ import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
 
-
+/**
+ * Vengono mostrate le release con un certo tag.
+ * Utilizzata per mostrate all'utente le ultime release aggiunte a fronte di un aggiornamento automatico.
+ */
 public class NewReleasesFragment extends Fragment {
 
     private final static String BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.new_releases.recycler.layout";
@@ -59,7 +62,7 @@ public class NewReleasesFragment extends Fragment {
 
         final String actionModeName = getClass().getSimpleName() + "_actionMode";
         final Context context = requireContext();
-        final String tag = NewReleasesFragmentArgs.fromBundle(getArguments()).getTag();
+        final String tag = NewReleasesFragmentArgs.fromBundle(requireArguments()).getTag();
 
         LogHelper.d("NEW RELEASES %s", tag);
 
@@ -124,7 +127,7 @@ public class NewReleasesFragment extends Fragment {
                         }
                     }
                 })
-                .withReleaseCallback(R.menu.menu_releases_popup, new ReleaseAdapter.ReleaseCallback() {
+                .withReleaseCallback(new ReleaseAdapter.ReleaseCallback() {
                     @Override
                     public void onReleaseClick(@NonNull ComicsRelease release) {
                         // se è una multi release apro il dettaglio del comics
@@ -148,18 +151,18 @@ public class NewReleasesFragment extends Fragment {
                     }
 
                     @Override
-                    public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
-                        switch (item.getItemId()) {
-                            case R.id.gotoComics:
+                    public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
+                        ReleaseBottomSheetDialogHelper.show(requireActivity(), id -> {
+                            if (id == R.id.gotoComics) {
                                 openComicsDetail(view, release);
-                                break;
-                            case R.id.share:
+                            } else if (id == R.id.share) {
                                 ShareHelper.shareRelease(requireActivity(), release);
-                                break;
-                            case R.id.deleteRelease:
+                            } else if (id == R.id.deleteRelease) {
                                 deleteRelease(release);
-                                break;
-                        }
+                            } else if (id == R.id.search1) {
+                                ShareHelper.shareWithStarShop(requireActivity(), release);
+                            }
+                        });
                     }
                 })
                 .withGlide(Glide.with(this))

@@ -152,7 +152,7 @@ public class ComicsDetailFragment extends Fragment {
                         }
                     }
                 })
-                .withReleaseCallback(0, new ReleaseAdapter.ReleaseCallback() {
+                .withReleaseCallback(new ReleaseAdapter.ReleaseCallback() {
                     @Override
                     public void onReleaseClick(@NonNull ComicsRelease release) {
                         openEdit(view, release);
@@ -169,8 +169,8 @@ public class ComicsDetailFragment extends Fragment {
                     }
 
                     @Override
-                    public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
-
+                    public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
+                        // non gestito
                     }
                 })
                 // uso la versione "lite" con il layout per gli item più compatta

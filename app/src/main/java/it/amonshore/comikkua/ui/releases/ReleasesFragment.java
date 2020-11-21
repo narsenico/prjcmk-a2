@@ -68,6 +68,7 @@ public class ReleasesFragment extends Fragment {
 
         final String actionModeName = getClass().getSimpleName() + "_actionMode";
         final Context context = requireContext();
+
         mRecyclerView = view.findViewById(R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
@@ -78,34 +79,34 @@ public class ReleasesFragment extends Fragment {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
-                switch (item.getItemId()) {
-                    case R.id.purchaseReleases:
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            mReleaseViewModel.togglePurchased(tracker.getSelection());
-                        }
-                        // mantengo la selezione
-                        return true;
-                    case R.id.orderReleases:
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            mReleaseViewModel.toggleOrdered(tracker.getSelection());
-                        }
-                        // mantengo la selezione
-                        return true;
-                    case R.id.deleteReleases:
-                        if (tracker.hasSelection()) {
-                            // prima elimino eventuali release ancora in fase di undo
-                            mReleaseViewModel.deleteRemoved();
-                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
-                        }
-                        tracker.clearSelection();
-                        return true;
-                    case R.id.shareReleases:
-                        LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
-                                items -> ShareHelper.shareReleases(requireActivity(), items));
-                        // mantengo la selezione
-                        return true;
+                int itemId = item.getItemId();
+                if (itemId == R.id.purchaseReleases) {
+                    if (tracker.hasSelection()) {
+                        // le multi non vengono passate
+                        mReleaseViewModel.togglePurchased(tracker.getSelection());
+                    }
+                    // mantengo la selezione
+                    return true;
+                } else if (itemId == R.id.orderReleases) {
+                    if (tracker.hasSelection()) {
+                        // le multi non vengono passate
+                        mReleaseViewModel.toggleOrdered(tracker.getSelection());
+                    }
+                    // mantengo la selezione
+                    return true;
+                } else if (itemId == R.id.deleteReleases) {
+                    if (tracker.hasSelection()) {
+                        // prima elimino eventuali release ancora in fase di undo
+                        mReleaseViewModel.deleteRemoved();
+                        mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
+                    }
+                    tracker.clearSelection();
+                    return true;
+                } else if (itemId == R.id.shareReleases) {
+                    LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
+                            items -> ShareHelper.shareReleases(requireActivity(), items));
+                    // mantengo la selezione
+                    return true;
                 }
                 return false;
             }
@@ -132,7 +133,7 @@ public class ReleasesFragment extends Fragment {
                         }
                     }
                 })
-                .withReleaseCallback(R.menu.menu_releases_popup, new ReleaseAdapter.ReleaseCallback() {
+                .withReleaseCallback(new ReleaseAdapter.ReleaseCallback() {
                     @Override
                     public void onReleaseClick(@NonNull ComicsRelease release) {
                         // se è una multi release apro il dettaglio del comics
@@ -156,18 +157,18 @@ public class ReleasesFragment extends Fragment {
                     }
 
                     @Override
-                    public void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release) {
-                        switch (item.getItemId()) {
-                            case R.id.gotoComics:
+                    public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
+                        ReleaseBottomSheetDialogHelper.show(requireActivity(), id -> {
+                            if (id == R.id.gotoComics) {
                                 openComicsDetail(view, release);
-                                break;
-                            case R.id.share:
+                            } else if (id == R.id.share) {
                                 ShareHelper.shareRelease(requireActivity(), release);
-                                break;
-                            case R.id.deleteRelease:
+                            } else if (id == R.id.deleteRelease) {
                                 deleteRelease(release);
-                                break;
-                        }
+                            } else if (id == R.id.search1) {
+                                ShareHelper.shareWithStarShop(requireActivity(), release);
+                            }
+                        });
                     }
                 })
                 .withGlide(Glide.with(this))

@@ -3,8 +3,8 @@ package it.amonshore.comikkua.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -62,14 +62,23 @@ public class ShareHelper {
         }
     }
 
-    public static void shareText(@NonNull Activity context, @NonNull String... rows) {
+    public static void shareText(@NonNull Activity activity, @NonNull String... rows) {
         if (rows.length > 0) {
             final Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_TEXT, Utility.join("\n", false, rows));
             intent.setType(TEXT_PLAIN);
-            context.startActivity(Intent.createChooser(intent, context.getText(R.string.share_chooser_title)));
+            activity.startActivity(Intent.createChooser(intent, activity.getText(R.string.share_chooser_title)));
         }
     }
 
+    public static void shareWithStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s%%20%s&query_name=match_and",
+                Uri.encode(release.comics.name),
+                release.release.number);
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(searchUrl));
+        activity.startActivity(intent);
+    }
 }

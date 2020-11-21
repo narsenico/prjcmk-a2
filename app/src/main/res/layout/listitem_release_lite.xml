@@ -75,16 +75,17 @@
                 app:srcCompat="@drawable/ic_ordered"
                 app:tint="@color/colorItemBackgroundAlt" />
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <ImageButton
                 android:id="@+id/img_release_menu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/item_margin_default"
+                android:contentDescription="@string/menu_release_menu"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/img_release_ordered"
                 app:srcCompat="@drawable/ic_menu_dots"
                 app:tint="@color/colorItemForeground" />
-
 
             <TextView
                 android:id="@+id/txt_release_date"

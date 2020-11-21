@@ -86,7 +86,7 @@
                 android:contentDescription="@string/menu_release_menu"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:srcCompat="@drawable/ic_menu_dots"
+                app:srcCompat="@drawable/ic_show_bottom_menu"
                 app:tint="@color/colorItemForeground" />
 
             <TextView

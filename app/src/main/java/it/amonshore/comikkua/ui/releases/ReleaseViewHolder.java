@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
@@ -38,9 +38,9 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
     private long mComicsId;
     private long mId;
 
-    private float mMainCardElevationPx;
+    private final float mMainCardElevationPx;
 
-    private ReleaseViewHolder(View itemView, final ReleaseViewHolderCallback callback) {
+    private ReleaseViewHolder(View itemView, final IReleaseViewHolderCallback callback) {
         super(itemView);
         mNumbers = itemView.findViewById(R.id.txt_release_numbers);
         mDate = itemView.findViewById(R.id.txt_release_date);
@@ -54,21 +54,11 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
 
         mMainCardElevationPx = mMainCard.getElevation();
 
-        final View menu = itemView.findViewById(R.id.img_release_menu);
-
+        final ImageButton menu = itemView.findViewById(R.id.img_release_menu);
         if (callback != null) {
             itemView.setOnClickListener(v -> callback.onReleaseClick(mComicsId, mId, getLayoutPosition()));
-
-            if (callback.mMenuRes != 0) {
-                final PopupMenu popupMenu = new PopupMenu(itemView.getContext(), menu);
-                popupMenu.inflate(callback.mMenuRes);
-                popupMenu.setOnMenuItemClickListener(item -> {
-                    callback.onReleaseMenuSelected(item, mComicsId, mId, getLayoutPosition());
-                    return true;
-                });
-                menu.setVisibility(View.VISIBLE);
-                menu.setOnClickListener(v -> popupMenu.show());
-            }
+            menu.setVisibility(View.VISIBLE);
+            menu.setOnClickListener(v -> callback.onReleaseMenuSelected(mComicsId, mId, getLayoutPosition()));
         } else {
             itemView.setOnClickListener(null);
             menu.setVisibility(View.INVISIBLE);
@@ -145,7 +135,7 @@ public class ReleaseViewHolder extends AReleaseViewModelItemViewHolder {
         return Utility.formatInterval(null, ",", "~", numbers).toString();
     }
 
-    static ReleaseViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ReleaseViewHolderCallback callback) {
+    static ReleaseViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IReleaseViewHolderCallback callback) {
         return new ReleaseViewHolder(inflater.inflate(R.layout.listitem_release, parent, false), callback);
     }
 

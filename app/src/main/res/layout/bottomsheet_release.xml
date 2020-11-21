@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/item_padding_default"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <View
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/item_margin_default"
+        android:background="@drawable/background_grip_rounded"
+        android:layout_width="38dp"
+        android:layout_height="6dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/gotoComics"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_goto_comics"
+        app:icon="@drawable/ic_comics"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/share"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_share"
+        app:icon="@drawable/ic_share"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search1"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerca in StarShop"
+        app:icon="@drawable/ic_search"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search2"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerca in Amazon"
+        app:icon="@drawable/ic_search"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search3"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerca in AnimeClick"
+        app:icon="@drawable/ic_search"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search4"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerca in PopStore"
+        app:icon="@drawable/ic_search"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/deleteRelease"
+        style="@style/BottomSheetDialog.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_delete"
+        app:icon="@drawable/ic_delete"/>
+
+</LinearLayout>

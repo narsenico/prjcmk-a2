@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -26,7 +25,6 @@ import java.util.Objects;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
-import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -49,7 +47,7 @@ import it.amonshore.comikkua.ui.ImageHelper;
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
-    private ReleaseViewHolderCallback mReleaseViewHolderCallback;
+    private IReleaseViewHolderCallback mReleaseViewHolderCallback;
     private boolean mUseLite;
     private RequestManager mRequestManager;
 
@@ -138,14 +136,12 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
         void onReleaseToggleOrder(@NonNull ComicsRelease release);
 
-        void onReleaseMenuItemSelected(@NonNull MenuItem item, @NonNull ComicsRelease release);
+        void onReleaseMenuSelected(@NonNull ComicsRelease release);
     }
 
     public static class Builder {
         private final RecyclerView mRecyclerView;
         private OnItemSelectedListener mOnItemSelectedListener;
-        @MenuRes
-        private int releaseMenuRes;
         private boolean useLite;
         private ReleaseCallback releaseCallback;
         private RequestManager mRequestManager;
@@ -159,8 +155,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
             return this;
         }
 
-        public Builder withReleaseCallback(@MenuRes int menuRes, @NonNull ReleaseCallback callback) {
-            releaseMenuRes = menuRes;
+        public Builder withReleaseCallback(@NonNull ReleaseCallback callback) {
             releaseCallback = callback;
             return this;
         }
@@ -178,9 +173,9 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         public ReleaseAdapter build() {
             final ReleaseAdapter adapter = new ReleaseAdapter();
             adapter.mUseLite = useLite;
-            adapter.mReleaseViewHolderCallback = new ReleaseViewHolderCallback(releaseMenuRes) {
+            adapter.mReleaseViewHolderCallback = new IReleaseViewHolderCallback() {
                 @Override
-                void onReleaseClick(long comicsId, long id, int position) {
+                public void onReleaseClick(long comicsId, long id, int position) {
                     // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
                     if (releaseCallback != null && !adapter.mSelectionTracker.hasSelection()) {
                         final IReleaseViewModelItem item = adapter.getItem(position);
@@ -192,12 +187,12 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
                 }
 
                 @Override
-                void onReleaseMenuSelected(@NonNull MenuItem menuItem, long comicsId, long id, int position) {
+                public void onReleaseMenuSelected(long comicsId, long id, int position) {
                     if (releaseCallback != null) {
                         final IReleaseViewModelItem item = adapter.getItem(position);
                         if (item != null) {
                             final ComicsRelease release = (ComicsRelease) item;
-                            releaseCallback.onReleaseMenuItemSelected(menuItem, release);
+                            releaseCallback.onReleaseMenuSelected(release);
                         }
                     }
                 }

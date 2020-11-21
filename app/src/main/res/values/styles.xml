@@ -8,6 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="actionModeStyle">@style/WindowActionMode</item>
         <item name="android:textColorPrimary">@color/colorText</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialog.Rounded</item>
     </style>
 
     <style name="AppTheme.TryMe" parent="AppTheme">
@@ -25,6 +26,24 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="android:windowBackground">@color/colorBackground</item>
         <item name="android:textColorPrimary">@color/colorText</item>
+    </style>
+
+    <style name="BottomSheetDialog.Button" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Widget.PopupMenu.Large</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:layout_marginStart">@dimen/item_margin_default</item>
+        <item name="android:layout_marginEnd">@dimen/item_margin_default</item>
+        <item name="iconPadding">@dimen/item_padding_double</item>
+        <item name="android:textColor">@color/colorText</item>
+        <item name="iconTint">@color/colorText</item>
+    </style>
+
+    <style name="BottomSheetDialog.Rounded" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheet.Modal.Rounded</item>
+    </style>
+
+    <style name="BottomSheet.Modal.Rounded" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/background_bottomsheetdialog</item>
     </style>
 
 </resources>
