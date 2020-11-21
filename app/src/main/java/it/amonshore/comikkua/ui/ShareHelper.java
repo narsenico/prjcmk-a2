@@ -20,6 +20,10 @@ public class ShareHelper {
 
     private static final String TEXT_PLAIN = "text/plain";
 
+    private static String formatComics(@NonNull Context context, @NonNull Comics comics) {
+        return Utility.join(" - ", true, comics.name, comics.publisher, comics.authors);
+    }
+
     private static String formatRelease(@NonNull Context context, @NonNull Comics comics, @NonNull Release release) {
         if (release.hasDate()) {
             return context.getString(R.string.share_release,
@@ -33,6 +37,10 @@ public class ShareHelper {
                     release.number,
                     release.hasNotes() ? release.notes : comics.notes);
         }
+    }
+
+    public static void shareComics(@NonNull Activity activity, @NonNull Comics comics) {
+        shareText(activity, formatComics(activity, comics));
     }
 
     public static void shareRelease(@NonNull Activity activity, @NonNull ComicsRelease release) {
@@ -76,6 +84,15 @@ public class ShareHelper {
         final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s%%20%s&query_name=match_and",
                 Uri.encode(release.comics.name),
                 release.release.number);
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(searchUrl));
+        activity.startActivity(intent);
+    }
+
+    public static void shareWithStarShop(@NonNull Activity activity, @NonNull Comics comics) {
+        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and",
+                Uri.encode(comics.name));
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(searchUrl));

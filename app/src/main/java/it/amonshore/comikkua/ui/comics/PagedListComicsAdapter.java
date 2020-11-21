@@ -1,16 +1,5 @@
 package it.amonshore.comikkua.ui.comics;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.paging.PagedListAdapter;
-import androidx.paging.PagingDataAdapter;
-import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.Selection;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.selection.StorageStrategy;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.net.Uri;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
@@ -26,6 +15,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.paging.PagingDataAdapter;
+import androidx.recyclerview.selection.ItemKeyProvider;
+import androidx.recyclerview.selection.Selection;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StorageStrategy;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ImageHelper;
@@ -36,7 +34,7 @@ import it.amonshore.comikkua.ui.ImageHelper;
 public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases, ComicsViewHolder> {
 
     private SelectionTracker<Long> mSelectionTracker;
-    private ComicsViewHolderCallback mComicsViewHolderCallback;
+    private IComicsViewHolderCallback mComicsViewHolderCallback;
     private RequestManager mRequestManager;
 
     private PagedListComicsAdapter() {
@@ -98,8 +96,7 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
         void onComicsClick(@NonNull ComicsWithReleases comics);
 
-        void onNewRelease(@NonNull ComicsWithReleases comics);
-
+        void onComicsMenuSelected(@NonNull ComicsWithReleases comics);
     }
 
     static class Builder {
@@ -129,9 +126,9 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
         PagedListComicsAdapter build() {
             final PagedListComicsAdapter adapter = new PagedListComicsAdapter();
-            adapter.mComicsViewHolderCallback = new ComicsViewHolderCallback() {
+            adapter.mComicsViewHolderCallback = new IComicsViewHolderCallback() {
                 @Override
-                void onComicsClick(long comicsId, int position) {
+                public void onComicsClick(long comicsId, int position) {
                     // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
                     if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
                         final ComicsWithReleases comics = adapter.getItem(position);
@@ -142,11 +139,11 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
                 }
 
                 @Override
-                void onNewRelease(long comicsId, int position) {
+                public void onComicsMenuSelected(long comicsId, int position) {
                     if (comicsCallback != null) {
                         final ComicsWithReleases comics = adapter.getItem(position);
                         if (comics != null) {
-                            comicsCallback.onNewRelease(comics);
+                            comicsCallback.onComicsMenuSelected(comics);
                         }
                     }
                 }

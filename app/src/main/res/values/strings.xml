@@ -20,11 +20,13 @@
     <string name="menu_purchase">Purchase</string>
     <string name="menu_ordered">Ordered</string>
     <string name="menu_goto_comics">Go to comics</string>
+    <string name="menu_new_release">New release</string>
     <string name="menu_release_edit">Edit release</string>
     <string name="menu_import_backup">Import backup</string>
     <string name="menu_export_backup">Export backup</string>
     <string name="menu_release_menu">Release menu</string>
     <string name="menu_releases_update">Update</string>
+    <string name="menu_comics_menu">Comics menu</string>
 
     <string name="swipe_purchase">Toggle purchase</string>
     <string name="swipe_order">Toggle order</string>

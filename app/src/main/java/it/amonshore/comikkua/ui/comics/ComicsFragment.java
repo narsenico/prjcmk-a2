@@ -33,6 +33,7 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import it.amonshore.comikkua.ui.ShareHelper;
 
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 
@@ -114,12 +115,20 @@ public class ComicsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNewRelease(@NonNull ComicsWithReleases comics) {
-                        final NavDirections directions = ComicsFragmentDirections
-                                .actionDestComicFragmentToReleaseEditFragment(comics.comics.id)
-                                .setSubtitle(R.string.title_release_create);
-
-                        Navigation.findNavController(requireView()).navigate(directions);
+                    public void onComicsMenuSelected(@NonNull ComicsWithReleases comics) {
+                        ComicsBottomSheetDialogHelper.show(requireActivity(), id -> {
+                            if (id == R.id.createNewRelease) {
+                                openNewRelease(view, comics);
+                            } else if (id == R.id.share) {
+                                ShareHelper.shareComics(requireActivity(), comics.comics);
+                            } else if (id == R.id.deleteComics) {
+                                // prima elimino eventuali release ancora in fase di undo
+                                mComicsViewModel.deleteRemoved();
+                                mComicsViewModel.remove(comics.comics.id, (ids, count) -> showUndo(ids, count));
+                            } else if (id == R.id.search1) {
+                                ShareHelper.shareWithStarShop(requireActivity(), comics.comics);
+                            }
+                        });
                     }
                 })
                 .withGlide(Glide.with(this))
@@ -255,6 +264,14 @@ public class ComicsFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openNewRelease(@NonNull View view, @NonNull ComicsWithReleases comics) {
+        final NavDirections directions = ComicsFragmentDirections
+                .actionDestComicFragmentToReleaseEditFragment(comics.comics.id)
+                .setSubtitle(R.string.title_release_create);
+
+        Navigation.findNavController(view).navigate(directions);
     }
 
     private void showUndo(final Long[] ids, int count) {

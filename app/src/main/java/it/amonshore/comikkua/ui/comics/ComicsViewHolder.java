@@ -31,7 +31,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mMissing;
     private long mId;
 
-    private ComicsViewHolder(View itemView, final ComicsViewHolderCallback callback) {
+    private ComicsViewHolder(View itemView, final IComicsViewHolderCallback callback) {
         super(itemView);
         mInitial = itemView.findViewById(R.id.txt_comics_initial);
         mName = itemView.findViewById(R.id.txt_comics_name);
@@ -42,17 +42,15 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
         mNext = itemView.findViewById(R.id.txt_comics_release_next);
         mMissing = itemView.findViewById(R.id.txt_comics_release_missing);
 
-        final View newRelease = itemView.findViewById(R.id.img_new_release);
-
+        final View menu = itemView.findViewById(R.id.img_comics_menu);
         if (callback != null) {
             itemView.setOnClickListener(v -> callback.onComicsClick(mId, getLayoutPosition()));
-
-            newRelease.setVisibility(View.VISIBLE);
-            newRelease.setOnClickListener(v -> callback.onNewRelease(mId, getLayoutPosition()));
+            menu.setVisibility(View.VISIBLE);
+            menu.setOnClickListener(v -> callback.onComicsMenuSelected(mId, getLayoutPosition()));
         } else {
             itemView.setOnClickListener(null);
-            newRelease.setVisibility(View.INVISIBLE);
-            newRelease.setOnClickListener(null);
+            menu.setVisibility(View.INVISIBLE);
+            menu.setOnClickListener(null);
         }
     }
 
@@ -64,7 +62,6 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     void bind(@NonNull ComicsWithReleases comics, boolean selected, RequestManager requestManager) {
         itemView.setActivated(selected);
         mId = comics.comics.id;
-//        mInitial.setText(comics.comics.getInitial());
         mName.setText(comics.comics.name);
         mPublisher.setText(comics.comics.publisher);
         mAuthors.setText(comics.comics.authors);
@@ -189,7 +186,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 //        }
 //    }
 
-    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, ComicsViewHolderCallback callback) {
+    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IComicsViewHolderCallback callback) {
         return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false), callback);
     }
 

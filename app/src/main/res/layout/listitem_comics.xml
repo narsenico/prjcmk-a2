@@ -72,7 +72,7 @@
                     android:maxLines="1"
                     android:textColor="@color/colorItemForeground"
                     android:textSize="@dimen/text_size_medium"
-                    app:layout_constraintEnd_toStartOf="@id/img_new_release"
+                    app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
                     app:layout_constraintStart_toStartOf="@id/txt_comics_publisher"
                     app:layout_constraintTop_toBottomOf="@id/txt_comics_publisher"
                     tools:text="Authors" />
@@ -91,24 +91,23 @@
                     android:textColor="@color/colorItemForeground"
                     android:textSize="@dimen/text_size_medium"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/img_new_release"
+                    app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/txt_comics_authors"
                     tools:text="Notes notes notes" />
 
                 <ImageButton
-                    android:id="@+id/img_new_release"
+                    android:id="@+id/img_comics_menu"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/item_margin_default"
                     android:layout_marginBottom="@dimen/item_margin_default"
-                    android:contentDescription="@string/title_release_create"
+                    android:contentDescription="@string/menu_comics_menu"
                     android:visibility="invisible"
-                    app:icon="@drawable/ic_new_release"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:srcCompat="@drawable/ic_new_release"
+                    app:srcCompat="@drawable/ic_show_bottom_menu"
                     app:tint="@color/colorItemForeground"
                     tools:visibility="visible" />
 
