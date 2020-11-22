@@ -212,6 +212,10 @@ public class MainActivity extends AppCompatActivity implements
                         LogHelper.d("SNACKBAR: dismissed event=%s", event);
                     }
                 });
+        // ancoro alla menu sul fondo in modo che non vi si sovrapponga
+        if (mBottomNavigationView.getVisibility() == View.VISIBLE) {
+            mSnackBar.setAnchorView(mBottomNavigationView);
+        }
         LogHelper.d("SNACKBAR: show snack");
         mSnackBar.show();
     }
