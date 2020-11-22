@@ -31,6 +31,7 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ActionModeController;
+import it.amonshore.comikkua.ui.BottomSheetDialogHelper;
 import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
@@ -116,7 +117,7 @@ public class ComicsFragment extends Fragment {
 
                     @Override
                     public void onComicsMenuSelected(@NonNull ComicsWithReleases comics) {
-                        ComicsBottomSheetDialogHelper.show(requireActivity(), id -> {
+                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_comics, id -> {
                             if (id == R.id.createNewRelease) {
                                 openNewRelease(view, comics);
                             } else if (id == R.id.share) {

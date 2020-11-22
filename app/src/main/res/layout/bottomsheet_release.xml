@@ -8,66 +8,73 @@
     app:layout_behavior="@string/bottom_sheet_behavior">
 
     <View
+        android:layout_width="38dp"
+        android:layout_height="6dp"
         android:layout_gravity="center"
         android:layout_margin="@dimen/item_margin_default"
-        android:background="@drawable/background_grip_rounded"
-        android:layout_width="38dp"
-        android:layout_height="6dp"/>
+        android:background="@drawable/background_grip_rounded" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/gotoComics"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_goto_comics"
-        app:icon="@drawable/ic_comics"/>
+        app:icon="@drawable/ic_comics" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/share"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_share"
-        app:icon="@drawable/ic_share"/>
+        app:icon="@drawable/ic_share" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_amazon"
         style="@style/BottomSheetDialog.Button.Bitmap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_amazon"
-        app:icon="@drawable/amazon"/>
+        app:icon="@drawable/amazon" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_starshop"
         style="@style/BottomSheetDialog.Button.Bitmap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_starshop"
-        app:icon="@drawable/starshop"/>
+        app:icon="@drawable/starshop" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_animeclick"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_animeclick"
-        app:icon="@drawable/ic_search"/>
+        app:icon="@drawable/ic_search" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/search_popstore"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_popstore"
-        app:icon="@drawable/ic_search"/>
+        app:icon="@drawable/ic_search" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteRelease"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_delete"
-        app:icon="@drawable/ic_delete"/>
+        app:icon="@drawable/ic_delete" />
 
 </LinearLayout>
