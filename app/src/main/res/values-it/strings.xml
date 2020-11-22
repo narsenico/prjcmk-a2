@@ -87,6 +87,7 @@
     <string name="menu_share">Condividi</string>
     <string name="menu_export_backup">Crea backup</string>
     <string name="menu_search_starshop">Cerca su Star Shop</string>
+    <string name="menu_search_google">Cerca su Google</string>
     <string name="menu_search_amazon">Cerca su Amazon</string>
     <string name="menu_search_animeclick">Cerca su AnimeClick</string>
     <string name="menu_search_popstore">Cerca su PopStore</string>

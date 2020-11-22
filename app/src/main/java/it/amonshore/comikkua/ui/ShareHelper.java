@@ -80,28 +80,10 @@ public class ShareHelper {
         }
     }
 
-    public static void shareOnStarShop(@NonNull Activity activity, @NonNull Comics comics) {
-        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and",
-                Uri.encode(comics.name));
-        final Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(searchUrl));
-        activity.startActivity(intent);
-    }
-
-    public static void shareOnStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and",
-                Uri.encode(Utility.join(" ", true, release.comics.name,
-                        Integer.toString(release.release.number))));
-        final Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(searchUrl));
-        activity.startActivity(intent);
-    }
-
-    public static void shareOnAmazon(@NonNull Activity activity, @NonNull Comics comics) {
-        final String searchUrl = String.format("https://www.amazon.it/s?k=%s&_encoding=UTF8",
-                Uri.encode(Utility.join(" ", true, comics.publisher,
+    public static void shareOn(@NonNull Activity activity, @NonNull String format, @NonNull Comics comics) {
+        final String searchUrl = String.format(format,
+                Uri.encode(Utility.join(" ", true,
+                        comics.publisher,
                         comics.name)));
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
@@ -109,13 +91,47 @@ public class ShareHelper {
         activity.startActivity(intent);
     }
 
-    public static void shareOnAmazon(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        final String searchUrl = String.format("https://www.amazon.it/s?k=%s&_encoding=UTF8",
-                Uri.encode(Utility.join(" ", true, release.comics.publisher,
-                        release.comics.name, Integer.toString(release.release.number))));
+    public static void shareOn(@NonNull Activity activity, @NonNull String format, @NonNull ComicsRelease release) {
+        final String searchUrl = String.format(format,
+                Uri.encode(Utility.join(" ", true,
+                        release.comics.publisher,
+                        release.comics.name,
+                        Integer.toString(release.release.number))));
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(searchUrl));
         activity.startActivity(intent);
+    }
+
+    public static void shareOnGoogle(@NonNull Activity activity, @NonNull Comics comics) {
+        shareOn(activity, "https://www.google.com/search?q=%s&ie=UTF-8", comics);
+    }
+
+    public static void shareOnGoogle(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        shareOn(activity, "https://www.google.com/search?q=%s&ie=UTF-8", release);
+    }
+
+    public static void shareOnStarShop(@NonNull Activity activity, @NonNull Comics comics) {
+        shareOn(activity, "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and", comics);
+    }
+
+    public static void shareOnStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        shareOn(activity, "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and", release);
+    }
+
+    public static void shareOnAmazon(@NonNull Activity activity, @NonNull Comics comics) {
+        shareOn(activity, "https://www.amazon.it/s?k=%s&_encoding=UTF8", comics);
+    }
+
+    public static void shareOnAmazon(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        shareOn(activity, "https://www.amazon.it/s?k=%s&_encoding=UTF8", release);
+    }
+
+    public static void shareOnPopStore(@NonNull Activity activity, @NonNull Comics comics) {
+        shareOn(activity, "https://popstore.it/cerca?controller=search&search_query=%s", comics);
+    }
+
+    public static void shareOnPopStore(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        shareOn(activity, "https://popstore.it/cerca?controller=search&search_query=%s", release);
     }
 }

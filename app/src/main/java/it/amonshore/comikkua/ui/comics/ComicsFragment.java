@@ -130,6 +130,10 @@ public class ComicsFragment extends Fragment {
                                 ShareHelper.shareOnStarShop(requireActivity(), comics.comics);
                             } else if (id == R.id.search_amazon) {
                                 ShareHelper.shareOnAmazon(requireActivity(), comics.comics);
+                            } else if (id == R.id.search_popstore) {
+                                ShareHelper.shareOnPopStore(requireActivity(), comics.comics);
+                            } else if (id == R.id.search_google) {
+                                ShareHelper.shareOnGoogle(requireActivity(), comics.comics);
                             }
                         });
                     }

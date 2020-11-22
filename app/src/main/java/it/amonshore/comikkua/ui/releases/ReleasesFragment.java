@@ -170,6 +170,10 @@ public class ReleasesFragment extends Fragment {
                                 ShareHelper.shareOnStarShop(requireActivity(), release);
                             } else if (id == R.id.search_amazon) {
                                 ShareHelper.shareOnAmazon(requireActivity(), release);
+                            } else if (id == R.id.search_popstore) {
+                                ShareHelper.shareOnPopStore(requireActivity(), release);
+                            } else if (id == R.id.search_google) {
+                                ShareHelper.shareOnGoogle(requireActivity(), release);
                             }
                         });
                     }

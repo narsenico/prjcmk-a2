@@ -33,6 +33,15 @@
         app:icon="@drawable/ic_share" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/search_google"
+        style="@style/BottomSheetDialog.Button.Bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
+        android:text="@string/menu_search_google"
+        app:icon="@drawable/google" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/search_amazon"
         style="@style/BottomSheetDialog.Button.Bitmap"
         android:layout_width="match_parent"
@@ -51,22 +60,13 @@
         app:icon="@drawable/starshop" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/search_animeclick"
-        style="@style/BottomSheetDialog.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:tag="BottomSheetDialogHelper"
-        android:text="@string/menu_search_animeclick"
-        app:icon="@drawable/ic_search" />
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/search_popstore"
-        style="@style/BottomSheetDialog.Button"
+        style="@style/BottomSheetDialog.Button.Bitmap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_popstore"
-        app:icon="@drawable/ic_search" />
+        app:icon="@drawable/popstore" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteRelease"
