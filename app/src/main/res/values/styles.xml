@@ -38,6 +38,12 @@
         <item name="iconTint">@color/colorText</item>
     </style>
 
+    <style name="BottomSheetDialog.Button.Bitmap" parent="BottomSheetDialog.Button">
+        <item name="iconTint">@android:color/transparent</item>
+        <item name="iconTintMode">add</item>
+        <item name="iconSize">24dp</item>
+    </style>
+
     <style name="BottomSheetDialog.Rounded" parent="Theme.Design.Light.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/BottomSheet.Modal.Rounded</item>
     </style>

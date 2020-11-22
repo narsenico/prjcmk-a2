@@ -165,8 +165,10 @@ public class ReleasesFragment extends Fragment {
                                 ShareHelper.shareRelease(requireActivity(), release);
                             } else if (id == R.id.deleteRelease) {
                                 deleteRelease(release);
-                            } else if (id == R.id.search1) {
-                                ShareHelper.shareWithStarShop(requireActivity(), release);
+                            } else if (id == R.id.search_starshop) {
+                                ShareHelper.shareOnStarShop(requireActivity(), release);
+                            } else if (id == R.id.search_amazon) {
+                                ShareHelper.shareOnAmazon(requireActivity(), release);
                             }
                         });
                     }

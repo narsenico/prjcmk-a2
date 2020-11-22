@@ -80,19 +80,39 @@ public class ShareHelper {
         }
     }
 
-    public static void shareWithStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s%%20%s&query_name=match_and",
-                Uri.encode(release.comics.name),
-                release.release.number);
+    public static void shareOnStarShop(@NonNull Activity activity, @NonNull Comics comics) {
+        final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and",
+                Uri.encode(comics.name));
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(searchUrl));
         activity.startActivity(intent);
     }
 
-    public static void shareWithStarShop(@NonNull Activity activity, @NonNull Comics comics) {
+    public static void shareOnStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
         final String searchUrl = String.format("https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and",
-                Uri.encode(comics.name));
+                Uri.encode(Utility.join(" ", true, release.comics.name,
+                        Integer.toString(release.release.number))));
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(searchUrl));
+        activity.startActivity(intent);
+    }
+
+    public static void shareOnAmazon(@NonNull Activity activity, @NonNull Comics comics) {
+        final String searchUrl = String.format("https://www.amazon.it/s?k=%s&_encoding=UTF8",
+                Uri.encode(Utility.join(" ", true, comics.publisher,
+                        comics.name)));
+        final Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(searchUrl));
+        activity.startActivity(intent);
+    }
+
+    public static void shareOnAmazon(@NonNull Activity activity, @NonNull ComicsRelease release) {
+        final String searchUrl = String.format("https://www.amazon.it/s?k=%s&_encoding=UTF8",
+                Uri.encode(Utility.join(" ", true, release.comics.publisher,
+                        release.comics.name, Integer.toString(release.release.number))));
         final Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(searchUrl));

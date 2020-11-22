@@ -125,8 +125,10 @@ public class ComicsFragment extends Fragment {
                                 // prima elimino eventuali release ancora in fase di undo
                                 mComicsViewModel.deleteRemoved();
                                 mComicsViewModel.remove(comics.comics.id, (ids, count) -> showUndo(ids, count));
-                            } else if (id == R.id.search1) {
-                                ShareHelper.shareWithStarShop(requireActivity(), comics.comics);
+                            } else if (id == R.id.search_starshop) {
+                                ShareHelper.shareOnStarShop(requireActivity(), comics.comics);
+                            } else if (id == R.id.search_amazon) {
+                                ShareHelper.shareOnAmazon(requireActivity(), comics.comics);
                             }
                         });
                     }

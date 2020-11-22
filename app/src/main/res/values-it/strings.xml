@@ -86,4 +86,11 @@
     <string name="settings">Impostazioni</string>
     <string name="menu_share">Condividi</string>
     <string name="menu_export_backup">Crea backup</string>
+    <string name="menu_search_starshop">Cerca su Star Shop</string>
+    <string name="menu_search_amazon">Cerca su Amazon</string>
+    <string name="menu_search_animeclick">Cerca su AnimeClick</string>
+    <string name="menu_search_popstore">Cerca su PopStore</string>
+    <string name="menu_new_release">Nuova uscita</string>
+    <string name="menu_release_menu">Menu uscite</string>
+    <string name="menu_comics_menu">Menu fumetti</string>
 </resources>

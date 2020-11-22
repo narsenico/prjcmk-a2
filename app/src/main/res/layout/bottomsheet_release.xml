@@ -31,35 +31,35 @@
         app:icon="@drawable/ic_share"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/search1"
+        android:id="@+id/search_amazon"
+        style="@style/BottomSheetDialog.Button.Bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_search_amazon"
+        app:icon="@drawable/amazon"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search_starshop"
+        style="@style/BottomSheetDialog.Button.Bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_search_starshop"
+        app:icon="@drawable/starshop"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search_animeclick"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cerca in StarShop"
+        android:text="@string/menu_search_animeclick"
         app:icon="@drawable/ic_search"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/search2"
+        android:id="@+id/search_popstore"
         style="@style/BottomSheetDialog.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cerca in Amazon"
-        app:icon="@drawable/ic_search"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/search3"
-        style="@style/BottomSheetDialog.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cerca in AnimeClick"
-        app:icon="@drawable/ic_search"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/search4"
-        style="@style/BottomSheetDialog.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cerca in PopStore"
+        android:text="@string/menu_search_popstore"
         app:icon="@drawable/ic_search"/>
 
     <com.google.android.material.button.MaterialButton

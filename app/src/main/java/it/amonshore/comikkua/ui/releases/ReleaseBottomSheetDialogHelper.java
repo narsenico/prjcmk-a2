@@ -25,7 +25,10 @@ class ReleaseBottomSheetDialogHelper {
         sheetView.findViewById(R.id.gotoComics).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.gotoComics));
         sheetView.findViewById(R.id.share).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.share));
         sheetView.findViewById(R.id.deleteRelease).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.deleteRelease));
-        sheetView.findViewById(R.id.search1).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.search1));
+        sheetView.findViewById(R.id.search_starshop).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.search_starshop));
+        sheetView.findViewById(R.id.search_amazon).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.search_amazon));
+        sheetView.findViewById(R.id.search_animeclick).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.search_animeclick));
+        sheetView.findViewById(R.id.search_popstore).setOnClickListener(v -> notifyAndClose(bottomSheetDialog, callback, R.id.search_popstore));
 //            bottomSheetDialog.setOnDismissListener(dialog -> LogHelper.d("BottomSheetDialog dismiss"));
         bottomSheetDialog.show();
     }

@@ -15,6 +15,10 @@
     <string name="menu_releases_save">Save releases</string>
     <string name="menu_delete">Remove</string>
     <string name="menu_share">Share</string>
+    <string name="menu_search_starshop">Search on Star Shop</string>
+    <string name="menu_search_amazon">Search on Amazon</string>
+    <string name="menu_search_animeclick">Search on AnimeClick</string>
+    <string name="menu_search_popstore">Search on PopStore</string>
     <string name="menu_delete_all">Remove all</string>
     <string name="menu_create">Create new</string>
     <string name="menu_purchase">Purchase</string>
