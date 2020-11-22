@@ -45,7 +45,7 @@
     <string name="title_comics_create">Create comics</string>
     <string name="title_release_edit">Edit release</string>
     <string name="title_release_create">Create release</string>
-    <string name="title_selected">Selected %d</string>
+    <string name="title_selected" translatable="false">%d</string>
 
     <string name="header_lost">Lost</string>
     <string name="header_current_period">This week</string>

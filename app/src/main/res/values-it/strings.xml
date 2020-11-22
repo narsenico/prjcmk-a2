@@ -94,4 +94,6 @@
     <string name="menu_new_release">Nuova uscita</string>
     <string name="menu_release_menu">Menu uscite</string>
     <string name="menu_comics_menu">Menu fumetti</string>
+    <string name="auto_update_zero">Nessuna nuova uscita</string>
+    <string name="auto_update_zero_message">Non ci sono nuove uscite disponibili, provare più avanti.</string>
 </resources>
