@@ -69,6 +69,7 @@
         style="@style/BottomSheetDialog.Button.Bitmap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="BottomSheetDialogHelper"
         android:text="@string/menu_search_starshop"
         app:icon="@drawable/starshop" />
 
