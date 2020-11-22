@@ -159,7 +159,8 @@ public class ReleasesFragment extends Fragment {
 
                     @Override
                     public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
-                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_release, id -> {
+                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_release,
+                                ShareHelper.formatRelease(context, release), id -> {
                             if (id == R.id.gotoComics) {
                                 openComicsDetail(view, release);
                             } else if (id == R.id.share) {

@@ -20,11 +20,15 @@ public class ShareHelper {
 
     private static final String TEXT_PLAIN = "text/plain";
 
-    private static String formatComics(@NonNull Context context, @NonNull Comics comics) {
+    public static String formatComics(@NonNull Comics comics) {
         return Utility.join(" - ", true, comics.name, comics.publisher, comics.authors);
     }
 
-    private static String formatRelease(@NonNull Context context, @NonNull Comics comics, @NonNull Release release) {
+    public static String formatRelease(@NonNull Context context, @NonNull ComicsRelease release) {
+        return formatRelease(context, release.comics, release.release);
+    }
+
+    public static String formatRelease(@NonNull Context context, @NonNull Comics comics, @NonNull Release release) {
         if (release.hasDate()) {
             return context.getString(R.string.share_release,
                     comics.name,
@@ -40,7 +44,7 @@ public class ShareHelper {
     }
 
     public static void shareComics(@NonNull Activity activity, @NonNull Comics comics) {
-        shareText(activity, formatComics(activity, comics));
+        shareText(activity, formatComics(comics));
     }
 
     public static void shareRelease(@NonNull Activity activity, @NonNull ComicsRelease release) {

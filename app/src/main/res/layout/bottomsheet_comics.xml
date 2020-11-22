@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -13,6 +14,19 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/item_margin_default"
         android:background="@drawable/background_grip_rounded" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/item_margin_default"
+        android:ellipsize="end"
+        android:lines="1"
+        android:tag="BottomSheetDialogHelper.Title"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/colorItemBackgroundLight"
+        android:textSize="@dimen/text_size_small"
+        tools:text="Titolo del fumetto" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/createNewRelease"

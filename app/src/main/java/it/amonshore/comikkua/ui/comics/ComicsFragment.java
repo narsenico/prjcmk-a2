@@ -117,25 +117,26 @@ public class ComicsFragment extends Fragment {
 
                     @Override
                     public void onComicsMenuSelected(@NonNull ComicsWithReleases comics) {
-                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_comics, id -> {
-                            if (id == R.id.createNewRelease) {
-                                openNewRelease(view, comics);
-                            } else if (id == R.id.share) {
-                                ShareHelper.shareComics(requireActivity(), comics.comics);
-                            } else if (id == R.id.deleteComics) {
-                                // prima elimino eventuali release ancora in fase di undo
-                                mComicsViewModel.deleteRemoved();
-                                mComicsViewModel.remove(comics.comics.id, (ids, count) -> showUndo(ids, count));
-                            } else if (id == R.id.search_starshop) {
-                                ShareHelper.shareOnStarShop(requireActivity(), comics.comics);
-                            } else if (id == R.id.search_amazon) {
-                                ShareHelper.shareOnAmazon(requireActivity(), comics.comics);
-                            } else if (id == R.id.search_popstore) {
-                                ShareHelper.shareOnPopStore(requireActivity(), comics.comics);
-                            } else if (id == R.id.search_google) {
-                                ShareHelper.shareOnGoogle(requireActivity(), comics.comics);
-                            }
-                        });
+                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_comics,
+                                ShareHelper.formatComics(comics.comics), id -> {
+                                    if (id == R.id.createNewRelease) {
+                                        openNewRelease(view, comics);
+                                    } else if (id == R.id.share) {
+                                        ShareHelper.shareComics(requireActivity(), comics.comics);
+                                    } else if (id == R.id.deleteComics) {
+                                        // prima elimino eventuali release ancora in fase di undo
+                                        mComicsViewModel.deleteRemoved();
+                                        mComicsViewModel.remove(comics.comics.id, (ids, count) -> showUndo(ids, count));
+                                    } else if (id == R.id.search_starshop) {
+                                        ShareHelper.shareOnStarShop(requireActivity(), comics.comics);
+                                    } else if (id == R.id.search_amazon) {
+                                        ShareHelper.shareOnAmazon(requireActivity(), comics.comics);
+                                    } else if (id == R.id.search_popstore) {
+                                        ShareHelper.shareOnPopStore(requireActivity(), comics.comics);
+                                    } else if (id == R.id.search_google) {
+                                        ShareHelper.shareOnGoogle(requireActivity(), comics.comics);
+                                    }
+                                });
                     }
                 })
                 .withGlide(Glide.with(this))

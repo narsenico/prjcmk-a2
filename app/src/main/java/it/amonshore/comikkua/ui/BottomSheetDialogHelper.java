@@ -2,11 +2,13 @@ package it.amonshore.comikkua.ui;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.FragmentActivity;
 import it.amonshore.comikkua.ICallback;
 
@@ -19,6 +21,7 @@ import it.amonshore.comikkua.ICallback;
  */
 public class BottomSheetDialogHelper {
 
+    private final static String TITLE_TAG = "BottomSheetDialogHelper.Title";
     private final static String CHILD_TAG = "BottomSheetDialogHelper";
 
     /**
@@ -30,9 +33,27 @@ public class BottomSheetDialogHelper {
      * @param callback Callback chiamata al click di un elemento
      */
     public static void show(@NonNull FragmentActivity activity, @LayoutRes int resource, @NonNull ICallback<Integer> callback) {
+        show(activity, resource, null, callback);
+    }
+
+    public static void show(@NonNull FragmentActivity activity, @LayoutRes int resource, @StringRes int titleResId, @NonNull ICallback<Integer> callback) {
+        show(activity, resource, activity.getString(titleResId), callback);
+    }
+
+    public static void show(@NonNull FragmentActivity activity, @LayoutRes int resource, CharSequence title, @NonNull ICallback<Integer> callback) {
         final ViewGroup sheetView = (ViewGroup) activity.getLayoutInflater().inflate(resource, null);
         final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(activity);
         bottomSheetDialog.setContentView(sheetView);
+
+        final TextView titleView = sheetView.findViewWithTag(TITLE_TAG);
+        if (titleView != null) {
+            if (title != null) {
+                titleView.setText(title);
+                titleView.setVisibility(View.VISIBLE);
+            } else {
+                titleView.setVisibility(View.GONE);
+            }
+        }
 
         final int childCount = sheetView.getChildCount();
         View child;
