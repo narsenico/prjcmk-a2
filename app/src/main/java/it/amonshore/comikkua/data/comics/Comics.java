@@ -8,7 +8,7 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "tComics",
-        indices = {@Index("name")})
+        indices = {@Index("name"), @Index("sourceId")})
 public class Comics {
 
     public final static long NO_COMICS_ID = -1;
@@ -30,6 +30,24 @@ public class Comics {
     public long lastUpdate;
     public long refJsonId;
     public boolean removed;
+
+    /**
+     * Id della sorgente da cui è stato generato il comics.
+     * Solitamente l'id dell'elemento letto da una sorgente remota.
+     */
+    public String sourceId;
+
+    /**
+     * Indica se il comics è stato selezionato dall'utente,
+     * quindi visibile nel suo elenco dei comics.
+     */
+    public boolean selected;
+
+    /**
+     * Versione del comics, cioè il numero di ristampa.
+     * 0=nessuna ristampa, 1=prima ristampa, etc.
+     */
+    public int version;
 
     @NonNull
     public String getInitial() {

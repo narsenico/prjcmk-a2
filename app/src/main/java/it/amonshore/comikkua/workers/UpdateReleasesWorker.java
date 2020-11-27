@@ -74,7 +74,7 @@ public class UpdateReleasesWorker extends Worker {
             final ComikkuDatabase db = ComikkuDatabase.getDatabase(context);
             final ComicsDao comicsDao = db.comicsDao();
             final ReleaseDao releaseDao = db.releaseDao();
-            final FirebaseRepository firebaseRepository = new FirebaseRepository();
+            final FirebaseRepository firebaseRepository = new FirebaseRepository(context);
             final Handler handler = new Handler(Looper.getMainLooper());
 
             // le operazioni di inserimento su DB verranno eseguite da questo executor

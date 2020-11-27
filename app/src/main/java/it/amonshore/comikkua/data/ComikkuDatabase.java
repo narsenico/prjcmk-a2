@@ -31,7 +31,7 @@ import it.amonshore.comikkua.data.release.ReleaseDao;
         views = {ComicsRelease.class,
                 MissingRelease.class, LostRelease.class, DatedRelease.class,
                 PurchasedRelease.class, NotPurchasedRelease.class},
-        version = 5)
+        version = 6)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -40,7 +40,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
     private static volatile ComikkuDatabase INSTANCE;
 
-    public static ComikkuDatabase getDatabase(final Context context) {
+    public static ComikkuDatabase getDatabase(@NonNull final Context context) {
         // NB: la vecchia applicazione ha un db chiamato comikkua.db alla versione 3
         // questo ha un nome diverso quindi non dovrebbe fare casino (ho provato, mantiene i database con nomi diversi)
         if (INSTANCE == null) {
@@ -53,6 +53,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_2_3)
                             .addMigrations(MIGRATION_3_4)
                             .addMigrations(MIGRATION_4_5)
+                            .addMigrations(MIGRATION_5_6)
                             .addCallback(new DatabaseCallback(context))
                             .build();
                 }
@@ -123,6 +124,38 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
             database.execSQL("DROP VIEW IF EXISTS `vNotPurchasedReleases`");
             database.execSQL("CREATE VIEW `vNotPurchasedReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND purchased = 0");
+        }
+    };
+
+    private static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // nuovo campo tComics.sourceId indicizzato
+            database.execSQL("ALTER TABLE tComics ADD COLUMN sourceId TEXT");
+            database.execSQL("CREATE INDEX index_tComics_sourceid ON tComics(sourceId)");
+
+            // nuovi campi tComics.version e tComics.selected
+            database.execSQL("ALTER TABLE tComics ADD COLUMN version INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE tComics ADD COLUMN selected INTEGER NOT NULL DEFAULT 1");
+
+            // aggiungo nuovi campi a tutte le viste
+            database.execSQL("DROP VIEW IF EXISTS `vComicsReleases`");
+            database.execSQL("CREATE VIEW `vComicsReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1");
+
+            database.execSQL("DROP VIEW IF EXISTS `vMissingReleases`");
+            database.execSQL("CREATE VIEW `vMissingReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND (date is null or date = '')");
+
+            database.execSQL("DROP VIEW IF EXISTS `vLostReleases`");
+            database.execSQL("CREATE VIEW `vLostReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND (date is not null and date <> '')");
+
+            database.execSQL("DROP VIEW IF EXISTS `vDatedReleases`");
+            database.execSQL("CREATE VIEW `vDatedReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND (date is not null and date <> '')");
+
+            database.execSQL("DROP VIEW IF EXISTS `vPurchasedReleases`");
+            database.execSQL("CREATE VIEW `vPurchasedReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND purchased = 1");
+
+            database.execSQL("DROP VIEW IF EXISTS `vNotPurchasedReleases`");
+            database.execSQL("CREATE VIEW `vNotPurchasedReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND purchased = 0");
         }
     };
 

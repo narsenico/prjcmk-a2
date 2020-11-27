@@ -2,20 +2,39 @@ package it.amonshore.comikkua.data.web;
 
 import com.google.gson.annotations.SerializedName;
 
-import androidx.annotation.NonNull;
-
 /**
- * Rappresenta un comics letto dalla rete
+ * Rappresenta un comics letto dalla rete.
  */
 public class CmkWebComics {
-    @SerializedName("title")
+
+    /**
+     * Id del comics così come indentificato in rete.
+     */
+    @SerializedName("id")
+    public String id;
+
+    /**
+     * Nome del cmomics.
+     */
+    @SerializedName("name")
     public String name;
-    @SerializedName("editor")
+
+    /**
+     * Nome del cmomics usato per le ricerche.
+     */
+    @SerializedName("searchableName")
+    public String searchableName;
+
+    /**
+     * Editore.
+     */
+    @SerializedName("publisher")
     public String publisher;
 
-    @NonNull
-    @Override
-    public String toString() {
-        return name;
-    }
+    /**
+     * Versione del comics, cioè il numero di ristampa.
+     * 0=nessuna ristampa, 1=prima ristampa, etc.
+     */
+    @SerializedName("version")
+    public int version;
 }

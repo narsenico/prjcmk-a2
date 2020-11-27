@@ -12,8 +12,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelKt;
-import androidx.paging.LivePagedListBuilder;
-import androidx.paging.PagedList;
 import androidx.paging.Pager;
 import androidx.paging.PagingConfig;
 import androidx.paging.PagingData;
@@ -43,7 +41,7 @@ public class ComicsViewModel extends AndroidViewModel {
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
-        mFirebaseRespository = new FirebaseRepository();
+        mFirebaseRespository = new FirebaseRepository(application);
         states = new Bundle();
         loading = new MutableLiveData<>();
 
@@ -74,7 +72,7 @@ public class ComicsViewModel extends AndroidViewModel {
         // posto il valore solo in caso di SUCCESS perché se uso LiveDataEx.observeOnce()
         //  riceverei solo il primo valore, che sarà a livello LOADING (oppure ERROR), visto che l'observer verrebbe subito rimosso
         comicBookTitles = new MediatorLiveData<>();
-        comicBookTitles.addSource(mFirebaseRespository.getTitles(), resource -> {
+        comicBookTitles.addSource(mFirebaseRespository.getComicNames(), resource -> {
             LogHelper.d("comicBookTitles status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:
@@ -90,6 +88,12 @@ public class ComicsViewModel extends AndroidViewModel {
                     break;
             }
         });
+
+        // TODO: leggere in una botta sola tutti i comics da remoto e salvarli in una tabella nuova?
+        //  per poi usare questa (paginata) come fonte di dati
+        //  così almeno posso fare delle ricerche complesse (perché all'utente sarà permesso fare delle ricerche)
+        //  mentre direttamente con Firestore non posso
+        //  però significa anche avere altri dati locali
     }
 
     /**

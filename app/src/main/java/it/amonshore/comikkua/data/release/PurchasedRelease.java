@@ -20,6 +20,9 @@ import it.amonshore.comikkua.Constants;
                 "tComics.image as cimage, " +
                 "tComics.lastUpdate as clastUpdate, " +
                 "tComics.refJsonId as crefJsonId, " +
+                "tComics.sourceId as csourceId, " +
+                "tComics.selected as cselected, " +
+                "tComics.version as cversion, " +
                 "tReleases.id as rid, " +
                 "tReleases.comicsId as rcomicsId, " +
                 "tReleases.number as rnumber, " +
@@ -32,7 +35,7 @@ import it.amonshore.comikkua.Constants;
                 "tReleases.tag as rtag " +
                 "FROM tComics INNER JOIN tReleases " +
                 "ON tComics.id = tReleases.comicsId " +
-                "WHERE tComics.removed = 0 AND tReleases.removed = 0 AND purchased = 1"
+                "WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND purchased = 1"
 )
 public class PurchasedRelease extends ComicsRelease {
     @Constants.ReleaseTypeDef

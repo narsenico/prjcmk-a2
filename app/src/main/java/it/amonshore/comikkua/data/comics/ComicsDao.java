@@ -11,6 +11,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
+import it.amonshore.comikkua.data.web.CmkWebRelease;
 
 @Dao
 public interface ComicsDao {
@@ -26,6 +27,14 @@ public interface ComicsDao {
 
     @Update
     int update(Comics... comics);
+
+    @Query("UPDATE tComics SET selected = :selected WHERE id IN (:id)")
+    @Transaction
+    int updateSelected(boolean selected, Long... id);
+
+    @Query("UPDATE tComics SET selected = 0")
+    @Transaction
+    int undoSelected();
 
     @Query("UPDATE tComics SET removed = :removed WHERE id IN (:id)")
     @Transaction
@@ -49,41 +58,41 @@ public interface ComicsDao {
     @Transaction
     int deleteRemoved();
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     LiveData<List<Comics>> getComics();
 
-    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0")
+    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     LiveData<Comics> getComics(long id);
 
-    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0")
+    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0 AND selected = 1")
     LiveData<Comics> getComics(String name);
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     List<Comics> getRawComics();
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     List<ComicsWithReleases> getRawComicsWithReleases();
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleases();
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 ORDER BY name COLLATE NOCASE ASC")
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource();
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 AND " +
+    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 AND " +
             "(name LIKE :likeName OR publisher LIKE :likeName OR authors LIKE :likeName OR notes LIKE :likeName) " +
             "ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource(String likeName);
 
-    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0")
+    @Query("SELECT * FROM tComics WHERE name = :name AND removed = 0 AND selected = 1")
     @Transaction
     LiveData<List<ComicsWithReleases>> getComicsWithReleasesByName(String name);
 
-    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0")
+    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     @Transaction
     LiveData<ComicsWithReleases> getComicsWithReleases(long id);
 

@@ -12,7 +12,7 @@ import it.amonshore.comikkua.data.ComikkuDatabase;
 
 class ComicsRepository {
 
-    private ComicsDao mComicsDao;
+    private final ComicsDao mComicsDao;
 
     ComicsRepository(Application application) {
         final ComikkuDatabase db = ComikkuDatabase.getDatabase(application);

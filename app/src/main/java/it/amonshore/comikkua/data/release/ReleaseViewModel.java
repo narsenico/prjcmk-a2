@@ -31,7 +31,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     private final FirebaseRepository mFirebaseRepository;
 
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
-    private ReleaseViewModelGroupHelper mGroupHelper;
+    private final ReleaseViewModelGroupHelper mGroupHelper;
 
     // lo uso per salvare gli stati delle viste (ad esempio la posizione dello scroll di una lista in un fragment)
     public final Bundle states;
@@ -41,7 +41,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
-        mFirebaseRepository = new FirebaseRepository();
+        mFirebaseRepository = new FirebaseRepository(application);
         mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();
         loading = new MutableLiveData<>();
