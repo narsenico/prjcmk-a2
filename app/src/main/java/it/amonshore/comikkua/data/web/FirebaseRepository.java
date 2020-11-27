@@ -31,9 +31,11 @@ import javax.annotation.Nonnull;
 import androidx.annotation.NonNull;
 import androidx.paging.PagingSource;
 import it.amonshore.comikkua.LogHelper;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 import it.amonshore.comikkua.data.CustomData;
 import it.amonshore.comikkua.data.Resource;
+import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsDao;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import kotlin.coroutines.Continuation;
@@ -144,11 +146,92 @@ public class FirebaseRepository {
         return liveData;
     }
 
-//    CustomData<Integer> refreshComics() {
-//        // (da eseguire in un thread che andrà eventualmente ad aggiornare la tabella)
-//        // 1. se ci sono novità remote
-//        // 2. aggiorno tComics aggiungendo i nuovi comics o aggiornando quelli esistenti (tComics.sourceId)
-//    }
+    public CustomData<Integer> refreshComics() {
+        LogHelper.d("CMKWEB/Firestore refresh comics");
+        // (da eseguire in un thread che andrà eventualmente ad aggiornare la tabella)
+        // 1. se ci sono novità remote
+        // 2. aggiorno tComics aggiungendo i nuovi comics o aggiornando quelli esistenti (tComics.sourceId)
+
+        final CustomData<Integer> liveData = new CustomData<>();
+        liveData.postValue(Resource.loading(null));
+
+        // estraggo tutti i documenti dalla collection "comics"
+        mFirestore.collection("comics")
+                .get()
+                // completo in un thread separato per via delle operazioni su DB
+                .addOnCompleteListener(mExecutor, task -> {
+                    if (task.isSuccessful()) {
+                        final QuerySnapshot result = task.getResult();
+                        if (result == null) {
+                            // nessun risultato, ritorno una lista vuota
+                            liveData.postValue(Resource.success(0));
+                        } else {
+                            // possono esserci comics con lo stesso nome, ma per publisher divefsi e/o ristampe diverse
+                            final ArrayList<Comics> lstNewComics = new ArrayList<>();
+                            final ArrayList<Comics> lstUpdComics = new ArrayList<>();
+                            CmkWebComics cmkWebComics;
+                            Comics comics;
+                            for (QueryDocumentSnapshot document : result) {
+                                cmkWebComics = document.toObject(CmkWebComics.class);
+                                cmkWebComics.id = document.getId(); // id non viene considerato da toObject!!!
+                                // leggo il comics con sourceId=id dal db, se esiste aggiorno, altrimenti creo
+                                comics = mComicsDao.getRawComicsBySourceId(cmkWebComics.id);
+                                if (comics == null) {
+                                    lstNewComics.add(updateOrCreateComics(cmkWebComics, comics));
+                                } else {
+                                    lstUpdComics.add(updateOrCreateComics(cmkWebComics, comics));
+                                }
+                            }
+                            // controllo anche se inserisco e aggiorno tutti i comics
+                            final int newSize = lstNewComics.size();
+                            final int updSize = lstUpdComics.size();
+                            int count = 0;
+                            // inserisco i nuovi comics
+                            if (newSize > 0) {
+                                final int newCount = mComicsDao.insert(lstNewComics.toArray(new Comics[0])).length;
+                                if (newCount != newSize) {
+                                    LogHelper.w("CMKWEB/Firestore refresh insert problem: expected %s, inserted %s", newSize, newCount);
+                                } else {
+                                    LogHelper.i("CMKWEB/Firestore refresh comics: inserted %s comics", newCount);
+                                }
+                                count += newCount;
+                            }
+                            // aggiorno i comics già esistenti
+                            if (updSize > 0) {
+                                final int updCount = mComicsDao.update(lstUpdComics.toArray(new Comics[0]));
+                                if (updCount != updSize) {
+                                    LogHelper.w("CMKWEB/Firestore refresh update problem: expected %s, updated %s", updSize, updCount);
+                                } else {
+                                    LogHelper.i("CMKWEB/Firestore refresh comics: updated %s comics", updCount);
+                                }
+                                count += updCount;
+                            }
+                            liveData.postValue(Resource.success(count));
+                        }
+                    } else {
+                        final Exception error = task.getException();
+                        LogHelper.e("Error refreshing comics", error);
+                        if (error == null) {
+                            liveData.postValue(Resource.error(null, "Unknown error"));
+                        } else {
+                            liveData.postValue(Resource.error(null, error.getMessage()));
+                        }
+                    }
+                });
+
+        return liveData;
+    }
+
+    private Comics updateOrCreateComics(@NonNull CmkWebComics cmkWebComics, Comics comics) {
+        if (comics == null) {
+            comics = new Comics();
+        }
+        comics.name = cmkWebComics.name;
+        comics.sourceId = cmkWebComics.id;
+        comics.publisher = cmkWebComics.publisher;
+        comics.version = cmkWebComics.version;
+        return comics;
+    }
 
     /**
      * Cerca la nuova release di un comics a partire da un dato numero (compreso).

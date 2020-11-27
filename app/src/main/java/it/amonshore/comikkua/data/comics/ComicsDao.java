@@ -2,6 +2,7 @@ package it.amonshore.comikkua.data.comics;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.paging.DataSource;
 import androidx.paging.PagingSource;
@@ -104,4 +105,10 @@ public interface ComicsDao {
 
     @Query("SELECT distinct(name) FROM tComics ORDER BY name COLLATE NOCASE ASC")
     LiveData<List<String>> getComicsName();
+
+    @Query("SELECT EXISTS(SELECT * FROM tcomics WHERE sourceId = :sourceId)")
+    boolean existsSourceId(@NonNull String sourceId);
+
+    @Query("SELECT * FROM tComics WHERE sourceId = :sourceId")
+    Comics getRawComicsBySourceId(@NonNull String sourceId);
 }
