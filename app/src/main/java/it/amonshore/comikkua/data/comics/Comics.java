@@ -62,9 +62,17 @@ public class Comics {
         return !TextUtils.isEmpty(this.image);
     }
 
+    /**
+     * Crea un nuovo comics con il nome specificato.
+     * Il comics è selezionato (select = true)
+     *
+     * @param name il nome del comics
+     * @return il comics
+     */
     public static Comics create(@NonNull String name) {
         final Comics comics = new Comics();
         comics.name = name;
+        comics.selected = true;
         return comics;
     }
 }
