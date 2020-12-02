@@ -106,7 +106,7 @@ public class ComicsFragment extends Fragment {
                         }
                     }
                 })
-                .withComcisCallback(new PagedListComicsAdapter.ComicsCallback() {
+                .withComicsCallback(new PagedListComicsAdapter.ComicsCallback() {
                     @Override
                     public void onComicsClick(@NonNull ComicsWithReleases comics) {
                         final NavDirections directions = ComicsFragmentDirections
@@ -261,11 +261,19 @@ public class ComicsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.createNewComics) {
+        final int itemId = item.getItemId();
+        if (itemId == R.id.createNewComics) {
             final NavDirections directions = ComicsFragmentDirections
                     .actionDestComicsFragmentToComicsEditFragment()
                     .setComicsId(NEW_COMICS_ID)
                     .setSubtitle(R.string.title_comics_create);
+
+            Navigation.findNavController(requireView()).navigate(directions);
+
+            return true;
+        } else if (itemId == R.id.openComicsSelector) {
+            final NavDirections directions = ComicsFragmentDirections
+                    .actionDestComicFragmentToComicsSelectorFragment();
 
             Navigation.findNavController(requireView()).navigate(directions);
 

@@ -19,6 +19,7 @@ import androidx.paging.PagingLiveData;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.web.CmkWebComics;
 import it.amonshore.comikkua.data.web.FirebaseRepository;
 import kotlinx.coroutines.CoroutineScope;
 
@@ -31,6 +32,7 @@ public class ComicsViewModel extends AndroidViewModel {
     private String mLastFilter;
 
     public final LiveData<PagingData<ComicsWithReleases>> comicsWithReleasesList;
+    public final LiveData<PagingData<CmkWebComics>> availableComics;
     public final MediatorLiveData<List<String>> comicBookTitles;
     // indica se è in corso un caricamento di dati da remoto
     public final MutableLiveData<Boolean> loading;
@@ -45,7 +47,7 @@ public class ComicsViewModel extends AndroidViewModel {
         states = new Bundle();
         loading = new MutableLiveData<>();
 
-        final PagingConfig pagingConfig = new PagingConfig(20, 20, true);
+        final PagingConfig pagingConfig = new PagingConfig(10, 10, true);
 
         // LiveData con l'elenco completo
         final CoroutineScope viewModelScope = ViewModelKt.getViewModelScope(this);
@@ -67,6 +69,12 @@ public class ComicsViewModel extends AndroidViewModel {
                 return PagingLiveData.cachedIn(PagingLiveData.getLiveData(filteredComicsPager), viewModelScope);
             }
         });
+
+        // TODO: TEST
+        final Pager<String, CmkWebComics> availableComicsPager = new Pager<>(pagingConfig,
+                mFirebaseRespository::getComicsPagingSource);
+        availableComics = PagingLiveData.cachedIn(PagingLiveData.getLiveData(availableComicsPager), viewModelScope);
+        // TODO: TEST
 
         // carico la lista dei titoli dalla rete
         // posto il valore solo in caso di SUCCESS perché se uso LiveDataEx.observeOnce()

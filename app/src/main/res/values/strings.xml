@@ -40,6 +40,7 @@
     <string name="title_releases">Release list</string>
     <string name="title_new_releases">Updated release list</string>
     <string name="title_comics">Comics list</string>
+    <string name="title_comics_selector">Comics selector</string>
     <string name="title_comics_detail">Comics detail</string>
     <string name="title_comics_edit">Edit comics</string>
     <string name="title_comics_create">Create comics</string>

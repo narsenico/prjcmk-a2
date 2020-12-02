@@ -1,12 +1,12 @@
 package it.amonshore.comikkua.data.web;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -31,13 +31,11 @@ import javax.annotation.Nonnull;
 import androidx.annotation.NonNull;
 import androidx.paging.PagingSource;
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 import it.amonshore.comikkua.data.CustomData;
 import it.amonshore.comikkua.data.Resource;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsDao;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import kotlin.coroutines.Continuation;
 
 public class FirebaseRepository {
@@ -105,9 +103,15 @@ public class FirebaseRepository {
         return liveData;
     }
 
-//    public PagingSource<String, CmkWebComics> getComicsPagingSource() {
-//
-//    }
+    private CmkWebComicsPagingSource mComicsPagingSource;
+
+    public PagingSource<String, CmkWebComics> getComicsPagingSource() {
+        LogHelper.d("CMKWEB/Firestore read all comic");
+        if (mComicsPagingSource == null) {
+            mComicsPagingSource = new CmkWebComicsPagingSource();
+        }
+        return mComicsPagingSource;
+    }
 
     public CustomData<List<CmkWebComics>> getComics() {
         LogHelper.d("CMKWEB/Firestore read comics");
@@ -270,24 +274,29 @@ public class FirebaseRepository {
                 .whereEqualTo("searchableName", searchableName)
                 .get()
                 .addOnCompleteListener(task -> {
-                    List<Task<QuerySnapshot>> tasks = new ArrayList<>();
-                    for (DocumentSnapshot ds : task.getResult()) {
-                        LogHelper.d("CMKWEB/Firestore found '%s'", ds.getId());
-                        tasks.add(ds.getReference().collection("releases")
-                                .whereGreaterThanOrEqualTo("releaseNumber", numberFrom)
-                                .get());
-                    }
-
-                    Tasks.whenAllSuccess(tasks).addOnCompleteListener(task1 -> {
-                        final List<CmkWebRelease> releases = new ArrayList<>();
-                        for (Object o : task1.getResult()) {
-                            final QuerySnapshot qs = (QuerySnapshot) o;
-                            for (QueryDocumentSnapshot qds : qs) {
-                                releases.add(fromDocument(comicsName, qds));
-                            }
+                    try {
+                        List<Task<QuerySnapshot>> tasks = new ArrayList<>();
+                        for (DocumentSnapshot ds : task.getResult()) {
+                            LogHelper.d("CMKWEB/Firestore found '%s'", ds.getId());
+                            tasks.add(ds.getReference().collection("releases")
+                                    .whereGreaterThanOrEqualTo("releaseNumber", numberFrom)
+                                    .get());
                         }
-                        liveData.postValue(Resource.success(releases));
-                    });
+
+                        Tasks.whenAllSuccess(tasks).addOnCompleteListener(task1 -> {
+                            final List<CmkWebRelease> releases = new ArrayList<>();
+                            for (Object o : task1.getResult()) {
+                                final QuerySnapshot qs = (QuerySnapshot) o;
+                                for (QueryDocumentSnapshot qds : qs) {
+                                    releases.add(fromDocument(comicsName, qds));
+                                }
+                            }
+                            liveData.postValue(Resource.success(releases));
+                        });
+                    } catch (Exception ex) {
+                        LogHelper.e("CMKWEB/Firestore result: read error");
+                        liveData.postValue(Resource.error(null, ex.getMessage()));
+                    }
                 });
 
         return liveData;
@@ -314,11 +323,10 @@ public class FirebaseRepository {
     private final class CmkWebComicsPagingSource extends PagingSource<String, CmkWebComics> {
 
         private Future<LoadResult<String, CmkWebComics>> loadFuture(@NotNull LoadParams<String> loadParams) {
-
             // tipologia di Future che può essere "settata" in un qualsiasi momento del futuro
             // in questo caso verrà "settata" appena ho caricato i dati da remoto
             final SettableFuture<LoadResult<String, CmkWebComics>> future = SettableFuture.create();
-            // chiave da qui devo caricare (>=), corrisponde al searchableName, con qui è anche ordinata la query
+            // chiave da qui devo caricare (>=), corrisponde all'id, con qui è anche ordinata la query
             final String key = loadParams.getKey();
             final int limit = loadParams.getLoadSize();
 
@@ -327,12 +335,15 @@ public class FirebaseRepository {
             final Query query;
             if (key != null) {
                 query = mFirestore.collection("comics")
-                        .whereGreaterThan("searchableName", key);
+                        .whereGreaterThan(FieldPath.documentId(), key);
             } else {
                 query = mFirestore.collection("comics");
             }
 
-            query.orderBy("searchableName")
+            // TODO: usare un altro campo per ordinare che prenda anche in considerazione il nome
+            //  ad esempio definire un nuovo campo che è la concetenazione di publisher + name + version
+
+            query.orderBy(FieldPath.documentId())
                     .limit(limit)
                     .get()
                     // completo il caricamento in un thread separato
@@ -341,33 +352,33 @@ public class FirebaseRepository {
                             try {
                                 final QuerySnapshot result = task.getResult();
                                 if (result != null) {
-                                    LogHelper.d("Parsing %s comics", result.size());
+                                    LogHelper.d("CMKWEB/Firestore parsing %s comics", result.size());
                                     final List<CmkWebComics> lstComics = new ArrayList<>();
                                     for (QueryDocumentSnapshot document : result) {
-                                        lstComics.add(document.toObject(CmkWebComics.class));
+                                        lstComics.add(prepare(document));
                                     }
 
                                     final int size = lstComics.size();
                                     // l'ultimo elemento conterrà la chiave per la prossima chiamata
-                                    final String nextKey = size > 0 ? lstComics.get(size - 1).searchableName : null;
-                                    LogHelper.d(String.format("Result size=%s nextKey='%s'", size, nextKey));
+                                    final String nextKey = size > 0 ? lstComics.get(size - 1).id : null;
+                                    LogHelper.d(String.format("CMKWEB/Firestore result size=%s nextKey='%s'", size, nextKey));
 
                                     future.set(new LoadResult.Page<>(lstComics, null, nextKey));
                                 } else {
-                                    LogHelper.w("Result: no data");
+                                    LogHelper.w("CMKWEB/Firestore result: no data");
                                     future.set(new LoadResult.Page<>(Collections.emptyList(), null, null));
                                 }
                             } catch (Exception ex) {
-                                LogHelper.e("Result: read error", ex);
+                                LogHelper.e("CMKWEB/Firestore result: read error", ex);
                                 future.set(new LoadResult.Error<>(ex));
                             }
                         } else {
                             final Exception error = task.getException();
                             if (error != null) {
-                                LogHelper.e("Result: read error", error);
+                                LogHelper.e("CMKWEB/Firestore result: read error", error);
                                 future.set(new LoadResult.Error<>(error));
                             } else {
-                                LogHelper.e("Result: read error");
+                                LogHelper.e("CMKWEB/Firestore result: read error");
                                 future.set(new LoadResult.Error<>(new UnknownError()));
                             }
                         }
@@ -376,15 +387,24 @@ public class FirebaseRepository {
             return future;
         }
 
+        private CmkWebComics prepare(@NonNull QueryDocumentSnapshot document) {
+            final CmkWebComics comics = document.toObject(CmkWebComics.class)
+                    .withId(document.getId());
+            comics.selected = mComicsDao.existsSourceId(comics.id);
+            LogHelper.d("CMKWEB/Firestore prepare name='%s' selected=%s", comics.name, comics.selected);
+            return comics;
+        }
+
         @Nullable
         @Override
         public LoadResult<String, CmkWebComics> load(@NotNull LoadParams<String> loadParams,
                                                      @NotNull Continuation<? super LoadResult<String, CmkWebComics>> continuation) {
             try {
                 // attendo il caricamento dei dati da remoto
+                LogHelper.d("CMKWEB/Firestore loading...");
                 return loadFuture(loadParams).get();
             } catch (ExecutionException | InterruptedException ex) {
-                LogHelper.e("Result: load error", ex);
+                LogHelper.e("CMKWEB/Firestore result: load error", ex);
                 return new LoadResult.Error<>(ex);
             }
         }

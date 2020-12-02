@@ -3,12 +3,12 @@ package it.amonshore.comikkua.ui.comics;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 
-public class ComicsItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
+public class ComicsItemDetails<T> extends ItemDetailsLookup.ItemDetails<T> {
 
-    private int mPosition;
-    private Long mSelectionKey;
+    private final int mPosition;
+    private final T mSelectionKey;
 
-    public ComicsItemDetails(int position, Long selectionKey) {
+    public ComicsItemDetails(int position, T selectionKey) {
         mPosition = position;
         mSelectionKey = selectionKey;
     }
@@ -20,7 +20,7 @@ public class ComicsItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
 
     @Nullable
     @Override
-    public Long getSelectionKey() {
+    public T getSelectionKey() {
         return mSelectionKey;
     }
 }

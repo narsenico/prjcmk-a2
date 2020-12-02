@@ -3,7 +3,7 @@ package it.amonshore.comikkua.ui.comics;
 /**
  * Callback per i ViewHoler riferiti ai comics.
  */
-interface IComicsViewHolderCallback {
+interface IComicsViewHolderCallback<T> {
 
     /**
      * Notifica il click sull'intero comics.
@@ -11,7 +11,7 @@ interface IComicsViewHolderCallback {
      * @param comicsId id del comics
      * @param position posizione del Viewholer
      */
-    void onComicsClick(long comicsId, int position);
+    void onComicsClick(T comicsId, int position);
 
     /**
      * Notifica la selezione del pulsante menu.
@@ -19,5 +19,5 @@ interface IComicsViewHolderCallback {
      * @param comicsId id del comics
      * @param position posizione del Viewholer
      */
-    void onComicsMenuSelected(long comicsId, int position);
+    void onComicsMenuSelected(T comicsId, int position);
 }

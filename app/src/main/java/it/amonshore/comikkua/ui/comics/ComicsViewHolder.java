@@ -31,7 +31,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mMissing;
     private long mId;
 
-    private ComicsViewHolder(View itemView, final IComicsViewHolderCallback callback) {
+    private ComicsViewHolder(View itemView, final IComicsViewHolderCallback<Long> callback) {
         super(itemView);
         mInitial = itemView.findViewById(R.id.txt_comics_initial);
         mName = itemView.findViewById(R.id.txt_comics_name);
@@ -56,7 +56,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ComicsItemDetails(getLayoutPosition(), mId);
+        return new ComicsItemDetails<>(getLayoutPosition(), mId);
     }
 
     void bind(@NonNull ComicsWithReleases comics, boolean selected, RequestManager requestManager) {
@@ -186,7 +186,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 //        }
 //    }
 
-    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IComicsViewHolderCallback callback) {
+    static ComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IComicsViewHolderCallback<Long> callback) {
         return new ComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false), callback);
     }
 

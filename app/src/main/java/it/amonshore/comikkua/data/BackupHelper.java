@@ -39,6 +39,9 @@ import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.ui.ImageHelper;
 
+/**
+ * TODO: da testare BENE import/export con nuovi campi tComics (sourceId, etc.)
+ */
 public class BackupHelper {
 
     private final static String TRUE = "T";
