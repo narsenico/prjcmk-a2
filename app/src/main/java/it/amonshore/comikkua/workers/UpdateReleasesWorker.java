@@ -45,7 +45,7 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
-import it.amonshore.comikkua.data.web.FirebaseRepository;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 import it.amonshore.comikkua.ui.releases.NewReleasesFragmentArgs;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
@@ -74,7 +74,7 @@ public class UpdateReleasesWorker extends Worker {
             final ComikkuDatabase db = ComikkuDatabase.getDatabase(context);
             final ComicsDao comicsDao = db.comicsDao();
             final ReleaseDao releaseDao = db.releaseDao();
-            final FirebaseRepository firebaseRepository = new FirebaseRepository(context);
+            final CmkWebRepository cmkWebRepository = new CmkWebRepository(context);
             final Handler handler = new Handler(Looper.getMainLooper());
 
             // le operazioni di inserimento su DB verranno eseguite da questo executor
@@ -90,7 +90,7 @@ public class UpdateReleasesWorker extends Worker {
             for (ComicsWithReleases cs : ccs) {
                 // observe deve essere esguita nel main thread
 //                handler.post(() -> observe(cmkWebRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
-                handler.post(() -> observe(firebaseRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
+                handler.post(() -> observe(cmkWebRepository.getReleases(cs.comics.name, cs.getNextReleaseNumber()),
                         cs, releaseDao, tag, completionService));
             }
 

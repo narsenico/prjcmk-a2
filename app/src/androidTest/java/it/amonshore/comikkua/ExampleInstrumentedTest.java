@@ -29,8 +29,6 @@ public class ExampleInstrumentedTest {
         assertEquals("it.amonshore.comikkua", appContext.getPackageName());
     }
 
-
-
     @Test
     public void playWithFile() {
         final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();

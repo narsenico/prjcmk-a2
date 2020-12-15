@@ -11,7 +11,7 @@ import com.bumptech.glide.RequestManager;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.web.CmkWebComics;
+import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
 class CmkWebComicsViewHolder extends IViewHolderWithDetails<String> {
@@ -53,14 +53,13 @@ class CmkWebComicsViewHolder extends IViewHolderWithDetails<String> {
         return new ComicsItemDetails<>(getLayoutPosition(), mId);
     }
 
-    void bind(@NonNull CmkWebComics comics, boolean selected, RequestManager requestManager) {
+    void bind(@NonNull AvailableComics comics, boolean selected, RequestManager requestManager) {
         itemView.setActivated(selected);
-        mId = comics.id;
+        mId = comics.sourceId;
         mName.setText(comics.name);
         mPublisher.setText(comics.publisher);
 //        mAuthors.setText(comics.authors);
 //        mNotes.setText(comics.notes);
-        mNotes.setText(comics.selected ? "SELECTED" : "");
 
         final Context context = itemView.getContext();
 

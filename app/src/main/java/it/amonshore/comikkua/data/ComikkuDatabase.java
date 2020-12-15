@@ -26,17 +26,24 @@ import it.amonshore.comikkua.data.release.NotPurchasedRelease;
 import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
+import it.amonshore.comikkua.data.web.AvailableComics;
+import it.amonshore.comikkua.data.web.CmkWebDao;
+import it.amonshore.comikkua.data.web.CmkWebDaoKt;
 
-@Database(entities = {Comics.class, Release.class},
+@Database(entities = {Comics.class, Release.class, AvailableComics.class},
         views = {ComicsRelease.class,
                 MissingRelease.class, LostRelease.class, DatedRelease.class,
                 PurchasedRelease.class, NotPurchasedRelease.class},
-        version = 6)
+        version = 7)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
 
     public abstract ReleaseDao releaseDao();
+
+    public abstract CmkWebDao cmkWebDao();
+
+    public abstract CmkWebDaoKt cmkWebDaoKt();
 
     private static volatile ComikkuDatabase INSTANCE;
 
@@ -54,6 +61,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_3_4)
                             .addMigrations(MIGRATION_4_5)
                             .addMigrations(MIGRATION_5_6)
+                            .addMigrations(MIGRATION_6_7)
                             .addCallback(new DatabaseCallback(context))
                             .build();
                 }
@@ -156,6 +164,16 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
             database.execSQL("DROP VIEW IF EXISTS `vNotPurchasedReleases`");
             database.execSQL("CREATE VIEW `vNotPurchasedReleases` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND purchased = 0");
+        }
+    };
+
+    private static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // creo nuova tabella tAvailableComics con indici
+            database.execSQL("CREATE TABLE IF NOT EXISTS `tAvailableComics` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sourceId` TEXT, `name` TEXT, `searchableName` TEXT, `publisher` TEXT, `version` INTEGER NOT NULL)");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_tAvailableComics_sourceId` ON `tAvailableComics` (`sourceId`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_tAvailableComics_name_publisher_version` ON `tAvailableComics` (`name`, `publisher`, `version`)");
         }
     };
 

@@ -19,20 +19,18 @@ import androidx.paging.PagingLiveData;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.web.CmkWebComics;
-import it.amonshore.comikkua.data.web.FirebaseRepository;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 import kotlinx.coroutines.CoroutineScope;
 
 public class ComicsViewModel extends AndroidViewModel {
 
     private final ComicsRepository mRepository;
-    private final FirebaseRepository mFirebaseRespository;
+    private final CmkWebRepository mCmkWebRepository;
     private final MutableLiveData<String> mFilterComics = new MutableLiveData<>();
     private final LiveData<PagingData<ComicsWithReleases>> mAllComics;
     private String mLastFilter;
 
     public final LiveData<PagingData<ComicsWithReleases>> comicsWithReleasesList;
-    public final LiveData<PagingData<CmkWebComics>> availableComics;
     public final MediatorLiveData<List<String>> comicBookTitles;
     // indica se è in corso un caricamento di dati da remoto
     public final MutableLiveData<Boolean> loading;
@@ -43,7 +41,7 @@ public class ComicsViewModel extends AndroidViewModel {
     public ComicsViewModel(Application application) {
         super(application);
         mRepository = new ComicsRepository(application);
-        mFirebaseRespository = new FirebaseRepository(application);
+        mCmkWebRepository = new CmkWebRepository(application);
         states = new Bundle();
         loading = new MutableLiveData<>();
 
@@ -70,17 +68,11 @@ public class ComicsViewModel extends AndroidViewModel {
             }
         });
 
-        // TODO: TEST
-        final Pager<String, CmkWebComics> availableComicsPager = new Pager<>(pagingConfig,
-                mFirebaseRespository::getComicsPagingSource);
-        availableComics = PagingLiveData.cachedIn(PagingLiveData.getLiveData(availableComicsPager), viewModelScope);
-        // TODO: TEST
-
         // carico la lista dei titoli dalla rete
         // posto il valore solo in caso di SUCCESS perché se uso LiveDataEx.observeOnce()
         //  riceverei solo il primo valore, che sarà a livello LOADING (oppure ERROR), visto che l'observer verrebbe subito rimosso
         comicBookTitles = new MediatorLiveData<>();
-        comicBookTitles.addSource(mFirebaseRespository.getComicNames(), resource -> {
+        comicBookTitles.addSource(mCmkWebRepository.getComicNames(), resource -> {
             LogHelper.d("comicBookTitles status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:

@@ -30,7 +30,7 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.web.FirebaseRepository;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 import it.amonshore.comikkua.workers.ReleaseNotificationWorker;
 import it.amonshore.comikkua.workers.UpdateReleasesWorker;
 
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements
             Toast.makeText(this,
                     String.format("%s (%s) - %s",
                             BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE,
-                            FirebaseRepository.getProjectId()),
+                            CmkWebRepository.getProjectId()),
                     Toast.LENGTH_LONG).show();
         }
     }

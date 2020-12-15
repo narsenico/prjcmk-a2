@@ -21,14 +21,14 @@ import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
-import it.amonshore.comikkua.data.web.FirebaseRepository;
+import it.amonshore.comikkua.data.web.CmkWebRepository;
 
 public class ReleaseViewModel extends AndroidViewModel {
 
     private final static long ONE_DAY = 86_400_000L;
 
     private final ReleaseRepository mRepository;
-    private final FirebaseRepository mFirebaseRepository;
+    private final CmkWebRepository mCmkWebRepository;
 
     private LiveData<List<IReleaseViewModelItem>> mReleaseViewModelItems;
     private final ReleaseViewModelGroupHelper mGroupHelper;
@@ -41,7 +41,7 @@ public class ReleaseViewModel extends AndroidViewModel {
     public ReleaseViewModel(Application application) {
         super(application);
         mRepository = new ReleaseRepository(application);
-        mFirebaseRepository = new FirebaseRepository(application);
+        mCmkWebRepository = new CmkWebRepository(application);
         mGroupHelper = new ReleaseViewModelGroupHelper();
         states = new Bundle();
         loading = new MutableLiveData<>();
@@ -221,7 +221,7 @@ public class ReleaseViewModel extends AndroidViewModel {
         // che potrebbe anche portare a risultati spiacevoli
         // ad es. se ci sono più edizioni dello stesso comics
 //        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-        data.addSource(mFirebaseRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
+        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
             LogHelper.d("searchForNextRelease status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:
@@ -253,7 +253,7 @@ public class ReleaseViewModel extends AndroidViewModel {
         // che potrebbe anche portare a risultati spiacevoli
         // ad es. se ci sono più edizioni dello stesso comics
 //        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-        data.addSource(mFirebaseRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
+        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
             LogHelper.d("getNewReleases status=%s", resource.status);
             switch (resource.status) {
                 case SUCCESS:

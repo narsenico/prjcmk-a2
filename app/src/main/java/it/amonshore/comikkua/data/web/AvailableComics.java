@@ -6,17 +6,35 @@ import com.google.gson.annotations.SerializedName;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Entity;
+import androidx.room.Index;
+import androidx.room.PrimaryKey;
 
 /**
- * Rappresenta un comics letto dalla rete.
+ * Rappresenta un comics disponibile per essere monitorato:
+ * cioè le release possono essere aggiornate in automatico.
+ * Una volta monitorato viene creato un record in tComcis con sourceId
+ * valorizzato a tAvailableComics.id.
  */
-public class CmkWebComics {
+@Entity(tableName = "tAvailableComics",
+        indices = {@Index(value = "sourceId", unique = true),
+                @Index({"name", "publisher", "version"})})
+public class AvailableComics {
+
+    public final static long NO_COMICS_ID = -1;
+
+    /**
+     * Id comics interno.
+     * Room supporta solo id di tipo long.
+     */
+    @PrimaryKey(autoGenerate = true)
+    public long id;
 
     /**
      * Id del comics così come indentificato in rete.
      */
     @SerializedName("id")
-    public String id;
+    public String sourceId;
 
     /**
      * Nome del cmomics.
@@ -43,10 +61,8 @@ public class CmkWebComics {
     @SerializedName("version")
     public int version;
 
-    public boolean selected;
-
-    CmkWebComics withId(String id) {
-        this.id = id;
+    public AvailableComics withSourceId(String sourceId) {
+        this.sourceId = sourceId;
         return this;
     }
 
@@ -63,9 +79,9 @@ public class CmkWebComics {
     public boolean equals(@Nullable Object obj) {
         if (obj == this) return true;
 
-        if (obj instanceof CmkWebComics) {
-            final CmkWebComics other = (CmkWebComics) obj;
-            return other.id.equals(this.id);
+        if (obj instanceof AvailableComics) {
+            final AvailableComics other = (AvailableComics) obj;
+            return other.sourceId.equals(this.sourceId);
         } else {
             return false;
         }

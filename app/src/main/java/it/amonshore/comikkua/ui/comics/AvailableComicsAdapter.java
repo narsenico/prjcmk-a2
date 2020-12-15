@@ -16,32 +16,32 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.paging.PagingDataAdapter;
 import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.data.web.CmkWebComics;
+import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.ui.ImageHelper;
 
-public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics, CmkWebComicsViewHolder> {
+public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebComicsViewHolder> {
 
     private SelectionTracker<String> mSelectionTracker;
     private IComicsViewHolderCallback<String> mComicsViewHolderCallback;
     private RequestManager mRequestManager;
 
-    private PagedListCmkWebComicsAdapter() {
+    private AvailableComicsAdapter() {
         super(DIFF_CALLBACK);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CmkWebComicsViewHolder holder, int position) {
-        final CmkWebComics item = getItem(position);
+        final AvailableComics item = getItem(position);
         if (item != null) {
-            holder.bind(item, mSelectionTracker.isSelected(item.id), mRequestManager);
+            holder.bind(item, mSelectionTracker.isSelected(item.sourceId), mRequestManager);
         } else {
             holder.clear();
         }
@@ -54,11 +54,11 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
     }
 
     public String getSelectionKey(int position) {
-        final CmkWebComics item = getItem(position);
+        final AvailableComics item = getItem(position);
         if (item == null) {
             return null;
         } else {
-            return item.id;
+            return item.sourceId;
         }
     }
 
@@ -66,10 +66,10 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
         long nn = SystemClock.elapsedRealtimeNanos();
         try {
             for (int ii = 0; ; ii++) {
-                final CmkWebComics item = getItem(ii);
+                final AvailableComics item = getItem(ii);
                 if (item == null) {
                     return RecyclerView.NO_POSITION;
-                } else if (item.id.equals(selectionKey)) {
+                } else if (item.sourceId.equals(selectionKey)) {
                     return ii;
                 }
             }
@@ -90,9 +90,9 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
 
     public interface ComicsCallback {
 
-        void onComicsClick(@NonNull CmkWebComics comics);
+        void onComicsClick(@NonNull AvailableComics comics);
 
-        void onComicsMenuSelected(@NonNull CmkWebComics comics);
+        void onComicsMenuSelected(@NonNull AvailableComics comics);
     }
 
     static class Builder {
@@ -120,14 +120,14 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
             return this;
         }
 
-        PagedListCmkWebComicsAdapter build() {
-            final PagedListCmkWebComicsAdapter adapter = new PagedListCmkWebComicsAdapter();
+        AvailableComicsAdapter build() {
+            final AvailableComicsAdapter adapter = new AvailableComicsAdapter();
             adapter.mComicsViewHolderCallback = new IComicsViewHolderCallback<String>() {
                 @Override
                 public void onComicsClick(String comicsId, int position) {
                     // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
                     if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
-                        final CmkWebComics comics = adapter.getItem(position);
+                        final AvailableComics comics = adapter.getItem(position);
                         if (comics != null) {
                             comicsCallback.onComicsClick(comics);
                         }
@@ -137,7 +137,7 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
                 @Override
                 public void onComicsMenuSelected(String comicsId, int position) {
                     if (comicsCallback != null) {
-                        final CmkWebComics comics = adapter.getItem(position);
+                        final AvailableComics comics = adapter.getItem(position);
                         if (comics != null) {
                             comicsCallback.onComicsMenuSelected(comics);
                         }
@@ -190,11 +190,11 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
 
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
-                final FixedPreloadSizeProvider<CmkWebComics> sizeProvider =
+                final FixedPreloadSizeProvider<AvailableComics> sizeProvider =
                         new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
                 final ComicsPreloadModelProvider modelProvider =
                         new ComicsPreloadModelProvider(adapter, mRequestManager);
-                final RecyclerViewPreloader<CmkWebComics> preloader =
+                final RecyclerViewPreloader<AvailableComics> preloader =
                         new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
 
                 adapter.mRequestManager = mRequestManager;
@@ -206,11 +206,11 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
     }
 
     private static class MyItemKeProvider extends ItemKeyProvider<String> {
-        private final PagedListCmkWebComicsAdapter mAdapter;
+        private final AvailableComicsAdapter mAdapter;
 
         public MyItemKeProvider(@NonNull RecyclerView recyclerView, int scope) {
             super(scope);
-            mAdapter = (PagedListCmkWebComicsAdapter) recyclerView.getAdapter();
+            mAdapter = (AvailableComicsAdapter) recyclerView.getAdapter();
         }
 
         @Nullable
@@ -225,37 +225,37 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
         }
     }
 
-    private static final DiffUtil.ItemCallback<CmkWebComics> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<CmkWebComics>() {
+    private static final DiffUtil.ItemCallback<AvailableComics> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<AvailableComics>() {
                 // ComicsWithReleases details may have changed if reloaded from the database,
                 // but ID is fixed.
                 @Override
-                public boolean areItemsTheSame(@NonNull CmkWebComics oldCmkWebComics,
-                                               @NonNull CmkWebComics newCmkWebComics) {
-                    return oldCmkWebComics.id.equals(newCmkWebComics.id);
+                public boolean areItemsTheSame(@NonNull AvailableComics oldAvailableComics,
+                                               @NonNull AvailableComics newAvailableComics) {
+                    return oldAvailableComics.sourceId.equals(newAvailableComics.sourceId);
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull CmkWebComics oldCmkWebComics,
-                                                  @NonNull CmkWebComics newCmkWebComics) {
-                    return oldCmkWebComics.equals(newCmkWebComics);
+                public boolean areContentsTheSame(@NonNull AvailableComics oldAvailableComics,
+                                                  @NonNull AvailableComics newAvailableComics) {
+                    return oldAvailableComics.equals(newAvailableComics);
                 }
             };
 
-    private static class ComicsPreloadModelProvider implements ListPreloader.PreloadModelProvider<CmkWebComics> {
+    private static class ComicsPreloadModelProvider implements ListPreloader.PreloadModelProvider<AvailableComics> {
 
-        private final PagedListCmkWebComicsAdapter mAdapter;
+        private final AvailableComicsAdapter mAdapter;
         private final RequestManager mRequestManager;
 
-        ComicsPreloadModelProvider(@NonNull PagedListCmkWebComicsAdapter adapter, @NonNull RequestManager requestManager) {
+        ComicsPreloadModelProvider(@NonNull AvailableComicsAdapter adapter, @NonNull RequestManager requestManager) {
             mAdapter = adapter;
             mRequestManager = requestManager;
         }
 
         @NonNull
         @Override
-        public List<CmkWebComics> getPreloadItems(int position) {
-            final CmkWebComics item = mAdapter.getItem(position);
+        public List<AvailableComics> getPreloadItems(int position) {
+            final AvailableComics item = mAdapter.getItem(position);
             if (item == null) {
                 return Collections.emptyList();
             } else {
@@ -265,7 +265,7 @@ public class PagedListCmkWebComicsAdapter extends PagingDataAdapter<CmkWebComics
 
         @Nullable
         @Override
-        public RequestBuilder<?> getPreloadRequestBuilder(@NonNull CmkWebComics item) {
+        public RequestBuilder<?> getPreloadRequestBuilder(@NonNull AvailableComics item) {
 //            if (item.comics.hasImage()) {
 //                return mRequestManager
 //                        .load(Uri.parse(item.comics.image))
