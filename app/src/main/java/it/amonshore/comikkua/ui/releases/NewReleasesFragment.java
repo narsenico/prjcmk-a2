@@ -74,34 +74,34 @@ public class NewReleasesFragment extends Fragment {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
-                switch (item.getItemId()) {
-                    case R.id.purchaseReleases:
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            mReleaseViewModel.togglePurchased(tracker.getSelection());
-                        }
-                        // mantengo la selezione
-                        return true;
-                    case R.id.orderReleases:
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            mReleaseViewModel.toggleOrdered(tracker.getSelection());
-                        }
-                        // mantengo la selezione
-                        return true;
-                    case R.id.deleteReleases:
-                        if (tracker.hasSelection()) {
-                            // prima elimino eventuali release ancora in fase di undo
-                            mReleaseViewModel.deleteRemoved();
-                            mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
-                        }
-                        tracker.clearSelection();
-                        return true;
-                    case R.id.shareReleases:
-                        LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
-                                items -> ShareHelper.shareReleases(requireActivity(), items));
-                        // mantengo la selezione
-                        return true;
+                int itemId = item.getItemId();
+                if (itemId == R.id.purchaseReleases) {
+                    if (tracker.hasSelection()) {
+                        // le multi non vengono passate
+                        mReleaseViewModel.togglePurchased(tracker.getSelection());
+                    }
+                    // mantengo la selezione
+                    return true;
+                } else if (itemId == R.id.orderReleases) {
+                    if (tracker.hasSelection()) {
+                        // le multi non vengono passate
+                        mReleaseViewModel.toggleOrdered(tracker.getSelection());
+                    }
+                    // mantengo la selezione
+                    return true;
+                } else if (itemId == R.id.deleteReleases) {
+                    if (tracker.hasSelection()) {
+                        // prima elimino eventuali release ancora in fase di undo
+                        mReleaseViewModel.deleteRemoved();
+                        mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
+                    }
+                    tracker.clearSelection();
+                    return true;
+                } else if (itemId == R.id.shareReleases) {
+                    LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
+                            items -> ShareHelper.shareReleases(requireActivity(), items));
+                    // mantengo la selezione
+                    return true;
                 }
                 return false;
             }
@@ -163,6 +163,8 @@ public class NewReleasesFragment extends Fragment {
                                 deleteRelease(release);
                             } else if (id == R.id.search_starshop) {
                                 ShareHelper.shareOnStarShop(requireActivity(), release);
+                            } else if (id == R.id.search_amazon) {
+                                ShareHelper.shareOnAmazon(requireActivity(), release);
                             } else if (id == R.id.search_popstore) {
                                 ShareHelper.shareOnPopStore(requireActivity(), release);
                             } else if (id == R.id.search_google) {
