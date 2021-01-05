@@ -32,4 +32,8 @@ public final class Constants {
 
     public final static int UNDO_TIMEOUT = 7_000;
 
+    public static final int VIEWHOLDER_ACTION_MENU = 741;
+    public static final int VIEWHOLDER_ACTION_CLICK = 406;
+    public static final int VIEWHOLDER_ACTION_FOLLOW = 121;
+
 }

@@ -11,6 +11,7 @@ import com.bumptech.glide.RequestManager;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.comics.Comics;
@@ -44,9 +45,11 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
 
         final View menu = itemView.findViewById(R.id.img_comics_menu);
         if (callback != null) {
-            itemView.setOnClickListener(v -> callback.onComicsClick(mId, getLayoutPosition()));
+            itemView.setOnClickListener(v -> callback.onAction(mId, getLayoutPosition(),
+                    Constants.VIEWHOLDER_ACTION_CLICK));
             menu.setVisibility(View.VISIBLE);
-            menu.setOnClickListener(v -> callback.onComicsMenuSelected(mId, getLayoutPosition()));
+            menu.setOnClickListener(v -> callback.onAction(mId, getLayoutPosition(),
+                    Constants.VIEWHOLDER_ACTION_MENU));
         } else {
             itemView.setOnClickListener(null);
             menu.setVisibility(View.INVISIBLE);

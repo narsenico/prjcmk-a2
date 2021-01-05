@@ -24,6 +24,7 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.ImageHelper;
@@ -123,24 +124,20 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
         PagedListComicsAdapter build() {
             final PagedListComicsAdapter adapter = new PagedListComicsAdapter();
-            adapter.mComicsViewHolderCallback = new IComicsViewHolderCallback<Long>() {
-                @Override
-                public void onComicsClick(Long comicsId, int position) {
+            adapter.mComicsViewHolderCallback = (comicsId, position, action) -> {
+                if (action == Constants.VIEWHOLDER_ACTION_MENU) {
+                    if (comicsCallback != null) {
+                        final ComicsWithReleases comics = adapter.getItem(position);
+                        if (comics != null) {
+                            comicsCallback.onComicsMenuSelected(comics);
+                        }
+                    }
+                } else if (action == Constants.VIEWHOLDER_ACTION_CLICK) {
                     // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
                     if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
                         final ComicsWithReleases comics = adapter.getItem(position);
                         if (comics != null) {
                             comicsCallback.onComicsClick(comics);
-                        }
-                    }
-                }
-
-                @Override
-                public void onComicsMenuSelected(Long comicsId, int position) {
-                    if (comicsCallback != null) {
-                        final ComicsWithReleases comics = adapter.getItem(position);
-                        if (comics != null) {
-                            comicsCallback.onComicsMenuSelected(comics);
                         }
                     }
                 }

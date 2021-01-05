@@ -10,14 +10,7 @@ interface IComicsViewHolderCallback<T> {
      *
      * @param comicsId id del comics
      * @param position posizione del Viewholer
+     * @param action   azione scatenata sul comics
      */
-    void onComicsClick(T comicsId, int position);
-
-    /**
-     * Notifica la selezione del pulsante menu.
-     *
-     * @param comicsId id del comics
-     * @param position posizione del Viewholer
-     */
-    void onComicsMenuSelected(T comicsId, int position);
+    void onAction(T comicsId, int position, int action);
 }
