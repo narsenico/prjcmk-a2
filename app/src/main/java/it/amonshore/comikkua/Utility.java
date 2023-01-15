@@ -2,6 +2,7 @@ package it.amonshore.comikkua;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -13,10 +14,11 @@ import android.widget.EditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
-import java.lang.reflect.Array;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +32,7 @@ import androidx.annotation.Nullable;
 
 public class Utility {
 
-    public static  boolean isMainLoop() {
+    public static boolean isMainLoop() {
         return Looper.getMainLooper() == Looper.myLooper();
     }
 
@@ -178,7 +180,8 @@ public class Utility {
     }
 
     public interface ReplaceWithRegexCallback {
-        @NonNull String replace(@NonNull Matcher matcher);
+        @NonNull
+        String replace(@NonNull Matcher matcher);
     }
 
     public static String replaceWithRegex(@NonNull String regex, @NonNull String input, @NonNull ReplaceWithRegexCallback callback) {
@@ -219,7 +222,6 @@ public class Utility {
     }
 
     /**
-     *
      * @return true se l'external storage è accessibile in scrittura
      */
     public static boolean isExternalStorageWritable() {
@@ -230,9 +232,9 @@ public class Utility {
      * Restituisce una istanza di file il cui percorso è dato dall'external storage
      * se accessibile in scrittura, altrimenti dalla cartella dell'app interna.
      *
-     * @param context contesto
-     * @param fileName  nome del file (senza il percorso)
-     * @return  una istanza di File
+     * @param context  contesto
+     * @param fileName nome del file (senza il percorso)
+     * @return una istanza di File
      */
     public static File getExternalFile(Context context, String fileName) {
         if (isExternalStorageWritable()) {
@@ -243,13 +245,26 @@ public class Utility {
     }
 
     /**
-     *
-     * @param folderType    il tipo della cartella esterna in cui risiede il file (vedi Enviroment.DIRECTORY_xxx)
-     * @param fileName  nome del file
-     * @return  una istanza di File
+     * @param folderType il tipo della cartella esterna in cui risiede il file (vedi Enviroment.DIRECTORY_xxx)
+     * @param fileName   nome del file
+     * @return una istanza di File
      */
     public static File getExternalFile(String folderType, String fileName) {
         return new File(Environment.getExternalStoragePublicDirectory(folderType), fileName);
+    }
+
+    public static boolean moveFile(final File srcFile, final File dstFile) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Files.move(srcFile.toPath(), dstFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                return true;
+            } else {
+                return srcFile.renameTo(dstFile);
+            }
+        } catch (IOException ex) {
+            LogHelper.e("moveFile error", ex);
+            return false;
+        }
     }
 
     @NonNull

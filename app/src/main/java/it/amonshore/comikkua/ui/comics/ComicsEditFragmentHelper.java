@@ -32,6 +32,7 @@ import it.amonshore.comikkua.LiveDataEx;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.ICallback;
+import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
@@ -263,7 +264,7 @@ class ComicsEditFragmentHelper {
             preview.initial.setBackgroundResource(R.drawable.background_comics_initial_noborder);
         } else {
             preview.initial.setText("");
-            mGlideRequestManager.load(preview.comicsImageUri)
+            mGlideRequestManager.load(new File(preview.comicsImageUri.getPath()))
                     .apply(ImageHelper.getGlideCircleOptions())
                     .into(mComicsImageViewTarget);
         }
@@ -339,7 +340,8 @@ class ComicsEditFragmentHelper {
                 final File srcFile = new File(preview.comicsImageUri.getPath());
                 final File dstFile = new File(Uri.parse(mComics.comics.image).getPath());
                 LogHelper.d("======> move file from '%s' to '%s'", srcFile, dstFile);
-                if (!srcFile.renameTo(dstFile)) {
+//                if (!srcFile.renameTo(dstFile)) {
+                if (Utility.moveFile(srcFile, dstFile)) {
                     LogHelper.e("Error moving image temp file '%s' to files/", srcFile);
                 }
             } else {
