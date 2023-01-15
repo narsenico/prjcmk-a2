@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
@@ -28,8 +27,10 @@ import com.google.android.material.snackbar.Snackbar;
 import java.lang.ref.WeakReference;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
@@ -41,7 +42,6 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 import static it.amonshore.comikkua.data.comics.Comics.NO_COMICS_ID;
@@ -49,15 +49,16 @@ import static it.amonshore.comikkua.data.comics.Comics.NO_COMICS_ID;
 
 public class ComicsEditFragment extends Fragment {
 
-    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 583;
-
-    private OnNavigationFragmentListener mListener;
+//    private OnNavigationFragmentListener mListener;
 
     private ComicsViewModel mComicsViewModel;
     private ComicsEditFragmentHelper mHelper;
-    private long mComicsId;
 
-    private final ActivityResultLauncher<CropImageContractOptions> mCropImageLauncher = registerForActivityResult(new CropImageContract(), this::cropImageCallback);
+    private final ActivityResultLauncher<CropImageContractOptions> mCropImageLauncher =
+            registerForActivityResult(new CropImageContract(), this::cropImageCallback);
+
+    private final ActivityResultLauncher<String> mRequestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), this::requestPermissionCallback);
 
     public ComicsEditFragment() {
     }
@@ -67,7 +68,38 @@ public class ComicsEditFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setSharedElementEnterTransition(TransitionInflater.from(getContext())
                 .inflateTransition(android.R.transition.move));
-        setHasOptionsMenu(true);
+
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.menu_comics_edit, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                final int itemId = menuItem.getItemId();
+                if (itemId == R.id.saveComics) {// controllo che i dati siano validi
+                    mHelper.isValid(valid -> {
+                        if (valid) {
+                            LogHelper.d("SAVE isValid view=%s", getView());
+                            // eseguo il salvataggio in manera asincrona
+                            //  al termine navigo vergo la destinazione
+                            new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
+                                    .execute();
+                        }
+                    });
+
+                    return true;
+                } else if (itemId == R.id.changeImage) {
+                    grabImage();
+                    return true;
+                } else if (itemId == R.id.removeImage) {
+                    mHelper.setComicsImage(null);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -86,16 +118,16 @@ public class ComicsEditFragment extends Fragment {
                 Glide.with(this));
 
         // id del comics da editra, può essere NEW_COMICS_ID per la creazione di un nuovo comics
-        mComicsId = args.getComicsId();
+        final long comicsId = args.getComicsId();
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
-        mHelper.getRootView().findViewById(R.id.comics).setTransitionName("comics_tx_" + mComicsId);
+        mHelper.getRootView().findViewById(R.id.comics).setTransitionName("comics_tx_" + comicsId);
 
-        if (mComicsId == NEW_COMICS_ID) {
+        if (comicsId == NEW_COMICS_ID) {
             mHelper.setComics(requireContext(), null, savedInstanceState);
         } else {
-            LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(mComicsId), getViewLifecycleOwner(),
+            LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(comicsId), getViewLifecycleOwner(),
                     comicsWithReleases -> mHelper.setComics(requireContext(), comicsWithReleases, savedInstanceState));
         }
 
@@ -110,81 +142,27 @@ public class ComicsEditFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnNavigationFragmentListener) {
-            mListener = (OnNavigationFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnNavigationFragmentListener");
-        }
-    }
+//    @Override
+//    public void onAttach(@NonNull Context context) {
+//        super.onAttach(context);
+//        if (context instanceof OnNavigationFragmentListener) {
+//            mListener = (OnNavigationFragmentListener) context;
+//        } else {
+//            throw new RuntimeException(context
+//                    + " must implement OnNavigationFragmentListener");
+//        }
+//    }
+//
+//    @Override
+//    public void onDetach() {
+//        super.onDetach();
+//        mListener = null;
+//    }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_comics_edit, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.saveComics) {// controllo che i dati siano validi
-            mHelper.isValid(valid -> {
-                if (valid) {
-                    LogHelper.d("SAVE isValid view=%s", getView());
-                    // eseguo il salvataggio in manera asincrona
-                    //  al termine navigo vergo la destinazione
-                    new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
-                            .execute();
-                }
-            });
-
-            return true;
-        } else if (itemId == R.id.changeImage) {// TODO: refactoring
+    private void requestPermissionCallback(boolean isGranted) {
+        if (isGranted) {
             grabImage();
-            return true;
-        } else if (itemId == R.id.removeImage) {
-            mHelper.setComicsImage(null);
-            return true;
         }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO: refactoring
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-//            final CropImage.ActivityResult result = CropImage.getActivityResult(data);
-//            if (resultCode == RESULT_OK) {
-//                final Uri resultUri = result.getUri();
-//                LogHelper.d("Crop result saved to %s", resultUri);
-//                mHelper.setComicsImage(resultUri);
-//            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-//                LogHelper.e("Crop error", result.getError());
-//            }
-//        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        // TODO: refactoring
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//
-//        if (requestCode == MY_PERMISSIONS_REQUEST_CAMERA) {
-//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                grabImage();
-//            }
-//        }
     }
 
     private void grabImage() {
@@ -200,8 +178,8 @@ public class ComicsEditFragment extends Fragment {
                         .setTitle(R.string.permission_camera_comics_title)
                         .setMessage(R.string.permission_camera_comics_explanation)
                         .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                                requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                        MY_PERMISSIONS_REQUEST_CAMERA))
+                                mRequestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        )
                         .show();
             } else {
                 // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
@@ -228,7 +206,6 @@ public class ComicsEditFragment extends Fragment {
         if (result.isSuccessful()) {
             final String uriFilePath = result.getUriFilePath(requireContext(), true);
             final Uri resultUri = Uri.parse(uriFilePath);
-//            final Uri resultUri = result.getUriContent();
             LogHelper.d("Crop result saved to %s", resultUri);
             mHelper.setComicsImage(resultUri);
         } else {
@@ -236,6 +213,8 @@ public class ComicsEditFragment extends Fragment {
         }
     }
 
+    // TODO: è da sostituire, ma con cosa?
+    //  il metodo migliore è usare le coroutines di Kotlink, forse è il caso di migrare il fragment in kotlin???
     private static class InsertOrUpdateAsyncTask extends AsyncTask<Void, Void, Long> {
 
         private final WeakReference<View> mWeakView;
