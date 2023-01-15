@@ -23,11 +23,12 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.ui.ImageHelper;
 
-public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebComicsViewHolder> {
+public class AvailableComicsAdapter extends ListAdapter<AvailableComics, AvailableComicsViewHolder> {
 
     private SelectionTracker<String> mSelectionTracker;
     private IComicsViewHolderCallback<String> mComicsViewHolderCallback;
@@ -38,7 +39,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebC
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CmkWebComicsViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull AvailableComicsViewHolder holder, int position) {
         final AvailableComics item = getItem(position);
         if (item != null) {
             holder.bind(item, mSelectionTracker.isSelected(item.sourceId), mRequestManager);
@@ -49,8 +50,8 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebC
 
     @NonNull
     @Override
-    public CmkWebComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return CmkWebComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mComicsViewHolderCallback);
+    public AvailableComicsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return AvailableComicsViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mComicsViewHolderCallback);
     }
 
     public String getSelectionKey(int position) {
@@ -90,7 +91,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebC
 
     public interface ComicsCallback {
 
-        void onComicsClick(@NonNull AvailableComics comics);
+        void onComicsFollowed(@NonNull AvailableComics comics);
 
         void onComicsMenuSelected(@NonNull AvailableComics comics);
     }
@@ -122,24 +123,20 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebC
 
         AvailableComicsAdapter build() {
             final AvailableComicsAdapter adapter = new AvailableComicsAdapter();
-            adapter.mComicsViewHolderCallback = new IComicsViewHolderCallback<String>() {
-                @Override
-                public void onComicsClick(String comicsId, int position) {
-                    // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
-                    if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
-                        final AvailableComics comics = adapter.getItem(position);
-                        if (comics != null) {
-                            comicsCallback.onComicsClick(comics);
-                        }
-                    }
-                }
-
-                @Override
-                public void onComicsMenuSelected(String comicsId, int position) {
+            adapter.mComicsViewHolderCallback = (comicsId, position, action) -> {
+                if (action == Constants.VIEWHOLDER_ACTION_MENU) {
                     if (comicsCallback != null) {
                         final AvailableComics comics = adapter.getItem(position);
                         if (comics != null) {
                             comicsCallback.onComicsMenuSelected(comics);
+                        }
+                    }
+                } else if (action == Constants.VIEWHOLDER_ACTION_FOLLOW) {
+                    // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
+                    if (comicsCallback != null && !adapter.mSelectionTracker.hasSelection()) {
+                        final AvailableComics comics = adapter.getItem(position);
+                        if (comics != null) {
+                            comicsCallback.onComicsFollowed(comics);
                         }
                     }
                 }
@@ -153,7 +150,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, CmkWebC
                     "comics-selection",
                     mRecyclerView,
                     itemKeyProvider,
-                    new ComicsItemDetailsLookup<>(mRecyclerView, CmkWebComicsViewHolder.class),
+                    new ComicsItemDetailsLookup<>(mRecyclerView, AvailableComicsViewHolder.class),
                     StorageStrategy.createStringStorage());
 
 //            if (mOnItemActivatedListener != null) {

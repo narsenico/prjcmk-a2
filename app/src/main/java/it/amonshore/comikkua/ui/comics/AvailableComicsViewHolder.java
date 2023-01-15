@@ -4,28 +4,29 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
 
-class CmkWebComicsViewHolder extends IViewHolderWithDetails<String> {
+class AvailableComicsViewHolder extends IViewHolderWithDetails<String> {
     private final TextView mInitial;
     private final TextView mName;
     private final TextView mPublisher;
     private final TextView mAuthors;
     private final TextView mNotes;
     private final TextView mLast;
-    private final TextView mNext;
-    private final TextView mMissing;
+    private final Button mFollow;
     private String mId;
 
-    private CmkWebComicsViewHolder(View itemView, final IComicsViewHolderCallback<String> callback) {
+    private AvailableComicsViewHolder(View itemView, final IComicsViewHolderCallback<String> callback) {
         super(itemView);
         mInitial = itemView.findViewById(R.id.txt_comics_initial);
         mName = itemView.findViewById(R.id.txt_comics_name);
@@ -33,14 +34,15 @@ class CmkWebComicsViewHolder extends IViewHolderWithDetails<String> {
         mAuthors = itemView.findViewById(R.id.txt_comics_authors);
         mNotes = itemView.findViewById(R.id.txt_comics_notes);
         mLast = itemView.findViewById(R.id.txt_comics_release_last);
-        mNext = itemView.findViewById(R.id.txt_comics_release_next);
-        mMissing = itemView.findViewById(R.id.txt_comics_release_missing);
+        mFollow = itemView.findViewById(R.id.btn_follow);
 
         final View menu = itemView.findViewById(R.id.img_comics_menu);
         if (callback != null) {
-            itemView.setOnClickListener(v -> callback.onComicsClick(mId, getLayoutPosition()));
+            mFollow.setOnClickListener(v -> callback.onAction(mId, getLayoutPosition(),
+                    Constants.VIEWHOLDER_ACTION_FOLLOW));
             menu.setVisibility(View.VISIBLE);
-            menu.setOnClickListener(v -> callback.onComicsMenuSelected(mId, getLayoutPosition()));
+            menu.setOnClickListener(v -> callback.onAction(mId, getLayoutPosition(),
+                    Constants.VIEWHOLDER_ACTION_MENU));
         } else {
             itemView.setOnClickListener(null);
             menu.setVisibility(View.INVISIBLE);
@@ -114,12 +116,11 @@ class CmkWebComicsViewHolder extends IViewHolderWithDetails<String> {
         mAuthors.setText("");
         mNotes.setText("");
         mLast.setText("");
-        mNext.setText("");
-        mMissing.setText("");
+        mFollow.setEnabled(true);
     }
 
-    static CmkWebComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IComicsViewHolderCallback<String> callback) {
-        return new CmkWebComicsViewHolder(inflater.inflate(R.layout.listitem_comics, parent, false), callback);
+    static AvailableComicsViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IComicsViewHolderCallback<String> callback) {
+        return new AvailableComicsViewHolder(inflater.inflate(R.layout.listitem_comics_available, parent, false), callback);
     }
 
 }

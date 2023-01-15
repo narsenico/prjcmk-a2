@@ -20,8 +20,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
+import com.canhub.cropper.CropImage;
+import com.canhub.cropper.CropImageView;
 
 import java.lang.ref.WeakReference;
 
@@ -43,6 +43,7 @@ import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import kotlin.NotImplementedError;
 
 import static android.app.Activity.RESULT_OK;
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
@@ -135,95 +136,100 @@ public class ComicsEditFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.saveComics:
-                // controllo che i dati siano validi
-                mHelper.isValid(valid -> {
-                    if (valid) {
-                        LogHelper.d("SAVE isValid view=%s", getView());
-                        // eseguo il salvataggio in manera asincrona
-                        //  al termine navigo vergo la destinazione
-                        new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
-                                .execute();
-                    }
-                });
-
-                return true;
-            case R.id.changeImage:
-                grabImage();
-                return true;
-            case R.id.removeImage:
-                mHelper.setComicsImage(null);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+        // TODO: refactoring
+//        switch (item.getItemId()) {
+//            case R.id.saveComics:
+//                // controllo che i dati siano validi
+//                mHelper.isValid(valid -> {
+//                    if (valid) {
+//                        LogHelper.d("SAVE isValid view=%s", getView());
+//                        // eseguo il salvataggio in manera asincrona
+//                        //  al termine navigo vergo la destinazione
+//                        new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
+//                                .execute();
+//                    }
+//                });
+//
+//                return true;
+//            case R.id.changeImage:
+//                grabImage();
+//                return true;
+//            case R.id.removeImage:
+//                mHelper.setComicsImage(null);
+//                return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+        throw new NotImplementedError();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            final CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
-                final Uri resultUri = result.getUri();
-                LogHelper.d("Crop result saved to %s", resultUri);
-                mHelper.setComicsImage(resultUri);
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                LogHelper.e("Crop error", result.getError());
-            }
-        }
+        // TODO: refactoring
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+//            final CropImage.ActivityResult result = CropImage.getActivityResult(data);
+//            if (resultCode == RESULT_OK) {
+//                final Uri resultUri = result.getUri();
+//                LogHelper.d("Crop result saved to %s", resultUri);
+//                mHelper.setComicsImage(resultUri);
+//            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+//                LogHelper.e("Crop error", result.getError());
+//            }
+//        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == MY_PERMISSIONS_REQUEST_CAMERA) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                grabImage();
-            }
-        }
+        // TODO: refactoring
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//
+//        if (requestCode == MY_PERMISSIONS_REQUEST_CAMERA) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                grabImage();
+//            }
+//        }
     }
 
-    private void grabImage() {
-        final Context context = requireContext();
-
-        if (ContextCompat.checkSelfPermission(context,
-                Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // non ho il permesso: contollo se posso mostrare il perché serve
-            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-                new AlertDialog.Builder(context, R.style.DialogTheme)
-                        .setTitle(R.string.permission_camera_comics_title)
-                        .setMessage(R.string.permission_camera_comics_explanation)
-                        .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                                requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                        MY_PERMISSIONS_REQUEST_CAMERA))
-                        .show();
-            } else {
-                // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
-
-                final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_camera_comics_denied,
-                        Snackbar.LENGTH_LONG);
-                snackbar.setAction(R.string.settings, v ->
-                        startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                .setData(Uri.fromParts("package", context.getPackageName(), null)))
-                );
-                snackbar.show();
-            }
-        } else {
-            // ho il permesso: avvio la procedura di selezione e crop dell'immagine
-            // il risultato è gestito in onActivityResult
-            // l'immagine è salvata nella cache
-            CropImage.activity()
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .setCropShape(CropImageView.CropShape.OVAL)
-                    .setFixAspectRatio(true)
-                    .start(requireContext(), this);
-        }
-    }
+// TODO: refactoring
+//    private void grabImage() {
+//        final Context context = requireContext();
+//
+//        if (ContextCompat.checkSelfPermission(context,
+//                Manifest.permission.CAMERA)
+//                != PackageManager.PERMISSION_GRANTED) {
+//
+//            // non ho il permesso: contollo se posso mostrare il perché serve
+//            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+//                new AlertDialog.Builder(context, R.style.DialogTheme)
+//                        .setTitle(R.string.permission_camera_comics_title)
+//                        .setMessage(R.string.permission_camera_comics_explanation)
+//                        .setPositiveButton(android.R.string.ok, (dialog, which) ->
+//                                requestPermissions(new String[]{Manifest.permission.CAMERA},
+//                                        MY_PERMISSIONS_REQUEST_CAMERA))
+//                        .show();
+//            } else {
+//                // non ho il permesso: l'utente può darlo accedendo direttamente ai settings dell'app
+//
+//                final Snackbar snackbar = Snackbar.make(requireView(), R.string.permission_camera_comics_denied,
+//                        Snackbar.LENGTH_LONG);
+//                snackbar.setAction(R.string.settings, v ->
+//                        startActivity(new Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+//                                .setData(Uri.fromParts("package", context.getPackageName(), null)))
+//                );
+//                snackbar.show();
+//            }
+//        } else {
+//            // ho il permesso: avvio la procedura di selezione e crop dell'immagine
+//            // il risultato è gestito in onActivityResult
+//            // l'immagine è salvata nella cache
+//            CropImage.activity()
+//                    .setGuidelines(CropImageView.Guidelines.ON)
+//                    .setCropShape(CropImageView.CropShape.OVAL)
+//                    .setFixAspectRatio(true)
+//                    .start(requireContext(), this);
+//        }
+//    }
 
     private static class InsertOrUpdateAsyncTask extends AsyncTask<Void, Void, Long> {
 

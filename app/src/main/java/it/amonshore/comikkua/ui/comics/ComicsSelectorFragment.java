@@ -2,6 +2,7 @@ package it.amonshore.comikkua.ui.comics;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -9,6 +10,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -17,7 +19,6 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,13 +31,12 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.data.web.CmkWebViewModelKt;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+import it.amonshore.comikkua.ui.TextWatcherAdapter;
 import it.amonshore.comikkua.workers.RefreshComicsWorker;
 
 /**
  * Mostra tutti i comics disponibili per l'auto aggiornamento.
  * Serve per far selezionare all'utnete un nuovo comics da inserire nel proprio elenco.
- * <p>
- * TODO: leggere elenco comcis dalla rete (rendere generico adapter facendogli gestire anche AvailableComics o fare un adapter nuovo?)
  */
 public class ComicsSelectorFragment extends Fragment {
 
@@ -60,16 +60,18 @@ public class ComicsSelectorFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_comics_selector, container, false);
-
         final Context context = requireContext();
+        final View view = inflater.inflate(R.layout.fragment_comics_selector, container, false);
+        final EditText txtSearch = view.findViewById(R.id.txt_search);
+        final View emptyView = view.findViewById(R.id.empty);
+
         mRecyclerView = view.findViewById(R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         mAdapter = new AvailableComicsAdapter.Builder(mRecyclerView)
                 .withComicsCallback(new AvailableComicsAdapter.ComicsCallback() {
                     @Override
-                    public void onComicsClick(@NonNull AvailableComics comics) {
+                    public void onComicsFollowed(@NonNull AvailableComics comics) {
                         // TODO
                     }
 
@@ -81,37 +83,21 @@ public class ComicsSelectorFragment extends Fragment {
                 .withGlide(Glide.with(this))
                 .build();
 
-//        // recupero il ViewModel per l'accesso ai dati
-//        // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
-//        mCmkWebViewModel = new ViewModelProvider(requireActivity())
-//                .get(CmkWebViewModel.class);
-//        // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-//        mCmkWebViewModel.getFilteredAvailableComics().observe(getViewLifecycleOwner(), data -> {
-//            LogHelper.d("comics viewmodel paging data changed");
-//            mAdapter.submitData(getLifecycle(), data);
-//        });
-//
-////        // ripristino la selezione salvata in onSaveInstanceState
-////        mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
-//
-//        // la prima volta carico tutti i dati
-//        mCmkWebViewModel.setFilter(null);
-
         mCmkWebViewModel = new ViewModelProvider(requireActivity())
                 .get(CmkWebViewModelKt.class);
 
-//        mCmkWebViewModel.getAvailableComics().observe(getViewLifecycleOwner(), data -> {
-//            LogHelper.d("comics viewmodel paging data changed");
-//            mAdapter.submitData(getLifecycle(), data);
-//        });
-
-        mCmkWebViewModel.getAvailableComics().observe(getViewLifecycleOwner(), data -> {
+        mCmkWebViewModel.getFilteredAvailableComics().observe(getViewLifecycleOwner(), data -> {
             LogHelper.d("submitList count=%s", data == null ? -1 : data.size());
             mAdapter.submitList(data);
+            emptyView.setVisibility((data == null || data.size() == 0) ? View.VISIBLE : View.GONE);
         });
 
-//        // TODO: la prima volta non deve caricare nulla
-//        mCmkWebViewModel.useLastFilter();
+        txtSearch.addTextChangedListener(new TextWatcherAdapter() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                mCmkWebViewModel.setFilter(s.toString());
+            }
+        });
 
         return view;
     }
@@ -174,37 +160,6 @@ public class ComicsSelectorFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_comics_selector_fragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
-
-        final MenuItem searchItem = menu.findItem(R.id.searchComics);
-        final SearchView searchView = (SearchView) searchItem.getActionView();
-
-        // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
-
-        // TODO: al cambio di configurazione (es orientamento) la query viene persa
-        //  è il viewModel che deve tenere memorizzata l'ultima query,
-        //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
-
-        if (!TextUtils.isEmpty(mCmkWebViewModel.getFilter())) {
-            // lo faccio prima di aver impostato i listener così non scateno più nulla
-            searchItem.expandActionView();
-            searchView.setQuery(mCmkWebViewModel.getFilter(), false);
-            searchView.clearFocus();
-        }
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                LogHelper.d("onQueryTextSubmit");
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                LogHelper.d("setFilter %s", newText);
-                mCmkWebViewModel.setFilter(newText); // TODO: ok ma aggiungere debounce
-                return true;
-            }
-        });
     }
 
     @Override

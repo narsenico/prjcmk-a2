@@ -65,6 +65,8 @@
     <string name="comics_price">Price</string>
     <string name="comics_periodicity">Periodicity</string>
     <string name="comics_notes">Notes</string>
+    <string name="comics_follow">Follow</string>
+    <string name="comics_following">Following</string>
 
     <string name="release_numbers">Number</string>
     <string name="release_numbers_helper">Single or intervals of numbers (eg: 1,4&#8211;6)</string>

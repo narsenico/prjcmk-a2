@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.JsonWriter;
 
-import com.bumptech.glide.Glide;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,11 +20,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -58,6 +54,9 @@ public class BackupHelper {
     private final static String FIELD_NOTES = "notes";
     private final static String FIELD_IMAGE_DATA = "image_data";
     private final static String FIELD_IMAGE_URI = "image_uri";
+    private final static String FIELD_SOURCE_ID = "source_id";
+    private final static String FIELD_VERSION = "version";
+    private final static String FIELD_SELECTED = "selected";
     private final static String FIELD_RELEASES = "releases";
     private final static String FIELD_NUMBER = "number";
     private final static String FIELD_DATE = "date";
@@ -191,6 +190,11 @@ public class BackupHelper {
         comics.reserved = Objects.equals(TRUE, object.getString(FIELD_RESERVED));
         comics.notes = tryGetString(object, FIELD_NOTES);
         comics.image = tryGetString(object, FIELD_IMAGE_URI);
+        comics.sourceId = tryGetString(object, FIELD_SOURCE_ID);
+        comics.version = tryGetInt(object, FIELD_VERSION, 0);
+        // visto che si esportano solo i selezionati, presumo che quelli importati siano anch'essi selezionati
+        comics.selected = tryGetBoolean(object, FIELD_SELECTED, true);
+
         cwr.comics = comics;
 
         final JSONArray arrReleases = object.getJSONArray(FIELD_RELEASES);
@@ -246,6 +250,14 @@ public class BackupHelper {
         return obj.isNull(field) ? null : obj.getString(field);
     }
 
+    private int tryGetInt(JSONObject obj, String field, int def) throws JSONException {
+        return obj.isNull(field) ? def : obj.getInt(field);
+    }
+
+    private boolean tryGetBoolean(JSONObject obj, String field, boolean def) throws JSONException {
+        return obj.isNull(field) ? def : obj.getString(field).equals(TRUE);
+    }
+
     private String tryGetDate(JSONObject obj, String field) throws JSONException {
         return obj.isNull(field) ? null : obj.getString(field).replaceAll("\\-", "");
     }
@@ -277,6 +289,7 @@ public class BackupHelper {
     private int exportToStream(@NonNull Context context, @NonNull OutputStream stream)
             throws IOException {
         final ContentResolver contentResolver = context.getContentResolver();
+        // estrae solo i comics selezionati
         final List<ComicsWithReleases> comicsList = mComicsDao.getRawComicsWithReleases();
         final JsonWriter writer = new JsonWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
         writer.beginArray();
@@ -304,6 +317,9 @@ public class BackupHelper {
         writer.name(FIELD_PERIODICITY).value(comics.periodicity);
         writer.name(FIELD_RESERVED).value(comics.reserved ? TRUE : FALSE);
         writer.name(FIELD_NOTES).value(comics.notes);
+        writer.name(FIELD_SOURCE_ID).value(comics.sourceId);
+        writer.name(FIELD_VERSION).value(comics.version);
+        writer.name(FIELD_SELECTED).value(comics.selected ? TRUE : FALSE);
 
         if (comics.hasImage()) {
             final Uri uri = Uri.parse(comics.image);
