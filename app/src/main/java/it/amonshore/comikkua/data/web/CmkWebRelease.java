@@ -12,5 +12,4 @@ public class CmkWebRelease {
     public int number;
     @SerializedName("release_date")
     public String date;
-
 }

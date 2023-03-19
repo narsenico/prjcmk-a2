@@ -36,11 +36,13 @@ android {
             dimension "develop"
             applicationId "it.amonshore.comikkua.neon"
             versionName "1.0-neon"
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://localhost:5000/\"") // TODO: da impostare
         }
         tryme {
             dimension "develop"
             applicationId "it.amonshore.comikkua.tryme"
             versionName "1.0-tryme"
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://192.168.1.151:5000/\"")
         }
     }
     compileOptions {
@@ -58,10 +60,13 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.android.volley:volley:1.2.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+
+    // Coroutine
+    def coroutinesVersion = '1.6.4'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
     // Support
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
@@ -125,6 +130,13 @@ dependencies {
     implementation "com.google.firebase:firebase-firestore-ktx:$firebaseVersion"
     implementation 'com.google.firebase:firebase-analytics:21.2.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
+
+    // Retrofit
+    def retrofitVersion = '2.9.0'
+    def okhttpLoggingInterceptorVersion = '4.9.0'
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpLoggingInterceptorVersion"
 
     // Testing
     androidTestImplementation 'androidx.test:core:1.5.0'

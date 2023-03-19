@@ -41,6 +41,7 @@ import it.amonshore.comikkua.ui.BottomSheetDialogHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
 import it.amonshore.comikkua.ui.ShareHelper;
 import it.amonshore.comikkua.workers.UpdateReleasesWorker;
+import it.amonshore.comikkua.workers.WorkerHelperKt;
 
 
 public class ReleasesFragment extends Fragment {
@@ -161,22 +162,22 @@ public class ReleasesFragment extends Fragment {
                     public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
                         BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_release,
                                 ShareHelper.formatRelease(context, release), id -> {
-                            if (id == R.id.gotoComics) {
-                                openComicsDetail(view, release);
-                            } else if (id == R.id.share) {
-                                ShareHelper.shareRelease(requireActivity(), release);
-                            } else if (id == R.id.deleteRelease) {
-                                deleteRelease(release);
-                            } else if (id == R.id.search_starshop) {
-                                ShareHelper.shareOnStarShop(requireActivity(), release);
-                            } else if (id == R.id.search_amazon) {
-                                ShareHelper.shareOnAmazon(requireActivity(), release);
-                            } else if (id == R.id.search_popstore) {
-                                ShareHelper.shareOnPopStore(requireActivity(), release);
-                            } else if (id == R.id.search_google) {
-                                ShareHelper.shareOnGoogle(requireActivity(), release);
-                            }
-                        });
+                                    if (id == R.id.gotoComics) {
+                                        openComicsDetail(view, release);
+                                    } else if (id == R.id.share) {
+                                        ShareHelper.shareRelease(requireActivity(), release);
+                                    } else if (id == R.id.deleteRelease) {
+                                        deleteRelease(release);
+                                    } else if (id == R.id.search_starshop) {
+                                        ShareHelper.shareOnStarShop(requireActivity(), release);
+                                    } else if (id == R.id.search_amazon) {
+                                        ShareHelper.shareOnAmazon(requireActivity(), release);
+                                    } else if (id == R.id.search_popstore) {
+                                        ShareHelper.shareOnPopStore(requireActivity(), release);
+                                    } else if (id == R.id.search_google) {
+                                        ShareHelper.shareOnGoogle(requireActivity(), release);
+                                    }
+                                });
                     }
                 })
                 .withGlide(Glide.with(this))
@@ -277,6 +278,21 @@ public class ReleasesFragment extends Fragment {
     }
 
     private void performUpdate() {
+        mSwipeRefreshLayout.setRefreshing(true);
+        WorkerHelperKt.enqueueUpdateReleasesWorker(requireActivity(),
+                data -> {
+                    LogHelper.d("Releases updated data=%s", data);
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    onUpdateSuccess(data);
+                },
+                () -> {
+                    LogHelper.w("Failing updating releases");
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+        );
+    }
+
+    private void _performUpdate() {
         // prima dell'aggiornamento elimino eventuali release rimosse nel caso fosse ancora in corso l'undo
         mReleaseViewModel.deleteRemoved();
 
@@ -319,7 +335,7 @@ public class ReleasesFragment extends Fragment {
         });
     }
 
-    private void onUpdateSuccess(Data data) {
+    private void onUpdateSuccess(@NonNull Data data) {
         final int newReleaseCount = data.getInt(UpdateReleasesWorker.RELEASE_COUNT, 0);
         final String tag = data.getString(UpdateReleasesWorker.RELEASE_TAG);
 

@@ -18,6 +18,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import it.amonshore.comikkua.BuildConfig;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsDao;
+import it.amonshore.comikkua.data.comics.ComicsDaoKt;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.DatedRelease;
 import it.amonshore.comikkua.data.release.LostRelease;
@@ -26,6 +27,7 @@ import it.amonshore.comikkua.data.release.NotPurchasedRelease;
 import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.data.release.ReleaseDao;
+import it.amonshore.comikkua.data.release.ReleaseDaoKt;
 import it.amonshore.comikkua.data.web.AvailableComics;
 import it.amonshore.comikkua.data.web.CmkWebDao;
 import it.amonshore.comikkua.data.web.CmkWebDaoKt;
@@ -39,7 +41,11 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
 
+    public abstract ComicsDaoKt comicsDaoKt();
+
     public abstract ReleaseDao releaseDao();
+
+    public abstract ReleaseDaoKt releaseDaoKt();
 
     public abstract CmkWebDao cmkWebDao();
 
