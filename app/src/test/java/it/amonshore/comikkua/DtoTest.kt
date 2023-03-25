@@ -9,7 +9,6 @@ class DtoTest {
     private fun createAvailableComics(sourceId: String, name: String) = AvailableComics(
         sourceId = sourceId,
         name = name,
-        searchableName = name,
         publisher = "",
         version = 0,
     )
