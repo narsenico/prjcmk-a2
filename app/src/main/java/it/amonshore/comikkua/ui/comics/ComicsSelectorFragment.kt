@@ -53,7 +53,7 @@ class ComicsSelectorFragment : Fragment() {
         _adapter = AvailableComicsAdapter.Builder(_recyclerView)
             .withComicsCallback(object : AvailableComicsAdapter.ComicsCallback {
                 override fun onComicsFollowed(comics: AvailableComics) {
-                    // TODO
+                    _cmkWebViewModel.followComics(comics)
                 }
 
                 override fun onComicsMenuSelected(comics: AvailableComics) {

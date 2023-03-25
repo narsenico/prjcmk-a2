@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.*
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.containsAll
+import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.toComics
 import it.amonshore.comikkua.splitToWords
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -12,9 +14,11 @@ import kotlinx.coroutines.launch
 
 private const val FILTER_DEBOUNCE = 300L;
 
+@Deprecated("Modificare nome in ComicsSelectorViewModel")
 class CmkWebViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _repository = CmkWebRepositoryKt(application)
+    private val _cmkWebRepository = CmkWebRepositoryKt(application)
+    private val _comicsRepository = ComicsRepositoryKt(application)
     private val _filter = MutableLiveData<String>()
 
     private var _lastFilter: String = ""
@@ -63,11 +67,11 @@ class CmkWebViewModel(application: Application) : AndroidViewModel(application) 
                 // e con lei anche il FLow creato al suo interno
                 _filteringJob = viewModelScope.launch {
                     if (filter.isEmpty()) {
-                        _repository.getAvailableComicsFlow()
+                        _cmkWebRepository.getAvailableComicsFlow()
                             .catch { LogHelper.e("Error reading available comics", it) }
                             .collectLatest { emit(it) }
                     } else {
-                        _repository.getAvailableComicsFlow()
+                        _cmkWebRepository.getAvailableComicsFlow()
                             .map { data ->
                                 data.filter { comics ->
                                     comics.searchableName.containsAll(
@@ -80,6 +84,11 @@ class CmkWebViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
             }
+    }
+
+    fun followComics(comics: AvailableComics) = viewModelScope.launch {
+        _comicsRepository.insert(comics.toComics())
+        // TODO: come aggiornare l'ui perché rifletta il cambiamento?
     }
 }
 

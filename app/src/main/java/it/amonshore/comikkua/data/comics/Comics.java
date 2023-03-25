@@ -69,6 +69,7 @@ public class Comics {
      * @param name il nome del comics
      * @return il comics
      */
+    @NonNull
     public static Comics create(@NonNull String name) {
         final Comics comics = new Comics();
         comics.name = name;
