@@ -13,6 +13,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Observer
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,7 +41,7 @@ class ComicsDetailFragment : Fragment() {
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var _adapter: ReleaseAdapter
-    private lateinit var mComics: ComicsWithReleases
+    private lateinit var _comics: ComicsWithReleases
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +55,6 @@ class ComicsDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_comics_detail, container, false)
-        val actionModeName = javaClass.simpleName + "_actionMode"
         val context = requireContext()
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
@@ -68,154 +68,17 @@ class ComicsDetailFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.list).apply {
             layoutManager = LinearLayoutManager(context)
         }
-        val txtInitial = view.findViewById<TextView>(R.id.txt_comics_initial)
-        val txtName = view.findViewById<TextView>(R.id.txt_comics_name)
-        val txtPublisher = view.findViewById<TextView>(R.id.txt_comics_publisher)
-        val txtAuthors = view.findViewById<TextView>(R.id.txt_comics_authors)
-        val txtNotes = view.findViewById<TextView>(R.id.txt_comics_notes)
-        val txtLast = view.findViewById<TextView>(R.id.txt_comics_release_last)
-        val txtNext = view.findViewById<TextView>(R.id.txt_comics_release_next)
-        val txtMissing = view.findViewById<TextView>(R.id.txt_comics_release_missing)
-
-        val actionModeController: ActionModeController =
-            object : ActionModeController(R.menu.menu_releases_selected) {
-                override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                    val tracker = _adapter.selectionTracker
-                    when (item.itemId) {
-                        R.id.purchaseReleases -> {
-                            if (tracker.hasSelection()) {
-                                // TODO: considerare le multi release
-                                _releaseViewModel.togglePurchased(tracker.selection)
-                            }
-                            // mantengo la selezione
-                            return true
-                        }
-                        R.id.orderReleases -> {
-                            if (tracker.hasSelection()) {
-                                // TODO: considerare le multi release
-                                _releaseViewModel.toggleOrdered(tracker.selection)
-                            }
-                            // mantengo la selezione
-                            return true
-                        }
-                        R.id.deleteReleases -> {
-                            if (tracker.hasSelection()) {
-                                // prima elimino eventuali release ancora in fase di undo
-                                _releaseViewModel.deleteRemoved()
-                                _releaseViewModel.remove(tracker.selection) { count: Int ->
-                                    showUndo(
-                                        count
-                                    )
-                                }
-                            }
-                            tracker.clearSelection()
-                            return true
-                        }
-                        R.id.shareReleases -> {
-                            LiveDataEx.observeOnce(
-                                _releaseViewModel.getComicsReleases(tracker.selection),
-                                viewLifecycleOwner
-                            ) { items: List<ComicsRelease?>? ->
-                                ShareHelper.shareReleases(
-                                    requireActivity(),
-                                    items!!
-                                )
-                            }
-                            // mantengo la selezione
-                            return true
-                        }
-                    }
-                    return false
-                }
-
-                override fun onDestroyActionMode(mode: ActionMode) {
-                    // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
-                    _adapter.selectionTracker.clearSelection()
-                    super.onDestroyActionMode(mode)
-                }
-            }
-
-        _adapter = ReleaseAdapter.Builder(recyclerView)
-            .withOnItemSelectedListener { _, size ->
-                if (size == 0) {
-                    _listener.onFragmentRequestActionMode(null, actionModeName, null)
-                } else {
-                    _listener.onFragmentRequestActionMode(
-                        actionModeController,
-                        actionModeName,
-                        getString(R.string.title_selected, size)
-                    )
-                }
-            }
-            .withReleaseCallback(object : ReleaseCallback {
-                override fun onReleaseClick(release: ComicsRelease) {
-                    openEdit(view, release)
-                }
-
-                override fun onReleaseTogglePurchase(release: ComicsRelease) {
-                    _releaseViewModel.updatePurchased(
-                        !release.release.purchased,
-                        release.release.id
-                    )
-                }
-
-                override fun onReleaseToggleOrder(release: ComicsRelease) {
-                    _releaseViewModel.updateOrdered(!release.release.ordered, release.release.id)
-                }
-
-                override fun onReleaseMenuSelected(release: ComicsRelease) {
-                    // non gestito
-                }
-            }) // uso la versione "lite" con il layout per gli item più compatta
-            .useLite()
-            .build()
+        val actionModeController = createActionModeController()
+        val actionModeName = javaClass.simpleName + "_actionMode"
+        _adapter = createReleaseAdapter(
+            recyclerView,
+            actionModeName,
+            actionModeController,
+            view
+        )
 
         _comicsViewModel.getComicsWithReleases(_comicsId)
-            .observe(viewLifecycleOwner) { comics ->
-                mComics = comics ?: throw NullPointerException("comics cannot be null")
-                txtName.text = comics.comics.name
-                txtPublisher.text = comics.comics.publisher
-                txtAuthors.text = comics.comics.authors
-                txtNotes.text = comics.comics.notes
-                if (comics.comics.hasImage()) {
-                    txtInitial.text = ""
-                    Glide.with(this)
-                        .load(Uri.parse(comics.comics.image))
-                        .apply(ImageHelper.getGlideCircleOptions())
-                        .into(DrawableTextViewTarget(txtInitial))
-                } else {
-                    txtInitial.text = comics.comics.initial
-                }
-                val lastRelease = comics.lastPurchasedRelease
-                txtLast.text =
-                    if (lastRelease == null) context.getString(R.string.release_last_none) else context.getString(
-                        R.string.release_last,
-                        lastRelease.number
-                    )
-                val nextRelease = comics.nextToPurchaseRelease
-                if (nextRelease != null) {
-                    if (nextRelease.date != null) {
-                        // TODO: non mi piace, dovrei mostrare la data solo se futura e nel formato ddd dd MMM
-                        txtNext.text = context.getString(
-                            R.string.release_next_dated, nextRelease.number,
-                            DateFormatterHelper.toHumanReadable(
-                                context,
-                                nextRelease.date,
-                                DateFormatterHelper.STYLE_SHORT
-                            )
-                        )
-                    } else {
-                        txtNext.text = context.getString(
-                            R.string.release_next,
-                            nextRelease.number
-                        )
-                    }
-                } else {
-                    txtNext.text = context.getString(R.string.release_next_none)
-                }
-                val missingCount = comics.notPurchasedReleaseCount
-                txtMissing.text = context.getString(R.string.release_missing, missingCount)
-            }
+            .observe(viewLifecycleOwner, createComicsWithReleasesObserver(view))
 
         _releaseViewModel.getReleaseViewModelItems(_comicsId)
             .observe(viewLifecycleOwner) { items ->
@@ -281,12 +144,168 @@ class ComicsDetailFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    private fun createReleaseAdapter(
+        recyclerView: RecyclerView,
+        actionModeName: String,
+        actionModeController: ActionModeController,
+        view: View
+    ) = ReleaseAdapter.Builder(recyclerView)
+        .withOnItemSelectedListener { _, size ->
+            if (size == 0) {
+                _listener.onFragmentRequestActionMode(null, actionModeName, null)
+            } else {
+                _listener.onFragmentRequestActionMode(
+                    actionModeController,
+                    actionModeName,
+                    getString(R.string.title_selected, size)
+                )
+            }
+        }
+        .withReleaseCallback(object : ReleaseCallback {
+            override fun onReleaseClick(release: ComicsRelease) {
+                openEdit(view, release)
+            }
+
+            override fun onReleaseTogglePurchase(release: ComicsRelease) {
+                _releaseViewModel.updatePurchased(
+                    !release.release.purchased,
+                    release.release.id
+                )
+            }
+
+            override fun onReleaseToggleOrder(release: ComicsRelease) {
+                _releaseViewModel.updateOrdered(!release.release.ordered, release.release.id)
+            }
+
+            override fun onReleaseMenuSelected(release: ComicsRelease) {
+                // non gestito
+            }
+        }) // uso la versione "lite" con il layout per gli item più compatta
+        .useLite()
+        .build()
+
+    private fun createActionModeController() =
+        object : ActionModeController(R.menu.menu_releases_selected) {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                val tracker = _adapter.selectionTracker
+                when (item.itemId) {
+                    R.id.purchaseReleases -> {
+                        if (tracker.hasSelection()) {
+                            // TODO: considerare le multi release
+                            _releaseViewModel.togglePurchased(tracker.selection)
+                        }
+                        // mantengo la selezione
+                        return true
+                    }
+                    R.id.orderReleases -> {
+                        if (tracker.hasSelection()) {
+                            // TODO: considerare le multi release
+                            _releaseViewModel.toggleOrdered(tracker.selection)
+                        }
+                        // mantengo la selezione
+                        return true
+                    }
+                    R.id.deleteReleases -> {
+                        if (tracker.hasSelection()) {
+                            // prima elimino eventuali release ancora in fase di undo
+                            _releaseViewModel.deleteRemoved()
+                            _releaseViewModel.remove(tracker.selection) { count: Int ->
+                                showUndo(
+                                    count
+                                )
+                            }
+                        }
+                        tracker.clearSelection()
+                        return true
+                    }
+                    R.id.shareReleases -> {
+                        LiveDataEx.observeOnce(
+                            _releaseViewModel.getComicsReleases(tracker.selection),
+                            viewLifecycleOwner
+                        ) { items: List<ComicsRelease?>? ->
+                            ShareHelper.shareReleases(
+                                requireActivity(),
+                                items!!
+                            )
+                        }
+                        // mantengo la selezione
+                        return true
+                    }
+                }
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {
+                // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
+                _adapter.selectionTracker.clearSelection()
+                super.onDestroyActionMode(mode)
+            }
+        }
+
+    private fun createComicsWithReleasesObserver(view: View): Observer<ComicsWithReleases?> {
+        val context = requireContext()
+        val txtInitial = view.findViewById<TextView>(R.id.txt_comics_initial)
+        val txtName = view.findViewById<TextView>(R.id.txt_comics_name)
+        val txtPublisher = view.findViewById<TextView>(R.id.txt_comics_publisher)
+        val txtAuthors = view.findViewById<TextView>(R.id.txt_comics_authors)
+        val txtNotes = view.findViewById<TextView>(R.id.txt_comics_notes)
+        val txtLast = view.findViewById<TextView>(R.id.txt_comics_release_last)
+        val txtNext = view.findViewById<TextView>(R.id.txt_comics_release_next)
+        val txtMissing = view.findViewById<TextView>(R.id.txt_comics_release_missing)
+
+        return Observer { comics ->
+            _comics = comics ?: throw NullPointerException("comics cannot be null")
+            txtName.text = comics.comics.name
+            txtPublisher.text = comics.comics.publisher
+            txtAuthors.text = comics.comics.authors
+            txtNotes.text = comics.comics.notes
+            if (comics.comics.hasImage()) {
+                txtInitial.text = ""
+                Glide.with(this)
+                    .load(Uri.parse(comics.comics.image))
+                    .apply(ImageHelper.getGlideCircleOptions())
+                    .into(DrawableTextViewTarget(txtInitial))
+            } else {
+                txtInitial.text = comics.comics.initial
+            }
+            val lastRelease = comics.lastPurchasedRelease
+            txtLast.text =
+                if (lastRelease == null) context.getString(R.string.release_last_none) else context.getString(
+                    R.string.release_last,
+                    lastRelease.number
+                )
+            val nextRelease = comics.nextToPurchaseRelease
+            if (nextRelease != null) {
+                if (nextRelease.date != null) {
+                    // TODO: non mi piace, dovrei mostrare la data solo se futura e nel formato ddd dd MMM
+                    txtNext.text = context.getString(
+                        R.string.release_next_dated, nextRelease.number,
+                        DateFormatterHelper.toHumanReadable(
+                            context,
+                            nextRelease.date,
+                            DateFormatterHelper.STYLE_SHORT
+                        )
+                    )
+                } else {
+                    txtNext.text = context.getString(
+                        R.string.release_next,
+                        nextRelease.number
+                    )
+                }
+            } else {
+                txtNext.text = context.getString(R.string.release_next_none)
+            }
+            val missingCount = comics.notPurchasedReleaseCount
+            txtMissing.text = context.getString(R.string.release_missing, missingCount)
+        }
+    }
+
     private fun performUpdate() {
         _listener.dismissSnackbar()
         _swipeRefreshLayout.isRefreshing = true
 
         // cerco tutte le nuove release e le aggiungo direttamente
-        _releaseViewModel.getNewReleases(mComics)
+        _releaseViewModel.getNewReleases(_comics)
             .observe(viewLifecycleOwner) { releases ->
                 if (releases != null) {
                     val size = releases.size
