@@ -3,6 +3,8 @@ package it.amonshore.comikkua.data.web
 import android.app.Application
 import androidx.lifecycle.*
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.containsAll
+import it.amonshore.comikkua.splitToWords
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -13,9 +15,9 @@ private const val FILTER_DEBOUNCE = 300L;
 class CmkWebViewModelKt(application: Application) : AndroidViewModel(application) {
 
     private val _repository = CmkWebRepositoryKt(application)
-    private var _lastFilter: String = ""
     private val _filter = MutableLiveData<String>()
-    private val _splitRegex = "\\s+".toRegex()
+
+    private var _lastFilter: String = ""
     private var _filteringJob: Job? = null
 
     @FlowPreview
@@ -30,7 +32,7 @@ class CmkWebViewModelKt(application: Application) : AndroidViewModel(application
                 if (it.isEmpty()) {
                     emptyList()
                 } else {
-                    it.split(_splitRegex)
+                    it.splitToWords()
                 }
             }
             .collect { emit(it) }
@@ -111,7 +113,5 @@ class CmkWebViewModelKt(application: Application) : AndroidViewModel(application
                 }
             }
     }
-
-    private infix fun String.containsAll(values: List<String>) = values.all { contains(it, true) }
 }
 
