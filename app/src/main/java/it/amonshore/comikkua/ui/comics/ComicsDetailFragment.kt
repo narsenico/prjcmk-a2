@@ -195,29 +195,21 @@ class ComicsDetailFragment : Fragment() {
                 val tracker = _adapter.selectionTracker
                 when (item.itemId) {
                     R.id.purchaseReleases -> {
-                        if (tracker.hasSelection()) {
-                            // TODO: considerare le multi release
-                            _releaseViewModel.togglePurchased(tracker.selection.toList())
-                        }
-                        // mantengo la selezione
+                        // TODO: considerare le multi release
+                        _releaseViewModel.togglePurchased(tracker.selection.toList())
                         return true
                     }
                     R.id.orderReleases -> {
-                        if (tracker.hasSelection()) {
-                            // TODO: considerare le multi release
-                            _releaseViewModel.toggleOrdered(tracker.selection.toList())
-                        }
-                        // mantengo la selezione
+                        // TODO: considerare le multi release
+                        _releaseViewModel.toggleOrdered(tracker.selection.toList())
                         return true
                     }
                     R.id.deleteReleases -> {
-                        if (tracker.hasSelection()) {
-                            _releaseViewModel.markAsRemoved(
-                                tracker.selection.toList(),
-                                ::showUndo
-                            )
-                            tracker.clearSelection()
-                        }
+                        _releaseViewModel.markAsRemoved(
+                            tracker.selection.toList(),
+                            ::showUndo
+                        )
+                        tracker.clearSelection()
                         return true
                     }
                     R.id.shareReleases -> {
@@ -302,25 +294,38 @@ class ComicsDetailFragment : Fragment() {
         _listener.dismissSnackbar()
         _swipeRefreshLayout.isRefreshing = true
 
-        _releaseViewModel.refreshWithNewReleases(_comics) { size ->
-            if (size > 0) {
+        _releaseViewModel.refreshWithNewReleases(_comics) { result ->
+            result.onSuccess { size ->
+                if (size > 0) {
+                    Toast.makeText(
+                        requireContext(),
+                        resources.getQuantityString(
+                            R.plurals.auto_update_available_message,
+                            size,
+                            size
+                        ),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.auto_update_zero,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                _swipeRefreshLayout.isRefreshing = false
+            }.onFailure { err ->
+                LogHelper.e(err, "Error reading new releases")
+
                 Toast.makeText(
-                    requireContext(),
-                    resources.getQuantityString(
-                        R.plurals.auto_update_available_message,
-                        size,
-                        size
-                    ),
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.auto_update_zero,
-                    Toast.LENGTH_SHORT
-                ).show()
+                        requireContext(),
+                        R.string.refresh_release_error,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                _swipeRefreshLayout.isRefreshing = false
             }
-            _swipeRefreshLayout.isRefreshing = false
         }
     }
 

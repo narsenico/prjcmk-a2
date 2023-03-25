@@ -44,7 +44,7 @@ public class LogHelper {
         Log.e(mTag, message, error);
     }
 
-    public static void e(Exception error, String message, Object... args) {
+    public static void e(Throwable error, String message, Object... args) {
         Log.e(mTag, String.format(message, args), error);
     }
 

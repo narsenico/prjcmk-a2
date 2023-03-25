@@ -56,13 +56,20 @@ class ReleaseViewModelKt(application: Application) : AndroidViewModel(applicatio
         callback(count)
     }
 
-    fun getComicsReleases(ids: List<Long>, callback: (List<ComicsRelease>) -> Unit) = viewModelScope.launch {
-        val list = _repository.getComicsReleases(ids)
-        callback(list)
-    }
+    fun getComicsReleases(ids: List<Long>, callback: (List<ComicsRelease>) -> Unit) =
+        viewModelScope.launch {
+            val list = _repository.getComicsReleases(ids)
+            callback(list)
+        }
 
-    fun refreshWithNewReleases(comics: ComicsWithReleases, callback: (Int) -> Unit) = viewModelScope.launch {
-        val count = _repository.refreshWithNewReleases(comics)
-        callback(count)
-    }
+    fun refreshWithNewReleases(comics: ComicsWithReleases, callback: (Result<Int>) -> Unit) =
+        viewModelScope.launch {
+            val result = try {
+                val count = _repository.refreshWithNewReleases(comics)
+                Result.success(count)
+            } catch (ex: Exception) {
+                Result.failure(ex)
+            }
+            callback(result)
+        }
 }

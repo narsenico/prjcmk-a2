@@ -104,6 +104,7 @@
     <string name="comics_name_notunique_error">Name already used</string>
     <string name="comics_saving_error">I couldn\'t save the comics! Please try again.</string>
     <string name="release_saving_error">I couldn\'t save the release! Please try again.</string>
+    <string name="refresh_release_error">There was an error reading new releases</string>
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
