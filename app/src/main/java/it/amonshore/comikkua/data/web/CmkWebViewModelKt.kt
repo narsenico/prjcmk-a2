@@ -93,7 +93,9 @@ class CmkWebViewModelKt(application: Application) : AndroidViewModel(application
                 // e con lei anche il FLow creato al suo interno
                 _filteringJob = viewModelScope.launch {
                     if (filter.isEmpty()) {
-                        emit(emptyList())
+                        _repository.getAvailableComicsFlow()
+                            .catch { LogHelper.e("Error reading available comics", it) }
+                            .collectLatest { emit(it) }
                     } else {
                         _repository.getAvailableComicsFlow()
                             .map { data ->

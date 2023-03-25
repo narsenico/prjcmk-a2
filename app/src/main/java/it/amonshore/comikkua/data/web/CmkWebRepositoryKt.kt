@@ -9,22 +9,22 @@ class CmkWebRepositoryKt(context: Context) {
     private val _cmkWebDao = ComikkuDatabase.getDatabase(context).cmkWebDaoKt()
     private val _service = CmkWebService.create()
 
-    private suspend fun readAvailableComics(): List<AvailableComics> {
-        return _service.getTitles().map {
-            AvailableComics(
-                sourceId = it,
-                name = it,
-                searchableName = it.uppercase(),
-                publisher = "",
-                version = 0,
-            )
-        }
-    }
-
     suspend fun refreshAvailableComics(): Int {
-        val comics = readAvailableComics()
-        _cmkWebDao.refresh(comics)
-        return comics.size
+        _cmkWebDao.deleteAll()
+
+        var count = 0
+        var page = 0
+        while (true) {
+            val result = _service.getAvailableComics(++page)
+            if (result.data.isEmpty()) {
+                break
+            }
+
+            _cmkWebDao.insert(result.data)
+            count += result.data.size
+        }
+
+        return count
     }
 
     fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()

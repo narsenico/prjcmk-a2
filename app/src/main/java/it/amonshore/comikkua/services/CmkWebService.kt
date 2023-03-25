@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.services
 
 import it.amonshore.comikkua.BuildConfig
+import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebComicsRelease
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -20,6 +21,12 @@ interface CmkWebService {
 
     @GET("v1/api/comics?mode=array-of-title")
     suspend fun getTitles(): List<String>
+
+    @GET("v1/api/comics")
+    suspend fun getAvailableComics(
+        @Query("page") page: Int,
+        @Query("pageLength") pageLength: Int = 10
+    ): GetAvailableComicsResult
 
     companion object {
         fun create(): CmkWebService {
