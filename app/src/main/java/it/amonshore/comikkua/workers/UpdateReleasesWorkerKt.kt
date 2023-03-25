@@ -26,7 +26,7 @@ class UpdateReleasesWorkerKt(appContext: Context, workerParams: WorkerParameters
             val database = ComikkuDatabase.getDatabase(applicationContext)
             val comicsDao = database.comicsDaoKt()
             val releaseDao = database.releaseDaoKt()
-            val comics = comicsDao.getRawComicsWithReleases()
+            val comics = comicsDao.getAllComicsWithReleases()
             val tag = UUID.randomUUID().toString()
 
             val calls = comics.map {
