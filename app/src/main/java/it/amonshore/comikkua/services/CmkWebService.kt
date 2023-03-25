@@ -13,6 +13,13 @@ import retrofit2.http.Query
 
 interface CmkWebService {
 
+    @GET("v1/api/comics/{ref_id}/releases")
+    suspend fun getReleases(
+        @Path("ref_id") refId: String,
+        @Query("numberFrom") numberFrom: Int = 0
+    ): List<CmkWebComicsRelease>
+
+    @Deprecated("Usare getReleases passando ref_id")
     @GET("v1/api/title/{title}/releases")
     suspend fun getReleasesByTitle(
         @Path("title") title: String,

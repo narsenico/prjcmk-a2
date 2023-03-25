@@ -20,11 +20,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.*
+import it.amonshore.comikkua.Constants
+import it.amonshore.comikkua.DateFormatterHelper
+import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
-import it.amonshore.comikkua.data.release.ReleaseViewModel
+import it.amonshore.comikkua.data.release.ReleaseViewModelKt
 import it.amonshore.comikkua.ui.*
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
@@ -32,7 +35,7 @@ import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
 class ComicsDetailFragment : Fragment() {
 
     private val _comicsViewModel: ComicsViewModelKt by viewModels()
-    private val _releaseViewModel: ReleaseViewModel by viewModels()
+    private val _releaseViewModel: ReleaseViewModelKt by viewModels()
 
     private val _comicsId: Long by lazy {
         ComicsDetailFragmentArgs.fromBundle(requireArguments()).comicsId
@@ -167,13 +170,16 @@ class ComicsDetailFragment : Fragment() {
 
             override fun onReleaseTogglePurchase(release: ComicsRelease) {
                 _releaseViewModel.updatePurchased(
-                    !release.release.purchased,
-                    release.release.id
+                    release.release.id,
+                    !release.release.purchased
                 )
             }
 
             override fun onReleaseToggleOrder(release: ComicsRelease) {
-                _releaseViewModel.updateOrdered(!release.release.ordered, release.release.id)
+                _releaseViewModel.updateOrdered(
+                    release.release.id,
+                    !release.release.ordered
+                )
             }
 
             override fun onReleaseMenuSelected(release: ComicsRelease) {
@@ -191,7 +197,7 @@ class ComicsDetailFragment : Fragment() {
                     R.id.purchaseReleases -> {
                         if (tracker.hasSelection()) {
                             // TODO: considerare le multi release
-                            _releaseViewModel.togglePurchased(tracker.selection)
+                            _releaseViewModel.togglePurchased(tracker.selection.toList())
                         }
                         // mantengo la selezione
                         return true
@@ -199,35 +205,28 @@ class ComicsDetailFragment : Fragment() {
                     R.id.orderReleases -> {
                         if (tracker.hasSelection()) {
                             // TODO: considerare le multi release
-                            _releaseViewModel.toggleOrdered(tracker.selection)
+                            _releaseViewModel.toggleOrdered(tracker.selection.toList())
                         }
                         // mantengo la selezione
                         return true
                     }
                     R.id.deleteReleases -> {
                         if (tracker.hasSelection()) {
-                            // prima elimino eventuali release ancora in fase di undo
-                            _releaseViewModel.deleteRemoved()
-                            _releaseViewModel.remove(tracker.selection) { count: Int ->
-                                showUndo(
-                                    count
-                                )
-                            }
+                            _releaseViewModel.markAsRemoved(
+                                tracker.selection.toList(),
+                                ::showUndo
+                            )
+                            tracker.clearSelection()
                         }
-                        tracker.clearSelection()
                         return true
                     }
                     R.id.shareReleases -> {
-                        LiveDataEx.observeOnce(
-                            _releaseViewModel.getComicsReleases(tracker.selection),
-                            viewLifecycleOwner
-                        ) { items: List<ComicsRelease?>? ->
+                        _releaseViewModel.getComicsReleases(tracker.selection.toList()) {
                             ShareHelper.shareReleases(
                                 requireActivity(),
-                                items!!
+                                it
                             )
                         }
-                        // mantengo la selezione
                         return true
                     }
                 }
@@ -303,36 +302,26 @@ class ComicsDetailFragment : Fragment() {
         _listener.dismissSnackbar()
         _swipeRefreshLayout.isRefreshing = true
 
-        // cerco tutte le nuove release e le aggiungo direttamente
-        _releaseViewModel.getNewReleases(_comics)
-            .observe(viewLifecycleOwner) { releases ->
-                if (releases != null) {
-                    val size = releases.size
-                    if (size > 0) {
-                        _releaseViewModel.insert(*releases.toTypedArray())
-                        Toast.makeText(
-                            requireContext(),
-                            resources.getQuantityString(
-                                R.plurals.auto_update_available_message,
-                                size,
-                                size
-                            ),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.auto_update_zero,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } else {
-                    // in realtà è null in caso di errore
-                    Toast.makeText(requireContext(), R.string.auto_update_zero, Toast.LENGTH_SHORT)
-                        .show()
-                }
-                _swipeRefreshLayout.isRefreshing = false
+        _releaseViewModel.refreshWithNewReleases(_comics) { size ->
+            if (size > 0) {
+                Toast.makeText(
+                    requireContext(),
+                    resources.getQuantityString(
+                        R.plurals.auto_update_available_message,
+                        size,
+                        size
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.auto_update_zero,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+            _swipeRefreshLayout.isRefreshing = false
+        }
     }
 
     private fun openEdit(view: View, release: ComicsRelease) {

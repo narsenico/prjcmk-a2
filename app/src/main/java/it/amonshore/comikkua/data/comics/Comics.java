@@ -63,6 +63,13 @@ public class Comics {
     }
 
     /**
+     * @return true se proviene da una sorgente remota, false se è stato creato manualmente
+     */
+    public boolean isSourced() {
+        return !TextUtils.isEmpty(this.sourceId);
+    }
+
+    /**
      * Crea un nuovo comics con il nome specificato.
      * Il comics è selezionato (select = true)
      *

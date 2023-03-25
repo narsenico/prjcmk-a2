@@ -12,8 +12,7 @@ data class CmkWebComicsRelease(
     val refId: String,
 )
 
-@Deprecated("Non servirà più quando si potrà usare refId")
-fun CmkWebComicsRelease.toRelease(comicsId: Long, tag: String): Release {
+fun CmkWebComicsRelease.toRelease(comicsId: Long, tag: String? = null): Release {
     val release = Release()
     release.comicsId = comicsId;
     release.number = number;
