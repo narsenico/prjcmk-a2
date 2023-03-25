@@ -14,4 +14,8 @@ interface ComicsDaoKt {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comics: Comics)
+
+    @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
+    @Transaction
+    fun getComicsWithReleases(id: Long): LiveData<ComicsWithReleases>
 }

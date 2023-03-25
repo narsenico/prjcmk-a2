@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.*
-import it.amonshore.comikkua.data.comics.ComicsViewModel
+import it.amonshore.comikkua.data.comics.ComicsViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.ReleaseViewModel
@@ -31,7 +31,7 @@ import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
 
 class ComicsDetailFragment : Fragment() {
 
-    private val _comicsViewModel: ComicsViewModel by viewModels()
+    private val _comicsViewModel: ComicsViewModelKt by viewModels()
     private val _releaseViewModel: ReleaseViewModel by viewModels()
 
     private val _comicsId: Long by lazy {
@@ -55,7 +55,6 @@ class ComicsDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_comics_detail, container, false)
-        val context = requireContext()
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
@@ -66,7 +65,7 @@ class ComicsDetailFragment : Fragment() {
         }
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.list).apply {
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(requireContext())
         }
         val actionModeController = createActionModeController()
         val actionModeName = javaClass.simpleName + "_actionMode"
@@ -91,6 +90,11 @@ class ComicsDetailFragment : Fragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         _listener = if (context is OnNavigationFragmentListener) {
@@ -104,11 +108,6 @@ class ComicsDetailFragment : Fragment() {
         super.onSaveInstanceState(outState)
         // ripristino le selezioni
         _adapter.selectionTracker.onSaveInstanceState(outState)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupMenu()
     }
 
     private fun setupMenu() {
