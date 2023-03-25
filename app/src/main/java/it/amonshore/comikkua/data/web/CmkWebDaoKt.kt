@@ -5,33 +5,33 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-abstract class CmkWebDaoKt {
+interface CmkWebDaoKt {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insert(comics: AvailableComics): Long
+    suspend fun insert(comics: AvailableComics): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insert(vararg comics: AvailableComics)
+    suspend fun insert(comics: List<AvailableComics>)
 
     @Query("DELETE FROM tAvailableComics")
-    abstract fun deleteAll(): Int
+    suspend fun deleteAll()
 
     @Transaction
-    open fun refresh(vararg comics: AvailableComics) {
+    suspend fun refresh(comics: List<AvailableComics>) {
         deleteAll()
-        insert(*comics)
+        insert(comics)
     }
 
     @Query("SELECT * FROM tAvailableComics " +
             "ORDER BY name COLLATE NOCASE ASC, publisher COLLATE NOCASE ASC, version")
-    abstract fun getAvailableComicsPagingSource(): PagingSource<Int, AvailableComics>
+    fun getAvailableComicsPagingSource(): PagingSource<Int, AvailableComics>
 
     @Query("SELECT * FROM tAvailableComics WHERE" +
             "(name LIKE :likeName OR publisher LIKE :likeName) " +
             "ORDER BY name COLLATE NOCASE ASC, publisher COLLATE NOCASE ASC, version")
-    abstract fun getAvailableComicsPagingSource(likeName: String): PagingSource<Int, AvailableComics>
+    fun getAvailableComicsPagingSource(likeName: String): PagingSource<Int, AvailableComics>
 
     @Query("SELECT * FROM tAvailableComics " +
             "ORDER BY name COLLATE NOCASE ASC, publisher COLLATE NOCASE ASC, version")
-    abstract fun getAvailableComicsFLow(): Flow<List<AvailableComics>>
+    fun getAvailableComicsFLow(): Flow<List<AvailableComics>>
 }

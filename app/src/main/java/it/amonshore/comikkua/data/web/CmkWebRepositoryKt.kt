@@ -11,6 +11,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import it.amonshore.comikkua.data.ComikkuDatabase
+import it.amonshore.comikkua.services.CmkWebService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -19,52 +20,25 @@ import kotlinx.coroutines.tasks.await
 
 class CmkWebRepositoryKt(context: Context) {
 
-    companion object {
-        @JvmStatic
-        val FIREBASE_PROJECT_ID = Firebase.firestore.app.options.projectId
-
-//        private const val PAGE_SIZE = 10
-    }
-
-    private val _firestore = Firebase.firestore;
     private val _cmkWebDao = ComikkuDatabase.getDatabase(context).cmkWebDaoKt()
+    private val _service = CmkWebService.create()
 
-    /**
-     * Aggiorna il repository locale.
-     */
-    private fun refreshAvailableComics(vararg availableComics: AvailableComics) = _cmkWebDao.refresh(*availableComics);
-
-    /**
-     * Legge e ritorna i comics dalla rete.
-     *
-     * @return  lista di comics
-     */
     private suspend fun readAvailableComics(): List<AvailableComics> {
-        // leggo tutti i comics così come sono
-        val data = _firestore.collection("comics")
-                .get()
-                .await()
-
-        // e li mappo in oggetti AvailableComics
-        // il campo "id" non è considerato durante la conversione, devo impostarlo a mano
-        return data.map { doc -> doc.toObject<AvailableComics>().withSourceId(doc.id) }
+        return _service.getTitles().map {
+            AvailableComics().apply {
+                name = it
+                searchableName = it.uppercase()
+            }
+        }
     }
 
-    /**
-     * Legge i comics dalla rete e aggiorna il repository locale.
-     *
-     * @return numero di comics disponibili
-     */
     suspend fun refreshAvailableComics(): Int {
         val comics = readAvailableComics()
-        refreshAvailableComics(*comics.toTypedArray())
+        _cmkWebDao.refresh(comics)
         return comics.size
     }
 
-    /**
-     * Ritorna il flusso di tutti i comics disponibili.
-     */
-    fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()
+    suspend fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()
 
 //    /**
 //     * Ritorna un [PagingData] con i comics disponibili.

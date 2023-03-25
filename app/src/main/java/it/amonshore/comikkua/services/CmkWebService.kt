@@ -18,6 +18,9 @@ interface CmkWebService {
         @Query("numberFrom") numberFrom: Int = 0
     ): List<CmkWebComicsRelease>
 
+    @GET("v1/api/comics?mode=array-of-title")
+    suspend fun getTitles(): List<String>
+
     companion object {
         fun create(): CmkWebService {
             val logger = HttpLoggingInterceptor()

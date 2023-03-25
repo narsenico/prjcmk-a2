@@ -1,57 +1,53 @@
 package it.amonshore.comikkua.data.web
 
 import android.app.Application
-import android.text.TextUtils
 import androidx.lifecycle.*
 import it.amonshore.comikkua.LogHelper
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+private const val FILTER_DEBOUNCE = 300L;
+
 class CmkWebViewModelKt(application: Application) : AndroidViewModel(application) {
 
-    companion object {
-        private const val FILTER_DEBOUNCE = 300L;
-    }
-
     private val _repository = CmkWebRepositoryKt(application)
-    private var _lastFilter: String? = null
-    private val _filter = MutableLiveData<String?>()
+    private var _lastFilter: String = ""
+    private val _filter = MutableLiveData<String>()
     private val _splitRegex = "\\s+".toRegex()
     private var _filteringJob: Job? = null
-//    private var _filteredAvailableComics: LiveData<PagingData<AvailableComics>>? = null
 
     @FlowPreview
-    private val _filterFlow: Flow<List<String>?> = flow {
+    private val _filterFlow: Flow<List<String>> = flow {
         // ogni volta che viene modificato il filtro emetto una lista con tutte le parole contenute nel filtro
         // se il filtro è vuoto emetto null
         _filter.asFlow()
-                .debounce(FILTER_DEBOUNCE)
-                .distinctUntilChanged()
-                .map {
-                    if (TextUtils.isEmpty(it)) {
-                        null
-                    } else {
-                        it!!.trim().split(_splitRegex)
-                    }
+            .debounce(FILTER_DEBOUNCE)
+            .map { it.trim() }
+            .distinctUntilChanged()
+            .map {
+                if (it.isEmpty()) {
+                    emptyList()
+                } else {
+                    it.split(_splitRegex)
                 }
-                .collect { emit(it) }
+            }
+            .collect { emit(it) }
     }
 
     /**
      * Filtro applicato ai comics letti con [getFilteredAvailableComics]
      * su [AvailableComics.name] e [AvailableComics.publisher]
      */
-    var filter: String?
+    var filter: String
         get() = _lastFilter
         set(value) {
             _lastFilter = value
             _filter.postValue(_lastFilter)
         }
 
-    fun useLastFilter(): String? {
+    fun useLastFilter(): String {
         _filter.postValue(_lastFilter)
         return _lastFilter
     }
@@ -85,33 +81,35 @@ class CmkWebViewModelKt(application: Application) : AndroidViewModel(application
      * LiveData con i comics disponibili filtrati grazie alla proprietà [CmkWebViewModelKt.filter].
      * Se il filtro è vuoto viene emessa una lista vuota.
      */
-    @FlowPreview
-    @ExperimentalCoroutinesApi
+    @OptIn(FlowPreview::class)
     fun getFilteredAvailableComics(): LiveData<List<AvailableComics>> = liveData {
         _filterFlow
-                .onStart { emit(null) }
-                .collectLatest { filter ->
-                    // eventuali precedenti operazioni di filtering vengono annullate
-                    _filteringJob?.cancel();
-                    // eseguo il filtering in una coroutine in modo da poter annullarela,
-                    // e con lei anche il FLow creato al suo interno
-                    _filteringJob = viewModelScope.launch {
-                        if (filter == null) {
-                            emit(emptyList<AvailableComics>())
-                        } else {
-                            _repository.getAvailableComicsFlow()
-                                    .map { data -> data.filter { comics -> containsAll(comics.searchableText, filter) } }
-                                    .catch { LogHelper.e("Error filtering available comics", it) }
-                                    .collectLatest { emit(it) }
-                        }
+            .onStart { emit(emptyList()) }
+            .collectLatest { filter ->
+                LogHelper.d("Filtering available comics by $filter")
+                // eventuali precedenti operazioni di filtering vengono annullate
+                _filteringJob?.cancel();
+                // eseguo il filtering in una coroutine in modo da poter annullare la,
+                // e con lei anche il FLow creato al suo interno
+                _filteringJob = viewModelScope.launch {
+                    if (filter.isEmpty()) {
+                        emit(emptyList())
+                    } else {
+                        _repository.getAvailableComicsFlow()
+                            .map { data ->
+                                data.filter { comics ->
+                                    comics.searchableName.containsAll(
+                                        filter
+                                    )
+                                }
+                            }
+                            .catch { LogHelper.e("Error filtering available comics", it) }
+                            .collectLatest { emit(it) }
                     }
                 }
+            }
     }
 
-    private fun containsAll(_this: String, values: List<String>): Boolean =
-            values.find { !_this.contains(it, true) } == null
-
-    private val AvailableComics.searchableText: String
-        get() = "${this.name} ${this.publisher}"
+    private infix fun String.containsAll(values: List<String>) = values.all { contains(it, true) }
 }
 
