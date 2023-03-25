@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "ab6ea51b0b5785b831055d0feb5e9818",
+    "identityHash": "07bc4fcde4726d0f9209a209b2d5be88",
     "entities": [
       {
         "tableName": "tComics",
@@ -106,10 +106,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -118,6 +118,7 @@
             "columnNames": [
               "name"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_tComics_name` ON `${TABLE_NAME}` (`name`)"
           },
           {
@@ -126,6 +127,7 @@
             "columnNames": [
               "sourceId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_tComics_sourceId` ON `${TABLE_NAME}` (`sourceId`)"
           }
         ],
@@ -203,10 +205,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -216,6 +218,7 @@
               "comicsId",
               "number"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_tReleases_comicsId_number` ON `${TABLE_NAME}` (`comicsId`, `number`)"
           }
         ],
@@ -235,50 +238,50 @@
       },
       {
         "tableName": "tAvailableComics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sourceId` TEXT, `name` TEXT, `searchableName` TEXT, `publisher` TEXT, `version` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sourceId` TEXT NOT NULL, `name` TEXT NOT NULL, `searchableName` TEXT NOT NULL, `publisher` TEXT NOT NULL, `version` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "sourceId",
             "columnName": "sourceId",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "searchableName",
             "columnName": "searchableName",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "publisher",
             "columnName": "publisher",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "version",
             "columnName": "version",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -287,6 +290,7 @@
             "columnNames": [
               "sourceId"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tAvailableComics_sourceId` ON `${TABLE_NAME}` (`sourceId`)"
           },
           {
@@ -297,6 +301,7 @@
               "publisher",
               "version"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_tAvailableComics_name_publisher_version` ON `${TABLE_NAME}` (`name`, `publisher`, `version`)"
           }
         ],
@@ -331,7 +336,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ab6ea51b0b5785b831055d0feb5e9818')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07bc4fcde4726d0f9209a209b2d5be88')"
     ]
   }
 }

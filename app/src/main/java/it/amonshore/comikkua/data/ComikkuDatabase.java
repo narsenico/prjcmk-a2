@@ -4,12 +4,15 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.loader.content.AsyncTaskLoader;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -36,7 +39,7 @@ import it.amonshore.comikkua.data.web.CmkWebDaoKt;
         views = {ComicsRelease.class,
                 MissingRelease.class, LostRelease.class, DatedRelease.class,
                 PurchasedRelease.class, NotPurchasedRelease.class},
-        version = 7)
+        version = 8)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();
@@ -62,13 +65,14 @@ public abstract class ComikkuDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             ComikkuDatabase.class, "comikku_database")
 //                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
-                            .addMigrations(new FakeMigration(1, 2))
-                            .addMigrations(MIGRATION_2_3)
-                            .addMigrations(MIGRATION_3_4)
-                            .addMigrations(MIGRATION_4_5)
-                            .addMigrations(MIGRATION_5_6)
-                            .addMigrations(MIGRATION_6_7)
-                            .addCallback(new DatabaseCallback(context))
+//                            .addMigrations(new FakeMigration(1, 2))
+//                            .addMigrations(MIGRATION_2_3)
+//                            .addMigrations(MIGRATION_3_4)
+//                            .addMigrations(MIGRATION_4_5)
+//                            .addMigrations(MIGRATION_5_6)
+//                            .addMigrations(MIGRATION_6_7)
+//                            .addMigrations(MIGRATION_7_8)
+//                            .addCallback(new DatabaseCallback())
                             .build();
                 }
             }
@@ -177,7 +181,7 @@ public abstract class ComikkuDatabase extends RoomDatabase {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // creo nuova tabella tAvailableComics con indici
-            database.execSQL("CREATE TABLE IF NOT EXISTS `tAvailableComics` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sourceId` TEXT, `name` TEXT, `searchableName` TEXT, `publisher` TEXT, `version` INTEGER NOT NULL)");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `tAvailableComics` (`sourceId` TEXT NOT NULL, `name` TEXT NOT NULL, `searchableName` TEXT NOT NULL, `publisher` TEXT NOT NULL, `version` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)");
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_tAvailableComics_sourceId` ON `tAvailableComics` (`sourceId`)");
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_tAvailableComics_name_publisher_version` ON `tAvailableComics` (`name`, `publisher`, `version`)");
         }
@@ -197,18 +201,13 @@ public abstract class ComikkuDatabase extends RoomDatabase {
 
     private static class DatabaseCallback extends RoomDatabase.Callback {
 
-        Context mContext;
-
-        DatabaseCallback(Context context) {
-            mContext = context;
-        }
-
         @Override
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
             if (BuildConfig.DEBUG) {
 //                new PopulateDbWithTestAsync(INSTANCE).execute();
 //                new ClearDbWithTestAsync(INSTANCE).execute();
+//                new ClearAvailableComicsAsync(INSTANCE).execute();
             }
         }
     }
@@ -266,6 +265,22 @@ public abstract class ComikkuDatabase extends RoomDatabase {
         protected Void doInBackground(final Void... params) {
             mReleaseDao.deleteAll();
             mComicsDao.deleteAll();
+            return null;
+        }
+    }
+
+    private static class ClearAvailableComicsAsync extends AsyncTask<Void, Void, Void> {
+
+        private final CmkWebDao _cmkWebDao;
+
+        ClearAvailableComicsAsync(@NonNull ComikkuDatabase db) {
+            _cmkWebDao = db.cmkWebDao();
+        }
+
+        @Nullable
+        @Override
+        protected Void doInBackground(Void... voids) {
+            _cmkWebDao.deleteAll();
             return null;
         }
     }
