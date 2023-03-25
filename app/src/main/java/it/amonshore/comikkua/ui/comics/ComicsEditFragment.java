@@ -30,6 +30,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -68,43 +69,14 @@ public class ComicsEditFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setSharedElementEnterTransition(TransitionInflater.from(getContext())
                 .inflateTransition(android.R.transition.move));
-
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.menu_comics_edit, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                final int itemId = menuItem.getItemId();
-                if (itemId == R.id.saveComics) {// controllo che i dati siano validi
-                    mHelper.isValid(valid -> {
-                        if (valid) {
-                            LogHelper.d("SAVE isValid view=%s", getView());
-                            // eseguo il salvataggio in manera asincrona
-                            //  al termine navigo vergo la destinazione
-                            new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
-                                    .execute();
-                        }
-                    });
-
-                    return true;
-                } else if (itemId == R.id.changeImage) {
-                    grabImage();
-                    return true;
-                } else if (itemId == R.id.removeImage) {
-                    mHelper.setComicsImage(null);
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        setupMenu();
+
         final ComicsEditFragmentArgs args = ComicsEditFragmentArgs.fromBundle(requireArguments());
 
         // recupero il ViewModel per l'accesso ai dati
@@ -158,6 +130,41 @@ public class ComicsEditFragment extends Fragment {
 //        super.onDetach();
 //        mListener = null;
 //    }
+
+    private void setupMenu() {
+        final MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.menu_comics_edit, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                final int itemId = menuItem.getItemId();
+                if (itemId == R.id.saveComics) {// controllo che i dati siano validi
+                    mHelper.isValid(valid -> {
+                        if (valid) {
+                            LogHelper.d("SAVE isValid view=%s", getView());
+                            // eseguo il salvataggio in manera asincrona
+                            //  al termine navigo vergo la destinazione
+                            new InsertOrUpdateAsyncTask(getView(), mComicsViewModel, mHelper)
+                                    .execute();
+                        }
+                    });
+
+                    return true;
+                } else if (itemId == R.id.changeImage) {
+                    grabImage();
+                    return true;
+                } else if (itemId == R.id.removeImage) {
+                    mHelper.setComicsImage(null);
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
 
     private void requestPermissionCallback(boolean isGranted) {
         if (isGranted) {
