@@ -27,7 +27,7 @@ class CmkWebRepositoryKt(context: Context) {
         return count
     }
 
-    fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()
+    fun getNotFollowedComics() = _cmkWebDao.getNotFollowedComics()
 
 //    /**
 //     * Ritorna un [PagingData] con i comics disponibili.

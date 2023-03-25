@@ -55,7 +55,7 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
      * LiveData con i comics disponibili filtrati grazie alla proprietà [ComicsSelectorViewModel.filter].
      */
     @OptIn(FlowPreview::class)
-    fun getFilteredAvailableComics(): LiveData<List<AvailableComics>> = liveData {
+    fun getNotFollowedComics(): LiveData<List<AvailableComics>> = liveData {
         _filterFlow
             .onStart { emit(emptyList()) }
             .collectLatest { filter ->
@@ -66,11 +66,11 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
                 // e con lei anche il FLow creato al suo interno
                 _filteringJob = viewModelScope.launch {
                     if (filter.isEmpty()) {
-                        _cmkWebRepository.getAvailableComicsFlow()
+                        _cmkWebRepository.getNotFollowedComics()
                             .catch { LogHelper.e("Error reading available comics", it) }
                             .collectLatest { emit(it) }
                     } else {
-                        _cmkWebRepository.getAvailableComicsFlow()
+                        _cmkWebRepository.getNotFollowedComics()
                             .map { data ->
                                 data.filter { comics ->
                                     comics.searchableName.containsAll(

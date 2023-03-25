@@ -62,9 +62,9 @@ class ComicsSelectorFragment : Fragment() {
             .withGlide(Glide.with(this))
             .build()
 
-        _comicsSelectorViewModel.getFilteredAvailableComics()
+        _comicsSelectorViewModel.getNotFollowedComics()
             .observe(viewLifecycleOwner) { data ->
-                LogHelper.d("submitList count=${data.size}")
+                LogHelper.d("not followed comics count=${data.size}")
                 _adapter.submitList(data)
                 emptyView.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
