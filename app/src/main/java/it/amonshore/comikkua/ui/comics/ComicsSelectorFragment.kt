@@ -2,12 +2,12 @@ package it.amonshore.comikkua.ui.comics
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
 import android.view.*
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -23,7 +23,6 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebViewModel
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
-import it.amonshore.comikkua.ui.TextWatcherAdapter
 import it.amonshore.comikkua.workers.RefreshComicsWorker
 
 /**
@@ -57,7 +56,7 @@ class ComicsSelectorFragment : Fragment() {
                 }
 
                 override fun onComicsMenuSelected(comics: AvailableComics) {
-                    // TODO
+                    TODO("Implementare menu contestuale")
                 }
             })
             .withGlide(Glide.with(this))
@@ -70,11 +69,9 @@ class ComicsSelectorFragment : Fragment() {
                 emptyView.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
 
-        txtSearch.addTextChangedListener(object : TextWatcherAdapter() {
-            override fun afterTextChanged(s: Editable) {
-                _cmkWebViewModel.filter = s.toString()
-            }
-        })
+        txtSearch.doAfterTextChanged {
+            _cmkWebViewModel.filter = it?.toString() ?: ""
+        }
 
         return view
     }
