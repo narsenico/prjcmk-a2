@@ -3,7 +3,6 @@ package it.amonshore.comikkua.ui.comics
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import android.widget.EditText
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -12,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -22,6 +20,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.ComicsSelectorViewModel
+import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.workers.RefreshComicsWorker
 
@@ -33,23 +32,21 @@ class ComicsSelectorFragment : Fragment() {
 
     private val _comicsSelectorViewModel: ComicsSelectorViewModel by viewModels()
     private lateinit var _listener: OnNavigationFragmentListener
-    private lateinit var _adapter: AvailableComicsAdapter
-    private lateinit var _recyclerView: RecyclerView
+    private lateinit var _binding: FragmentComicsSelectorBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _binding = FragmentComicsSelectorBinding.inflate(layoutInflater)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val context = requireContext()
-        val view = inflater.inflate(R.layout.fragment_comics_selector, container, false)
-        val txtSearch = view.findViewById<EditText>(R.id.txt_search)
-        val emptyView = view.findViewById<View>(R.id.empty)
+        _binding.list.layoutManager = LinearLayoutManager(context)
 
-        _recyclerView = view.findViewById(R.id.list)
-        _recyclerView.layoutManager = LinearLayoutManager(context)
-
-        _adapter = AvailableComicsAdapter.Builder(_recyclerView)
+        val adapter = AvailableComicsAdapter.Builder(_binding.list)
             .withComicsCallback(object : AvailableComicsAdapter.ComicsCallback {
                 override fun onComicsFollowed(comics: AvailableComics) {
                     _comicsSelectorViewModel.followComics(comics)
@@ -65,15 +62,15 @@ class ComicsSelectorFragment : Fragment() {
         _comicsSelectorViewModel.getNotFollowedComics()
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("not followed comics count=${data.size}")
-                _adapter.submitList(data)
-                emptyView.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
+                adapter.submitList(data)
+                _binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
 
-        txtSearch.doAfterTextChanged {
+        _binding.txtSearch.doAfterTextChanged {
             _comicsSelectorViewModel.filter = it?.toString() ?: ""
         }
 
-        return view
+        return _binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
