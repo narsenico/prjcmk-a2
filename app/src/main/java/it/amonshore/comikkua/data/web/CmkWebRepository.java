@@ -155,53 +155,53 @@ public class CmkWebRepository {
         return liveData;
     }
 
-    public CustomData<Integer> refreshComics() {
-        LogHelper.d("CMKWEB/Firestore refresh comics");
-
-        final CustomData<Integer> liveData = new CustomData<>();
-        liveData.postValue(Resource.loading(null));
-
-        // estraggo tutti i documenti dalla collection "comics"
-        mFirestore.collection("comics")
-                .get()
-                // completo in un thread separato per via delle operazioni su DB
-                .addOnCompleteListener(mExecutor, task -> {
-                    try {
-                        if (task.isSuccessful()) {
-                            final QuerySnapshot result = task.getResult();
-                            if (result == null) {
-                                // nessun risultato, ritorno una lista vuota
-                                liveData.postValue(Resource.success(0));
-                            } else {
-                                // leggo i comics da Firestore e li salvo nel DB locale
-                                final ArrayList<AvailableComics> lstComics = new ArrayList<>();
-                                for (QueryDocumentSnapshot document : result) {
-                                    lstComics.add(document.toObject(AvailableComics.class).withSourceId(document.getId()));
-                                }
-                                int size = lstComics.size();
-                                // pulisco la tabella e poi inserisco i nuovi comics
-                                // tutto sotto transazione
-                                mCmkWebDao.refresh(lstComics.toArray(new AvailableComics[0]));
-                                LogHelper.d("CMKWEB/Firestore refresh with %s comics", size);
-                                liveData.postValue(Resource.success(size));
-                            }
-                        } else {
-                            final Exception error = task.getException();
-                            LogHelper.e("Error refreshing comics", error);
-                            if (error == null) {
-                                liveData.postValue(Resource.error(null, "Unknown error"));
-                            } else {
-                                liveData.postValue(Resource.error(null, error.getMessage()));
-                            }
-                        }
-                    } catch (Exception ex) {
-                        LogHelper.e("CMKWEB/Firestore result: refresh error");
-                        liveData.postValue(Resource.error(null, ex.getMessage()));
-                    }
-                });
-
-        return liveData;
-    }
+//    public CustomData<Integer> refreshComics() {
+//        LogHelper.d("CMKWEB/Firestore refresh comics");
+//
+//        final CustomData<Integer> liveData = new CustomData<>();
+//        liveData.postValue(Resource.loading(null));
+//
+//        // estraggo tutti i documenti dalla collection "comics"
+//        mFirestore.collection("comics")
+//                .get()
+//                // completo in un thread separato per via delle operazioni su DB
+//                .addOnCompleteListener(mExecutor, task -> {
+//                    try {
+//                        if (task.isSuccessful()) {
+//                            final QuerySnapshot result = task.getResult();
+//                            if (result == null) {
+//                                // nessun risultato, ritorno una lista vuota
+//                                liveData.postValue(Resource.success(0));
+//                            } else {
+//                                // leggo i comics da Firestore e li salvo nel DB locale
+//                                final ArrayList<AvailableComics> lstComics = new ArrayList<>();
+//                                for (QueryDocumentSnapshot document : result) {
+//                                    lstComics.add(document.toObject(AvailableComics.class).withSourceId(document.getId()));
+//                                }
+//                                int size = lstComics.size();
+//                                // pulisco la tabella e poi inserisco i nuovi comics
+//                                // tutto sotto transazione
+//                                mCmkWebDao.refresh(lstComics.toArray(new AvailableComics[0]));
+//                                LogHelper.d("CMKWEB/Firestore refresh with %s comics", size);
+//                                liveData.postValue(Resource.success(size));
+//                            }
+//                        } else {
+//                            final Exception error = task.getException();
+//                            LogHelper.e("Error refreshing comics", error);
+//                            if (error == null) {
+//                                liveData.postValue(Resource.error(null, "Unknown error"));
+//                            } else {
+//                                liveData.postValue(Resource.error(null, error.getMessage()));
+//                            }
+//                        }
+//                    } catch (Exception ex) {
+//                        LogHelper.e("CMKWEB/Firestore result: refresh error");
+//                        liveData.postValue(Resource.error(null, ex.getMessage()));
+//                    }
+//                });
+//
+//        return liveData;
+//    }
 
 //    private Comics updateOrCreateComics(@NonNull AvailableComics availableComics, Comics comics) {
 //        if (comics == null) {

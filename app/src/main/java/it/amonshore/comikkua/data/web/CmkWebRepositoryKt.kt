@@ -1,22 +1,8 @@
 package it.amonshore.comikkua.data.web
 
 import android.content.Context
-import android.text.TextUtils
-import androidx.lifecycle.LiveData
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.liveData
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.ktx.Firebase
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.services.CmkWebService
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.tasks.await
 
 class CmkWebRepositoryKt(context: Context) {
 
@@ -25,10 +11,13 @@ class CmkWebRepositoryKt(context: Context) {
 
     private suspend fun readAvailableComics(): List<AvailableComics> {
         return _service.getTitles().map {
-            AvailableComics().apply {
-                name = it
-                searchableName = it.uppercase()
-            }
+            AvailableComics(
+                sourceId = it,
+                name = it,
+                searchableName = it.uppercase(),
+                publisher = "",
+                version = 0,
+            )
         }
     }
 
@@ -38,7 +27,7 @@ class CmkWebRepositoryKt(context: Context) {
         return comics.size
     }
 
-    suspend fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()
+    fun getAvailableComicsFlow() = _cmkWebDao.getAvailableComicsFLow()
 
 //    /**
 //     * Ritorna un [PagingData] con i comics disponibili.

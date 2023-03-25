@@ -1,14 +1,9 @@
-package it.amonshore.comikkua.data.web;
+package it.amonshore.comikkua.data.web
 
-import android.text.TextUtils;
-
-import com.google.gson.annotations.SerializedName;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.room.Entity;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 /**
  * Rappresenta un comics disponibile per essere monitorato:
@@ -16,74 +11,42 @@ import androidx.room.PrimaryKey;
  * Una volta monitorato viene creato un record in tComcis con sourceId
  * valorizzato a tAvailableComics.id.
  */
-@Entity(tableName = "tAvailableComics",
-        indices = {@Index(value = "sourceId", unique = true),
-                @Index({"name", "publisher", "version"})})
-public class AvailableComics {
-
-    public final static long NO_COMICS_ID = -1;
-
+@Entity(
+    tableName = "tAvailableComics",
+    indices = [Index("sourceId", unique = true), Index("name", "publisher", "version")]
+)
+data class AvailableComics(
+    @SerializedName("id") val sourceId: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("searchableName") val searchableName: String,
+    @SerializedName("publisher") val publisher: String,
+    @SerializedName("version") val version: Int,
+) {
     /**
      * Id comics interno.
      * Room supporta solo id di tipo long.
      */
+    @JvmField
     @PrimaryKey(autoGenerate = true)
-    public long id;
+    var id: Long = 0
 
-    /**
-     * Id del comics così come indentificato in rete.
-     */
-    @SerializedName("id")
-    public String sourceId;
+    val initial: String
+        get() = if (name.isEmpty()) "" else name.substring(0, 1)
 
-    /**
-     * Nome del cmomics.
-     */
-    @SerializedName("name")
-    public String name;
-
-    /**
-     * Nome del cmomics usato per le ricerche.
-     */
-    @SerializedName("searchableName")
-    public String searchableName;
-
-    /**
-     * Editore.
-     */
-    @SerializedName("publisher")
-    public String publisher;
-
-    /**
-     * Versione del comics, cioè il numero di ristampa.
-     * 0=nessuna ristampa, 1=prima ristampa, etc.
-     */
-    @SerializedName("version")
-    public int version;
-
-    public AvailableComics withSourceId(String sourceId) {
-        this.sourceId = sourceId;
-        return this;
-    }
-
-    @NonNull
-    public String getInitial() {
-        if (TextUtils.isEmpty(name)) {
-            return "";
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        return if (other is AvailableComics) {
+            other.sourceId == sourceId
         } else {
-            return name.substring(0, 1);
+            false
         }
     }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (obj == this) return true;
+    override fun hashCode(): Int {
+        return sourceId.hashCode()
+    }
 
-        if (obj instanceof AvailableComics) {
-            final AvailableComics other = (AvailableComics) obj;
-            return other.sourceId.equals(this.sourceId);
-        } else {
-            return false;
-        }
+    companion object {
+        const val NO_COMICS_ID: Long = -1
     }
 }

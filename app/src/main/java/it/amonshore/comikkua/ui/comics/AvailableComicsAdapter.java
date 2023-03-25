@@ -42,7 +42,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
     public void onBindViewHolder(@NonNull AvailableComicsViewHolder holder, int position) {
         final AvailableComics item = getItem(position);
         if (item != null) {
-            holder.bind(item, mSelectionTracker.isSelected(item.sourceId), mRequestManager);
+            holder.bind(item, mSelectionTracker.isSelected(item.getSourceId()), mRequestManager);
         } else {
             holder.clear();
         }
@@ -59,7 +59,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
         if (item == null) {
             return null;
         } else {
-            return item.sourceId;
+            return item.getSourceId();
         }
     }
 
@@ -70,7 +70,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
                 final AvailableComics item = getItem(ii);
                 if (item == null) {
                     return RecyclerView.NO_POSITION;
-                } else if (item.sourceId.equals(selectionKey)) {
+                } else if (item.getSourceId().equals(selectionKey)) {
                     return ii;
                 }
             }
@@ -229,7 +229,7 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
                 @Override
                 public boolean areItemsTheSame(@NonNull AvailableComics oldAvailableComics,
                                                @NonNull AvailableComics newAvailableComics) {
-                    return oldAvailableComics.sourceId.equals(newAvailableComics.sourceId);
+                    return oldAvailableComics.getSourceId().equals(newAvailableComics.getSourceId());
                 }
 
                 @Override

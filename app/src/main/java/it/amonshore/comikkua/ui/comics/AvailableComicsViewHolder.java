@@ -57,9 +57,9 @@ class AvailableComicsViewHolder extends IViewHolderWithDetails<String> {
 
     void bind(@NonNull AvailableComics comics, boolean selected, RequestManager requestManager) {
         itemView.setActivated(selected);
-        mId = comics.sourceId;
-        mName.setText(comics.name);
-        mPublisher.setText(comics.publisher);
+        mId = comics.getSourceId();
+        mName.setText(comics.getName());
+        mPublisher.setText(comics.getPublisher());
 //        mAuthors.setText(comics.authors);
 //        mNotes.setText(comics.notes);
 
