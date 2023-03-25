@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 private const val FILTER_DEBOUNCE = 300L;
 
-class CmkWebViewModelKt(application: Application) : AndroidViewModel(application) {
+class CmkWebViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _repository = CmkWebRepositoryKt(application)
     private val _filter = MutableLiveData<String>()
@@ -80,7 +80,7 @@ class CmkWebViewModelKt(application: Application) : AndroidViewModel(application
 //    }
 
     /**
-     * LiveData con i comics disponibili filtrati grazie alla proprietà [CmkWebViewModelKt.filter].
+     * LiveData con i comics disponibili filtrati grazie alla proprietà [CmkWebViewModel.filter].
      * Se il filtro è vuoto viene emessa una lista vuota.
      */
     @OptIn(FlowPreview::class)

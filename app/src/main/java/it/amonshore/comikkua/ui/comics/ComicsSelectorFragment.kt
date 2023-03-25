@@ -21,7 +21,7 @@ import com.bumptech.glide.Glide
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
-import it.amonshore.comikkua.data.web.CmkWebViewModelKt
+import it.amonshore.comikkua.data.web.CmkWebViewModel
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.TextWatcherAdapter
 import it.amonshore.comikkua.workers.RefreshComicsWorker
@@ -32,7 +32,7 @@ import it.amonshore.comikkua.workers.RefreshComicsWorker
  */
 class ComicsSelectorFragment : Fragment() {
 
-    private val _cmkWebViewModel: CmkWebViewModelKt by viewModels()
+    private val _cmkWebViewModel: CmkWebViewModel by viewModels()
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: AvailableComicsAdapter
     private lateinit var _recyclerView: RecyclerView
