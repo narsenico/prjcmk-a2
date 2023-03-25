@@ -1,195 +1,111 @@
-package it.amonshore.comikkua.ui.releases;
+package it.amonshore.comikkua.ui.releases
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.transition.TransitionInflater;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
+import android.content.Context
+import android.os.Bundle
+import android.transition.TransitionInflater
+import android.view.*
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.switchMap
+import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
+import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.comics.ComicsViewModelKt
+import it.amonshore.comikkua.data.release.ReleaseViewModelKt
+import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 
-import com.bumptech.glide.Glide;
+private data class Id(val comicsId: Long, val releaseId: Long)
 
-import java.lang.ref.WeakReference;
+class ReleaseEditFragment : Fragment() {
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import it.amonshore.comikkua.ICallback;
-import it.amonshore.comikkua.LiveDataEx;
-import it.amonshore.comikkua.LiveEvent;
-import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.data.release.Release;
-import it.amonshore.comikkua.data.release.ReleaseViewModel;
-import it.amonshore.comikkua.data.web.CmkWebRelease;
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
+    private val _comicsViewModel: ComicsViewModelKt by viewModels()
+    private val _releaseViewModel: ReleaseViewModelKt by viewModels()
 
-public class ReleaseEditFragment extends Fragment {
-
-    private OnNavigationFragmentListener mListener;
-
-    private ComicsViewModel mComicsViewModel;
-    private ReleaseViewModel mReleaseViewModel;
-    private ReleaseEditFragmentHelper mHelper;
-    private long mComicsId;
-    private long mReleaseId;
-    // immodificabile
-    private ComicsWithReleases mComics;
-
-    public ReleaseEditFragment() {
+    private val _id: Id by lazy {
+        val args = ReleaseEditFragmentArgs.fromBundle(requireArguments())
+        Id(args.comicsId, args.releaseId)
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setSharedElementEnterTransition(TransitionInflater.from(getContext())
-                .inflateTransition(android.R.transition.move));
-        setHasOptionsMenu(true);
+    private lateinit var _listener: OnNavigationFragmentListener
+    private lateinit var _helper: ReleaseEditFragmentHelper
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = TransitionInflater.from(context)
+            .inflateTransition(android.R.transition.move)
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final ReleaseEditFragmentArgs args = ReleaseEditFragmentArgs.fromBundle(requireArguments());
-
-        // recupero il ViewModel per l'accesso ai dati
-        mComicsViewModel = new ViewModelProvider(requireActivity())
-                .get(ComicsViewModel.class);
-        mReleaseViewModel = new ViewModelProvider(requireActivity())
-                .get(ReleaseViewModel.class);
-
-        // helper per bindare le view
-        mHelper = ReleaseEditFragmentHelper.init(inflater, container,
-                mReleaseViewModel,
-                getViewLifecycleOwner(),
-                getParentFragmentManager(),
-                Glide.with(this));
-
-        final Bundle arguments = requireArguments();
-        // id del comics, deve esistere sempre
-        mComicsId = args.getComicsId();
-        // id della release da editare, può essere NEW_RELEASE_ID per la creazione di una nuova release
-        mReleaseId = args.getReleaseId();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _helper = ReleaseEditFragmentHelper.init(
+            inflater,
+            container,
+            viewLifecycleOwner,
+            parentFragmentManager,
+            Glide.with(this)
+        )
 
         // lo stesso nome della transizione è stato assegnato alla view di partenza
         //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
-        mHelper.getRootView().findViewById(R.id.release).setTransitionName("release_tx_" + mReleaseId);
+        _helper.rootView.findViewById<View>(R.id.release).transitionName =
+            "release_tx_${_id.releaseId}"
 
-        // prima di tutto devo recupera il comics
-        LiveDataEx.observeOnce(mComicsViewModel.getComicsWithReleases(mComicsId), getViewLifecycleOwner(),
-                comicsWithReleases -> {
-                    mComics = comicsWithReleases;
-                    mHelper.setComics(mComics);
-                    if (mReleaseId == Release.NEW_RELEASE_ID) {
-                        // cerco la prossima release
-                        LiveDataEx.observeOnce(mReleaseViewModel.searchForNextRelease(mComics), getViewLifecycleOwner(),
-                                release -> mHelper.setRelease(/*mComics, */release, savedInstanceState));
-                    } else {
-                        LiveDataEx.observeOnce(mReleaseViewModel.getRelease(mReleaseId), getViewLifecycleOwner(),
-                                release -> mHelper.setRelease(/*mComics, */release, savedInstanceState));
+        _comicsViewModel.getComicsWithReleases(_id.comicsId)
+            .switchMap {
+                _helper.comics = it
+                _releaseViewModel.getPreferredRelease(it, _id.releaseId)
+            }
+            .observe(viewLifecycleOwner) { release ->
+                _helper.setRelease(release, savedInstanceState)
+            }
+
+        return _helper.rootView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_releases_edit, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == R.id.saveReleases) {
+                    _helper.isValid { valid ->
+                        // TODO: inserire solo se valido
+                        _releaseViewModel.insertReleases(_helper.createReleases().toList()) {
+                            findNavController().navigateUp()
+                        }
                     }
-                });
-
-        return mHelper.getRootView();
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mHelper != null) {
-            mHelper.saveInstanceState(outState);
-        }
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnNavigationFragmentListener) {
-            mListener = (OnNavigationFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnNavigationFragmentListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_releases_edit, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.saveReleases) {
-            // controllo che i dati siano validi
-            mHelper.isValid(valid -> {
-                // eseguo il salvataggio in manera asincrona
-                //  al termine navigo vergo la destinazione
-                new InsertAsyncTask(getView(), mReleaseViewModel, mHelper.isNew())
-                        .execute(mHelper.createReleases());
-            });
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private static class InsertAsyncTask extends AsyncTask<Release, Void, Integer> {
-
-        private WeakReference<View> mWeakView;
-        private ReleaseViewModel mReleaseViewModel;
-        private boolean mIsNew;
-
-        InsertAsyncTask(View view, ReleaseViewModel releaseViewModel, boolean isNew) {
-            mWeakView = new WeakReference<>(view);
-            mReleaseViewModel = releaseViewModel;
-            mIsNew = isNew;
-        }
-
-        @Override
-        protected Integer doInBackground(Release... releases) {
-            // per prima cosa elimino tutte le release esistenti con gli stessi numeri
-            // così potrò "sovrascrierle"
-            int[] numbers = new int[releases.length];
-            for (int ii = 0; ii < numbers.length; ii++) {
-                numbers[ii] = releases[ii].number;
-            }
-            int delCount = mReleaseViewModel.deleteByNumberSync(releases[0].comicsId, numbers);
-            LogHelper.d("DELETED OLD %d releases", delCount);
-            return mReleaseViewModel.insertSync(releases).length;
-        }
-
-        @Override
-        protected void onPostExecute(Integer count) {
-            LogHelper.d("INSERTED %d releases", count);
-            final View view = mWeakView.get();
-            if (view != null) {
-                if (count > 0) {
-                    Navigation.findNavController(view)
-                            .navigateUp();
-                } else {
-                    Toast.makeText(view.getContext(),
-                            R.string.comics_saving_error,
-                            Toast.LENGTH_LONG).show();
+                    return true
                 }
+                return false
             }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        _helper.saveInstanceState(outState)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        _listener = if (context is OnNavigationFragmentListener) {
+            context
+        } else {
+            throw RuntimeException("$context must implement OnNavigationFragmentListener")
         }
     }
 }

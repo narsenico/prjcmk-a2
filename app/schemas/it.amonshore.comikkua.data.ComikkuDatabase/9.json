@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "8fb775a46dab2e7b0349b64aca796e48",
+    "identityHash": "81208b7e92bfade027375fd9b11e4bfe",
     "entities": [
       {
         "tableName": "tComics",
@@ -213,13 +213,13 @@
         "indices": [
           {
             "name": "index_tReleases_comicsId_number",
-            "unique": false,
+            "unique": true,
             "columnNames": [
               "comicsId",
               "number"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_tReleases_comicsId_number` ON `${TABLE_NAME}` (`comicsId`, `number`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tReleases_comicsId_number` ON `${TABLE_NAME}` (`comicsId`, `number`)"
           }
         ],
         "foreignKeys": [
@@ -330,7 +330,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8fb775a46dab2e7b0349b64aca796e48')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '81208b7e92bfade027375fd9b11e4bfe')"
     ]
   }
 }

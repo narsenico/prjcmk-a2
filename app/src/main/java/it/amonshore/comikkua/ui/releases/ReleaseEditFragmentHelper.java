@@ -25,7 +25,6 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LifecycleOwner;
 import it.amonshore.comikkua.DateFormatterHelper;
@@ -35,7 +34,6 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
-import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
 import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
@@ -43,7 +41,6 @@ import it.amonshore.comikkua.ui.TextWatcherAdapter;
 public class ReleaseEditFragmentHelper {
 
     static ReleaseEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
-                                          @NonNull ReleaseViewModel viewModel,
                                           @NonNull LifecycleOwner lifecycleOwner,
                                           @NonNull FragmentManager fragmentManager,
                                           @NonNull RequestManager glideRequestManager) {
@@ -51,7 +48,7 @@ public class ReleaseEditFragmentHelper {
         final ReleaseEditFragmentHelper helper = new ReleaseEditFragmentHelper();
         helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
         helper.mGlideRequestManager = glideRequestManager;
-        helper.bind(view, viewModel, lifecycleOwner, fragmentManager);
+        helper.bind(view, lifecycleOwner, fragmentManager);
         return helper;
     }
 
@@ -80,17 +77,13 @@ public class ReleaseEditFragmentHelper {
     private Release mRelease;
     private NumberFormat numberFormat;
     @NonNull
-    private ReleaseViewModel mViewModel;
-    @NonNull
     private LifecycleOwner mLifecycleOwner;
     private RequestManager mGlideRequestManager;
-    private ContentLoadingProgressBar mProgressBar;
 
-    private void bind(@NonNull View view, @NonNull ReleaseViewModel viewModel,
+    private void bind(@NonNull View view,
                       @NonNull LifecycleOwner lifecycleOwner,
                       @NonNull FragmentManager fragmentManager) {
         mRootView = view;
-        mViewModel = viewModel;
         mLifecycleOwner = lifecycleOwner;
 
         preview = new Preview();
@@ -165,15 +158,6 @@ public class ReleaseEditFragmentHelper {
             editor.selectedDateInUtc = 0;
             editor.date.setText("");
             preview.date.setText("");
-        });
-
-        mProgressBar = view.findViewById(R.id.progress_bar);
-        viewModel.loading.observe(lifecycleOwner, loading -> {
-            if (loading) {
-                mProgressBar.show();
-            } else {
-                mProgressBar.hide();
-            }
         });
     }
 

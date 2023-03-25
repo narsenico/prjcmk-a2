@@ -17,7 +17,7 @@ import it.amonshore.comikkua.data.web.CmkWebRelease;
         foreignKeys = @ForeignKey(entity = Comics.class,
                 parentColumns = "id", childColumns = "comicsId",
                 onDelete = ForeignKey.CASCADE),
-        indices = {@Index(value = {"comicsId", "number"})})
+        indices = {@Index(value = {"comicsId", "number"}, unique = true)})
 public class Release {
 
     public final static long NO_RELEASE_ID = -1;

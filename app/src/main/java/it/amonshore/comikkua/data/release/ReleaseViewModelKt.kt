@@ -1,10 +1,7 @@
 package it.amonshore.comikkua.data.release
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import kotlinx.coroutines.launch
 
@@ -23,6 +20,11 @@ class ReleaseViewModelKt(application: Application) : AndroidViewModel(applicatio
                     0
                 )
             }
+    }
+
+    fun insertReleases(releases: List<Release>, callback: () -> Unit) = viewModelScope.launch {
+        _repository.insertReleases(releases)
+        callback()
     }
 
     fun updatePurchased(releaseId: Long, purchased: Boolean) = viewModelScope.launch {
@@ -72,4 +74,13 @@ class ReleaseViewModelKt(application: Application) : AndroidViewModel(applicatio
             }
             callback(result)
         }
+
+    fun getPreferredRelease(comics: ComicsWithReleases, id: Long) = liveData {
+        val release = if (id == Release.NEW_RELEASE_ID) {
+            comics.createNextRelease()
+        } else {
+            _repository.getRelease(id)
+        }
+        emit(release)
+    }
 }

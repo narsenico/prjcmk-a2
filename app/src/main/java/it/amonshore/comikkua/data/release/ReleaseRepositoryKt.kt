@@ -17,6 +17,10 @@ class ReleaseRepositoryKt(application: Application) {
 
     suspend fun getComicsReleases(ids: List<Long>) = _releaseDao.getComicsReleases(ids)
 
+    suspend fun getRelease(id: Long) = _releaseDao.getRelease(id)
+
+    suspend fun insertReleases(releases: List<Release>) = _releaseDao.insert(releases)
+
     suspend fun updatePurchased(ids: List<Long>, purchased: Boolean) {
         val lastUpdate = System.currentTimeMillis()
         _releaseDao.updatePurchased(ids, purchased, lastUpdate)

@@ -244,7 +244,7 @@ class ComicsDetailFragment : Fragment() {
         val txtMissing = view.findViewById<TextView>(R.id.txt_comics_release_missing)
 
         return Observer { comics ->
-            _comics = comics ?: throw NullPointerException("comics cannot be null")
+            _comics = comics!!
             txtName.text = comics.comics.name
             txtPublisher.text = comics.comics.publisher
             txtAuthors.text = comics.comics.authors
