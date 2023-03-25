@@ -21,7 +21,7 @@ import com.bumptech.glide.Glide
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
-import it.amonshore.comikkua.data.web.CmkWebViewModel
+import it.amonshore.comikkua.data.web.ComicsSelectorViewModel
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.workers.RefreshComicsWorker
 
@@ -31,7 +31,7 @@ import it.amonshore.comikkua.workers.RefreshComicsWorker
  */
 class ComicsSelectorFragment : Fragment() {
 
-    private val _cmkWebViewModel: CmkWebViewModel by viewModels()
+    private val _comicsSelectorViewModel: ComicsSelectorViewModel by viewModels()
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: AvailableComicsAdapter
     private lateinit var _recyclerView: RecyclerView
@@ -52,7 +52,7 @@ class ComicsSelectorFragment : Fragment() {
         _adapter = AvailableComicsAdapter.Builder(_recyclerView)
             .withComicsCallback(object : AvailableComicsAdapter.ComicsCallback {
                 override fun onComicsFollowed(comics: AvailableComics) {
-                    _cmkWebViewModel.followComics(comics)
+                    _comicsSelectorViewModel.followComics(comics)
                 }
 
                 override fun onComicsMenuSelected(comics: AvailableComics) {
@@ -62,7 +62,7 @@ class ComicsSelectorFragment : Fragment() {
             .withGlide(Glide.with(this))
             .build()
 
-        _cmkWebViewModel.getFilteredAvailableComics()
+        _comicsSelectorViewModel.getFilteredAvailableComics()
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("submitList count=${data.size}")
                 _adapter.submitList(data)
@@ -70,7 +70,7 @@ class ComicsSelectorFragment : Fragment() {
             }
 
         txtSearch.doAfterTextChanged {
-            _cmkWebViewModel.filter = it?.toString() ?: ""
+            _comicsSelectorViewModel.filter = it?.toString() ?: ""
         }
 
         return view

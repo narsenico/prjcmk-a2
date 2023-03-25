@@ -14,8 +14,7 @@ import kotlinx.coroutines.launch
 
 private const val FILTER_DEBOUNCE = 300L;
 
-@Deprecated("Modificare nome in ComicsSelectorViewModel")
-class CmkWebViewModel(application: Application) : AndroidViewModel(application) {
+class ComicsSelectorViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _cmkWebRepository = CmkWebRepositoryKt(application)
     private val _comicsRepository = ComicsRepositoryKt(application)
@@ -53,7 +52,7 @@ class CmkWebViewModel(application: Application) : AndroidViewModel(application) 
 //    }
 
     /**
-     * LiveData con i comics disponibili filtrati grazie alla proprietà [CmkWebViewModel.filter].
+     * LiveData con i comics disponibili filtrati grazie alla proprietà [ComicsSelectorViewModel.filter].
      */
     @OptIn(FlowPreview::class)
     fun getFilteredAvailableComics(): LiveData<List<AvailableComics>> = liveData {
