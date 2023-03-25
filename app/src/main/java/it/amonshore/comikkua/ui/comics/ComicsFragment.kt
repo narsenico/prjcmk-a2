@@ -1,313 +1,304 @@
-package it.amonshore.comikkua.ui.comics;
+package it.amonshore.comikkua.ui.comics
 
-import android.content.Context;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.content.Context
+import android.os.Bundle
+import android.text.TextUtils
+import android.view.*
+import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import it.amonshore.comikkua.Constants
+import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.comics.Comics
+import it.amonshore.comikkua.data.comics.ComicsViewModel
+import it.amonshore.comikkua.data.comics.ComicsViewModelKt
+import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.databinding.FragmentComicsBinding
+import it.amonshore.comikkua.parcelable
+import it.amonshore.comikkua.ui.*
 
-import com.bumptech.glide.Glide;
+private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout"
+//private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query"
 
-import java.util.Objects;
+class ComicsFragment : Fragment() {
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.view.ActionMode;
-import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import it.amonshore.comikkua.Constants;
-import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.ui.ActionModeController;
-import it.amonshore.comikkua.ui.BottomSheetDialogHelper;
-import it.amonshore.comikkua.ui.ImageHelper;
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
-import it.amonshore.comikkua.ui.ShareHelper;
+    private val _comicsViewModel: ComicsViewModel by viewModels()
+    private val _comicsViewModelKt: ComicsViewModelKt by viewModels()
 
-import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
+    private lateinit var _binding: FragmentComicsBinding
+    private lateinit var _listener: OnNavigationFragmentListener
+    private lateinit var _adapter: PagedListComicsAdapter
 
-
-public class ComicsFragment extends Fragment {
-
-    private final static String BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout";
-    private final static String BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query";
-
-    private OnNavigationFragmentListener mListener;
-    private PagedListComicsAdapter mAdapter;
-    private ComicsViewModel mComicsViewModel;
-    private RecyclerView mRecyclerView;
-
-    public ComicsFragment() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _binding = FragmentComicsBinding.inflate(layoutInflater)
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding.list.layoutManager = LinearLayoutManager(requireContext())
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_comics, container, false);
+        val actionModeName = javaClass.simpleName + "_actionMode"
+        val actionModeController = createActionModeController()
+        _adapter = createComicsAdapter(actionModeName, actionModeController)
 
-        final String actionModeName = getClass().getSimpleName() + "_actionMode";
-        final Context context = requireContext();
-        mRecyclerView = view.findViewById(R.id.list);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-        final ActionModeController actionModeController = new ActionModeController(R.menu.menu_comics_selected) {
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                if (item.getItemId() == R.id.deleteComics) {
-                    final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
-                    if (tracker.hasSelection()) {
-                        // prima elimino eventuali release ancora in fase di undo
-                        mComicsViewModel.deleteRemoved();
-                        mComicsViewModel.remove(tracker.getSelection(), (ids, count) -> showUndo(ids, count));
-                    }
-                    tracker.clearSelection();
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
-                mAdapter.getSelectionTracker().clearSelection();
-                super.onDestroyActionMode(mode);
-            }
-        };
-
-        // PROBLEMI:
-        // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
-
-        mAdapter = new PagedListComicsAdapter.Builder(mRecyclerView)
-                .withOnItemSelectedListener((keys, size) -> {
-                    if (mListener != null) {
-                        if (size == 0) {
-                            mListener.onFragmentRequestActionMode(null, actionModeName, null);
-                        } else {
-                            mListener.onFragmentRequestActionMode(actionModeController, actionModeName,
-                                    getString(R.string.title_selected, size));
-                        }
-                    }
-                })
-                .withComicsCallback(new PagedListComicsAdapter.ComicsCallback() {
-                    @Override
-                    public void onComicsClick(@NonNull ComicsWithReleases comics) {
-                        final NavDirections directions = ComicsFragmentDirections
-                                .actionDestComicsToComicsDetailFragment(comics.comics.id);
-
-                        Navigation.findNavController(requireView()).navigate(directions);
-                    }
-
-                    @Override
-                    public void onComicsMenuSelected(@NonNull ComicsWithReleases comics) {
-                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_comics,
-                                ShareHelper.formatComics(comics.comics), id -> {
-                                    if (id == R.id.createNewRelease) {
-                                        openNewRelease(view, comics);
-                                    } else if (id == R.id.share) {
-                                        ShareHelper.shareComics(requireActivity(), comics.comics);
-                                    } else if (id == R.id.deleteComics) {
-                                        // prima elimino eventuali release ancora in fase di undo
-                                        mComicsViewModel.deleteRemoved();
-                                        mComicsViewModel.remove(comics.comics.id, (ids, count) -> showUndo(ids, count));
-                                    } else if (id == R.id.search_starshop) {
-                                        ShareHelper.shareOnStarShop(requireActivity(), comics.comics);
-                                    } else if (id == R.id.search_amazon) {
-                                        ShareHelper.shareOnAmazon(requireActivity(), comics.comics);
-                                    } else if (id == R.id.search_popstore) {
-                                        ShareHelper.shareOnPopStore(requireActivity(), comics.comics);
-                                    } else if (id == R.id.search_google) {
-                                        ShareHelper.shareOnGoogle(requireActivity(), comics.comics);
-                                    }
-                                });
-                    }
-                })
-                .withGlide(Glide.with(this))
-                .build();
-
-        // recupero il ViewModel per l'accesso ai dati
-        // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
-        mComicsViewModel = new ViewModelProvider(requireActivity())
-                .get(ComicsViewModel.class);
         // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        mComicsViewModel.comicsWithReleasesList.observe(getViewLifecycleOwner(), data -> {
-            LogHelper.d("comics viewmodel paging data changed");
-            mAdapter.submitData(getLifecycle(), data);
-        });
+        _comicsViewModelKt.getComicsWithReleasesPaged()
+            .observe(viewLifecycleOwner) { data ->
+                LogHelper.d("comics viewmodel paging data changed")
+                _adapter.submitData(lifecycle, data)
+            }
 
         // ripristino la selezione salvata in onSaveInstanceState
-        mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
+        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
+        _comicsViewModelKt.useLastFilter()
 
-        // la prima volta carico tutti i dati
-//        mComicsViewModel.setFilter(null);
-        mComicsViewModel.useLastFilter();
-
-        return view;
+        return _binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+
         // ripristino lo stato del layout (la posizione dello scroll)
         // se non trovo savedInstanceState uso lo stato salvato nel view model
         if (savedInstanceState != null) {
-            Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                    .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
-        } else if (mComicsViewModel != null) {
-            Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                    .onRestoreInstanceState(mComicsViewModel.states.getParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT));
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mRecyclerView != null) {
-            // visto che Navigation ricrea il fragment ogni volta (!)
-            // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
-            //  in onViewCreated
-            mComicsViewModel.states.putParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT,
-                    Objects.requireNonNull(mRecyclerView.getLayoutManager()).onSaveInstanceState());
-        }
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnNavigationFragmentListener) {
-            mListener = (OnNavigationFragmentListener) context;
+            _binding.list.layoutManager?.onRestoreInstanceState(
+                savedInstanceState.parcelable(
+                    BUNDLE_COMICS_RECYCLER_LAYOUT
+                )
+            )
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnNavigationFragmentListener");
+            _binding.list.layoutManager?.onRestoreInstanceState(
+                _comicsViewModelKt.states.parcelable(
+                    BUNDLE_COMICS_RECYCLER_LAYOUT
+                )
+            )
         }
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    override fun onPause() {
+        super.onPause()
+        // visto che Navigation ricrea il fragment ogni volta (!)
+        // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
+        //  in onViewCreated
+        _comicsViewModelKt.states.putParcelable(
+            BUNDLE_COMICS_RECYCLER_LAYOUT,
+            _binding.list.layoutManager?.onSaveInstanceState()
+        )
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            // ripristino le selezioni
-            mAdapter.getSelectionTracker().onSaveInstanceState(outState);
-            // salvo lo stato del layout (la posizione dello scroll)
-            outState.putParcelable(BUNDLE_COMICS_RECYCLER_LAYOUT,
-                    Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                            .onSaveInstanceState());
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        _listener = if (context is OnNavigationFragmentListener) {
+            context
+        } else {
+            throw RuntimeException("$context must implement OnNavigationFragmentListener")
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_comics_fragment, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // ripristino le selezioni
+        _adapter.selectionTracker.onSaveInstanceState(outState)
+        // salvo lo stato del layout (la posizione dello scroll)
+        outState.putParcelable(
+            BUNDLE_COMICS_RECYCLER_LAYOUT,
+            _binding.list.layoutManager?.onSaveInstanceState()
+        )
+    }
 
-        final MenuItem searchItem = menu.findItem(R.id.searchComics);
-        final SearchView searchView = (SearchView) searchItem.getActionView();
-
-        // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
-
-        // TODO: al cambio di configurazione (es orientamento) la query viene persa
-        //  è il viewModel che deve tenere memorizzata l'ultima query,
-        //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
-
-        if (!TextUtils.isEmpty(mComicsViewModel.getLastFilter())) {
-            // lo faccio prima di aver impostato i listener così non scateno più nulla
-            searchItem.expandActionView();
-            searchView.setQuery(mComicsViewModel.getLastFilter(), false);
-            searchView.clearFocus();
-
-            // TODO: non funziona sulla navigazione (es apro il dettaglio di un comics filtrato),
-            //  perché viene chiusa la searchView e scatenato onQueryTextChange con testo vuoto
-            //  che mi serve così perché quando volutamente la chiudo voglio che il filtro venga pulito
-        }
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                LogHelper.d("onQueryTextSubmit");
-                return true;
+    private fun createActionModeController() =
+        object : ActionModeController(R.menu.menu_comics_selected) {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                if (item.itemId == R.id.deleteComics) {
+                    val tracker = _adapter.selectionTracker
+                    if (tracker.hasSelection()) {
+                        // prima elimino eventuali release ancora in fase di undo
+                        _comicsViewModel.deleteRemoved()
+                        _comicsViewModel.remove(tracker.selection) { ids: Array<Long>, count: Int ->
+                            showUndo(
+                                ids,
+                                count
+                            )
+                        }
+                    }
+                    tracker.clearSelection()
+                    return true
+                }
+                return false
             }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                LogHelper.d("filterName change " + newText);
-                mComicsViewModel.setFilter(newText); // TODO: ok ma aggiungere debounce
-                return true;
+            override fun onDestroyActionMode(mode: ActionMode) {
+                // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
+                _adapter.selectionTracker.clearSelection()
+                super.onDestroyActionMode(mode)
             }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        final int itemId = item.getItemId();
-        if (itemId == R.id.createNewComics) {
-            final NavDirections directions = ComicsFragmentDirections
-                    .actionDestComicsFragmentToComicsEditFragment()
-                    .setComicsId(NEW_COMICS_ID)
-                    .setSubtitle(R.string.title_comics_create);
-
-            Navigation.findNavController(requireView()).navigate(directions);
-
-            return true;
-        } else if (itemId == R.id.openComicsSelector) {
-            final NavDirections directions = ComicsFragmentDirections
-                    .actionDestComicFragmentToComicsSelectorFragment();
-
-            Navigation.findNavController(requireView()).navigate(directions);
-
-            return true;
         }
-        return super.onOptionsItemSelected(item);
+
+    /**
+     * TODO: selection changed viene scatenato due volte all'inizio:
+     *  questo perché il tracker permette la selezione di più item trascinando la selezione
+     */
+    private fun createComicsAdapter(
+        actionModeName: String,
+        actionModeController: ActionModeController
+    ) = PagedListComicsAdapter.Builder(_binding.list)
+        .withOnItemSelectedListener { _, size ->
+            if (size == 0) {
+                _listener.onFragmentRequestActionMode(null, actionModeName, null)
+            } else {
+                _listener.onFragmentRequestActionMode(
+                    actionModeController, actionModeName,
+                    getString(R.string.title_selected, size)
+                )
+            }
+        }
+        .withComicsCallback(object : PagedListComicsAdapter.ComicsCallback {
+            override fun onComicsClick(comics: ComicsWithReleases) {
+                val directions: NavDirections = ComicsFragmentDirections
+                    .actionDestComicsToComicsDetailFragment(comics.comics.id)
+                findNavController(requireView()).navigate(directions)
+            }
+
+            override fun onComicsMenuSelected(comics: ComicsWithReleases) {
+                BottomSheetDialogHelper.show(
+                    requireActivity(), R.layout.bottomsheet_comics,
+                    ShareHelper.formatComics(comics.comics)
+                ) { id: Int ->
+                    when (id) {
+                        R.id.createNewRelease -> {
+                            openNewRelease(_binding.root, comics)
+                        }
+                        R.id.share -> {
+                            ShareHelper.shareComics(requireActivity(), comics.comics)
+                        }
+                        R.id.deleteComics -> {
+                            // prima elimino eventuali release ancora in fase di undo
+                            _comicsViewModel.deleteRemoved()
+                            _comicsViewModel.remove(comics.comics.id) { ids: Array<Long>, count: Int ->
+                                showUndo(
+                                    ids,
+                                    count
+                                )
+                            }
+                        }
+                        R.id.search_starshop -> {
+                            ShareHelper.shareOnStarShop(requireActivity(), comics.comics)
+                        }
+                        R.id.search_amazon -> {
+                            ShareHelper.shareOnAmazon(requireActivity(), comics.comics)
+                        }
+                        R.id.search_popstore -> {
+                            ShareHelper.shareOnPopStore(requireActivity(), comics.comics)
+                        }
+                        R.id.search_google -> {
+                            ShareHelper.shareOnGoogle(requireActivity(), comics.comics)
+                        }
+                    }
+                }
+            }
+        })
+        .withGlide(Glide.with(this))
+        .build()
+
+    private fun openNewRelease(view: View, comics: ComicsWithReleases) {
+        val directions: NavDirections = ComicsFragmentDirections
+            .actionDestComicFragmentToReleaseEditFragment(comics.comics.id)
+            .setSubtitle(R.string.title_release_create)
+        findNavController(view).navigate(directions)
     }
 
-    private void openNewRelease(@NonNull View view, @NonNull ComicsWithReleases comics) {
-        final NavDirections directions = ComicsFragmentDirections
-                .actionDestComicFragmentToReleaseEditFragment(comics.comics.id)
-                .setSubtitle(R.string.title_release_create);
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_comics_fragment, menu)
 
-        Navigation.findNavController(view).navigate(directions);
+                val searchItem = menu.findItem(R.id.searchComics)
+                val searchView = searchItem.actionView as SearchView
+
+                // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
+
+                // TODO: al cambio di configurazione (es orientamento) la query viene persa
+                //  è il viewModel che deve tenere memorizzata l'ultima query,
+                //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
+                if (!TextUtils.isEmpty(_comicsViewModelKt.lastFilter)) {
+                    // lo faccio prima di aver impostato i listener così non scateno più nulla
+                    searchItem.expandActionView()
+                    searchView.setQuery(_comicsViewModelKt.lastFilter, false)
+                    searchView.clearFocus()
+
+                    // TODO: non funziona sulla navigazione (es apro il dettaglio di un comics filtrato),
+                    //  perché viene chiusa la searchView e scatenato onQueryTextChange con testo vuoto
+                    //  che mi serve così perché quando volutamente la chiudo voglio che il filtro venga pulito
+                }
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        LogHelper.d("onQueryTextSubmit")
+                        return true
+                    }
+
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        LogHelper.d("filterName change $newText")
+                        _comicsViewModelKt.filter = newText // TODO: ok ma aggiungere debounce
+                        return true
+                    }
+                })
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    R.id.createNewComics -> {
+                        val directions: NavDirections = ComicsFragmentDirections
+                            .actionDestComicsFragmentToComicsEditFragment()
+                            .setComicsId(Comics.NEW_COMICS_ID)
+                            .setSubtitle(R.string.title_comics_create)
+                        findNavController(requireView()).navigate(directions)
+                        return true
+                    }
+                    R.id.openComicsSelector -> {
+                        val directions: NavDirections = ComicsFragmentDirections
+                            .actionDestComicFragmentToComicsSelectorFragment()
+                        findNavController(requireView()).navigate(directions)
+                        return true
+                    }
+                    else -> return false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private void showUndo(final Long[] ids, int count) {
+    private fun showUndo(ids: Array<Long>, count: Int) {
         // uso il contesto applicativo per eliminare le immagini perché il contesto del fragment
         // non è più valido se navigo da un'altra parte
-        final Context context = requireContext().getApplicationContext();
-
-        mListener.requestSnackbar(getResources().getQuantityString(R.plurals.comics_deleted, count, count),
-                Constants.UNDO_TIMEOUT,
-                (canDelete) -> {
-                    if (canDelete) {
-                        LogHelper.d("Delete removed comics");
-                        mComicsViewModel.deleteRemoved();
-                        // elimino anche le immagini
-                        // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
-                        ImageHelper.deleteImageFiles(context, ids);
-                    } else {
-                        LogHelper.d("Undo removed comics");
-                        mComicsViewModel.undoRemoved();
-                    }
-                });
+        val context = requireContext().applicationContext
+        _listener.requestSnackbar(
+            resources.getQuantityString(R.plurals.comics_deleted, count, count),
+            Constants.UNDO_TIMEOUT
+        ) { canDelete: Boolean ->
+            if (canDelete) {
+                LogHelper.d("Delete removed comics")
+                _comicsViewModel.deleteRemoved()
+                // elimino anche le immagini
+                // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
+                ImageHelper.deleteImageFiles(context, *ids)
+            } else {
+                LogHelper.d("Undo removed comics")
+                _comicsViewModel.undoRemoved()
+            }
+        }
     }
 }

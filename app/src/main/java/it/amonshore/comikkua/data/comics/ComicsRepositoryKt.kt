@@ -1,7 +1,7 @@
 package it.amonshore.comikkua.data.comics
 
 import android.content.Context
- import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import it.amonshore.comikkua.data.ComikkuDatabase
 
 class ComicsRepositoryKt(context: Context) {
@@ -15,4 +15,10 @@ class ComicsRepositoryKt(context: Context) {
     fun getComicsWithReleases(id: Long): LiveData<ComicsWithReleases> =
         _comicsDao.getComicsWithReleases(id)
 
+    fun getComicsWithReleasesPagingSource(likeName: String? = null) =
+        if (likeName == null) {
+            _comicsDao.getComicsWithReleasesPagingSource()
+        } else {
+            _comicsDao.getComicsWithReleasesPagingSource(likeName)
+        }
 }
