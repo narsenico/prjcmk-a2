@@ -11,6 +11,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +25,8 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
 import it.amonshore.comikkua.ui.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout"
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query"
@@ -52,16 +55,16 @@ class ComicsFragment : Fragment() {
         val actionModeController = createActionModeController()
         _adapter = createComicsAdapter(actionModeName, actionModeController)
 
-        // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        _comicsViewModelKt.getComicsWithReleasesPaged()
+        _comicsViewModelKt.comicsWithReleasesPaged
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("comics viewmodel paging data changed")
                 _adapter.submitData(lifecycle, data)
             }
 
         // ripristino la selezione salvata in onSaveInstanceState
-        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
-        _comicsViewModelKt.useLastFilter()
+        // TODO: come fa a ripristinare la selezione prima di aver caricato i dati???
+//        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
+//        _comicsViewModelKt.useLastFilter()
 
         return _binding.root
     }
@@ -239,14 +242,13 @@ class ComicsFragment : Fragment() {
                     //  perché viene chiusa la searchView e scatenato onQueryTextChange con testo vuoto
                     //  che mi serve così perché quando volutamente la chiudo voglio che il filtro venga pulito
                 }
+
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String): Boolean {
-                        LogHelper.d("onQueryTextSubmit")
                         return true
                     }
 
                     override fun onQueryTextChange(newText: String): Boolean {
-                        LogHelper.d("filterName change $newText")
                         _comicsViewModelKt.filter = newText // TODO: ok ma aggiungere debounce
                         return true
                     }

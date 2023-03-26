@@ -42,13 +42,13 @@ interface ComicsDaoKt {
             FROM tComics 
             WHERE 
             removed = 0 AND selected = 1 
-            AND (name LIKE :likeName 
-                OR publisher LIKE :likeName 
-                OR authors LIKE :likeName 
-                OR notes LIKE :likeName)
+            AND (name LIKE :like 
+                OR publisher LIKE :like 
+                OR authors LIKE :like 
+                OR notes LIKE :like)
             ORDER BY name COLLATE NOCASE ASC
             """
     )
     @Transaction
-    fun getComicsWithReleasesPagingSource(likeName: String): PagingSource<Int, ComicsWithReleases>
+    fun getComicsWithReleasesPagingSource(like: String): PagingSource<Int, ComicsWithReleases>
 }

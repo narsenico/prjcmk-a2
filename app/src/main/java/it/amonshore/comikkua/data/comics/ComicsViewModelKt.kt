@@ -5,19 +5,19 @@ import android.os.Bundle
 import androidx.lifecycle.*
 import androidx.paging.*
 import it.amonshore.comikkua.LogHelper
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 private const val FILTER_DEBOUNCE = 300L;
 private val SPACE_REGEX = "\\s+".toRegex()
 
+@OptIn(FlowPreview::class)
 class ComicsViewModelKt(application: Application) : AndroidViewModel(application) {
 
     private val _repository = ComicsRepositoryKt(application)
     private val _filter = MutableLiveData<String>()
-
     private var _lastFilter: String = ""
-    private var _filteringJob: Job? = null
 
     var filter: String
         get() = _lastFilter
@@ -31,13 +31,20 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
 
     val states = Bundle()
 
-    fun useLastFilter() {
-        filter = _lastFilter
-    }
+    val comicsWithReleasesPaged: LiveData<PagingData<ComicsWithReleases>>
 
-    fun getComicsWithReleasesPaged(): LiveData<PagingData<ComicsWithReleases>> {
-        return _filter
-            .map { it.toLikeOrNull() }
+    init {
+        val filterAsLike: LiveData<String?> = liveData {
+            _filter.asFlow()
+                .onStart { emit("") }
+                .debounce(FILTER_DEBOUNCE)
+                .onEach { _lastFilter = it }
+                .map { it.toLikeOrNull() }
+                .distinctUntilChanged()
+                .collectLatest { emit(it) }
+        }
+
+        comicsWithReleasesPaged = filterAsLike
             .switchMap { filter ->
                 Pager(
                     config = PagingConfig(
@@ -49,8 +56,13 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
                         LogHelper.d("get paged comics with filter=$filter")
                         _repository.getComicsWithReleasesPagingSource(filter)
                     }
-                ).liveData.cachedIn(viewModelScope)
+                ).liveData
             }
+            .cachedIn(viewModelScope)
+    }
+
+    fun useLastFilter() {
+        filter = _lastFilter
     }
 
     fun getComicsWithReleases(id: Long) = _repository.getComicsWithReleases(id)

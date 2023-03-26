@@ -22,10 +22,10 @@ class ComicsRepositoryKt(context: Context) {
     fun getComicsWithReleases(id: Long): LiveData<ComicsWithReleases> =
         _comicsDao.getComicsWithReleases(id)
 
-    fun getComicsWithReleasesPagingSource(likeName: String? = null) =
-        if (likeName == null) {
+    fun getComicsWithReleasesPagingSource(like: String? = null) =
+        if (like == null) {
             _comicsDao.getComicsWithReleasesPagingSource()
         } else {
-            _comicsDao.getComicsWithReleasesPagingSource(likeName)
+            _comicsDao.getComicsWithReleasesPagingSource(like)
         }
 }
