@@ -19,7 +19,6 @@ import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
-import it.amonshore.comikkua.data.comics.ComicsViewModel
 import it.amonshore.comikkua.data.comics.ComicsViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
@@ -31,7 +30,6 @@ private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout
 
 class ComicsFragment : Fragment() {
 
-    private val _comicsViewModel: ComicsViewModel by viewModels()
     private val _comicsViewModelKt: ComicsViewModelKt by viewModels()
 
     private lateinit var _binding: FragmentComicsBinding
@@ -125,15 +123,12 @@ class ComicsFragment : Fragment() {
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 if (item.itemId == R.id.deleteComics) {
                     val tracker = _adapter.selectionTracker
-                    if (tracker.hasSelection()) {
-                        // prima elimino eventuali release ancora in fase di undo
-                        _comicsViewModel.deleteRemoved()
-                        _comicsViewModel.remove(tracker.selection) { ids: Array<Long>, count: Int ->
-                            showUndo(
-                                ids,
-                                count
-                            )
-                        }
+                    val ids = tracker.selection.toList()
+                    _comicsViewModelKt.markAsRemoved(ids) { count ->
+                        showUndo(
+                            ids,
+                            count
+                        )
                     }
                     tracker.clearSelection()
                     return true
@@ -186,9 +181,8 @@ class ComicsFragment : Fragment() {
                             ShareHelper.shareComics(requireActivity(), comics.comics)
                         }
                         R.id.deleteComics -> {
-                            // prima elimino eventuali release ancora in fase di undo
-                            _comicsViewModel.deleteRemoved()
-                            _comicsViewModel.remove(comics.comics.id) { ids: Array<Long>, count: Int ->
+                            val ids = listOf(comics.comics.id)
+                            _comicsViewModelKt.markAsRemoved(ids) { count ->
                                 showUndo(
                                     ids,
                                     count
@@ -281,7 +275,7 @@ class ComicsFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun showUndo(ids: Array<Long>, count: Int) {
+    private fun showUndo(ids: List<Long>, count: Int) {
         // uso il contesto applicativo per eliminare le immagini perché il contesto del fragment
         // non è più valido se navigo da un'altra parte
         val context = requireContext().applicationContext
@@ -291,13 +285,13 @@ class ComicsFragment : Fragment() {
         ) { canDelete: Boolean ->
             if (canDelete) {
                 LogHelper.d("Delete removed comics")
-                _comicsViewModel.deleteRemoved()
+                _comicsViewModelKt.deleteRemoved()
                 // elimino anche le immagini
                 // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
-                ImageHelper.deleteImageFiles(context, *ids)
+                ImageHelper.deleteImageFiles(context, *ids.toTypedArray())
             } else {
                 LogHelper.d("Undo removed comics")
-                _comicsViewModel.undoRemoved()
+                _comicsViewModelKt.undoRemoved()
             }
         }
     }

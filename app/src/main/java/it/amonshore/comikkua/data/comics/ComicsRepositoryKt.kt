@@ -12,6 +12,13 @@ class ComicsRepositoryKt(context: Context) {
         _comicsDao.insert(comics)
     }
 
+    suspend fun deleteRemoved() = _comicsDao.deleteRemoved()
+
+    suspend fun undoRemoved() = _comicsDao.undoRemoved()
+
+    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int =
+        _comicsDao.updateRemoved(ids, removed)
+
     fun getComicsWithReleases(id: Long): LiveData<ComicsWithReleases> =
         _comicsDao.getComicsWithReleases(id)
 

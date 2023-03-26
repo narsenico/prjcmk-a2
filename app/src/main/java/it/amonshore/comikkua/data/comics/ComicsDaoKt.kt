@@ -6,6 +6,20 @@ import androidx.room.*
 
 @Dao
 interface ComicsDaoKt {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(comics: Comics)
+
+    @Query("DELETE FROM tComics WHERE removed = 1")
+    @Transaction
+    suspend fun deleteRemoved()
+
+    @Query("UPDATE tComics SET removed = 0")
+    @Transaction
+    suspend fun undoRemoved()
+
+    @Query("UPDATE tComics SET removed = :removed WHERE id IN (:ids)")
+    @Transaction
+    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     suspend fun getComics(): List<Comics>
@@ -13,9 +27,6 @@ interface ComicsDaoKt {
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
     suspend fun getAllComicsWithReleases(): List<ComicsWithReleases>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(comics: Comics)
 
     @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     @Transaction
