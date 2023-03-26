@@ -172,4 +172,5 @@
     <string name="share_chooser_title">Share</string>
     <string name="share_release" translatable="false">%s #%d (%s) %s</string>
     <string name="share_release_nodate" translatable="false">%s #%d %s</string>
+    <string name="search_comics_hint">Search comics</string>
 </resources>

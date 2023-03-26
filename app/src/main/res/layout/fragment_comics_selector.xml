@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <androidx.constraintlayout.motion.widget.MotionLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    <androidx.constraintlayout.motion.widget.MotionLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,6 +15,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginBottom="0dp"
             android:background="?attr/colorPrimaryDark"
+            android:elevation="4dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_new_releases_found"
             app:layout_constraintEnd_toEndOf="parent"
@@ -25,14 +26,11 @@
             android:id="@+id/txt_search"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/item_margin_default"
-            android:layout_marginTop="@dimen/item_margin_default"
-            android:layout_marginEnd="@dimen/item_margin_default"
-            android:layout_marginBottom="@dimen/item_margin_default"
-            android:background="@drawable/background_search_round"
+            android:background="@color/colorBackground"
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="@dimen/item_padding_half"
-            android:hint="Search comics"
+            android:elevation="4dp"
+            android:hint="@string/search_comics_hint"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
@@ -55,21 +53,21 @@
             app:layout_constraintTop_toBottomOf="@id/image">
 
             <androidx.recyclerview.widget.RecyclerView
-                tools:visibility="gone"
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:listitem="@layout/listitem_comics" />
+                tools:listitem="@layout/listitem_comics"
+                tools:visibility="gone" />
 
             <androidx.appcompat.widget.AppCompatTextView
-                style="@style/TextAppearance.AppCompat.Large"
                 android:id="@+id/empty"
-                android:text="Se non trovi un fumetto puoi sempre aggiungerlo a mano"
+                style="@style/TextAppearance.AppCompat.Large"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                tools:visibility="visible"
-                android:visibility="gone" />
+                android:text="Se non trovi un fumetto puoi sempre aggiungerlo a mano"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
         </FrameLayout>
 
