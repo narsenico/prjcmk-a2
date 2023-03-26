@@ -253,6 +253,10 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
         @NonNull
         @Override
         public List<ComicsWithReleases> getPreloadItems(int position) {
+            if (position >= mAdapter.getItemCount()) {
+                return Collections.emptyList();
+            }
+
             final ComicsWithReleases item = mAdapter.getItem(position);
             if (item == null) {
                 return Collections.emptyList();
