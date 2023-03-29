@@ -9,7 +9,7 @@ android {
     compileSdkVersion 33
     defaultConfig {
         applicationId "it.amonshore.comikkua"
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 33
         versionCode 3
         versionName "1.0"
