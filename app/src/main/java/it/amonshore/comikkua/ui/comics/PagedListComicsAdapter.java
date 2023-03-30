@@ -66,18 +66,21 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
     public int getPosition(long selectionKey) {
         long nn = SystemClock.elapsedRealtimeNanos();
+        final int count = getItemCount();
         try {
-            for (int ii = 0; ; ii++) {
+            for (int ii = 0; ii < count; ii++) {
                 final ComicsWithReleases item = getItem(ii);
                 if (item == null) {
-                    return RecyclerView.NO_POSITION;
+                    break;
                 } else if (item.comics.id == selectionKey) {
                     return ii;
                 }
             }
+
+            return RecyclerView.NO_POSITION;
         } finally {
             LogHelper.d("getPosition of %s out of %s in %sns",
-                    selectionKey, getItemCount(), SystemClock.elapsedRealtimeNanos() - nn);
+                    selectionKey, count, SystemClock.elapsedRealtimeNanos() - nn);
         }
     }
 

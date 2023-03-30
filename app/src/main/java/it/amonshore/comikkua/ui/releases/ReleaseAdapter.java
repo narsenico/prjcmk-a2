@@ -93,18 +93,21 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
     public int getPosition(long selectionKey) {
         long nn = SystemClock.elapsedRealtimeNanos();
+        final int count = getItemCount();
         try {
-            for (int ii = 0; ; ii++) {
+            for (int ii = 0; ii < count; ii++) {
                 final IReleaseViewModelItem item = getItem(ii);
                 if (item == null) {
-                    return RecyclerView.NO_POSITION;
+                    break;
                 } else if (item.getId() == selectionKey) {
                     return ii;
                 }
             }
+
+            return RecyclerView.NO_POSITION;
         } finally {
-            LogHelper.d("getPosition of %s out of %s in %sns",
-                    selectionKey, getItemCount(), SystemClock.elapsedRealtimeNanos() - nn);
+            LogHelper.d("getPosition of key=%s in %s items in %sns",
+                    selectionKey, count, SystemClock.elapsedRealtimeNanos() - nn);
         }
     }
 
@@ -522,6 +525,10 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         @NonNull
         @Override
         public List<IReleaseViewModelItem> getPreloadItems(int position) {
+            if (position >= mAdapter.getItemCount()) {
+                return Collections.emptyList();
+            }
+
             final IReleaseViewModelItem item = mAdapter.getItem(position);
             if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) {
                 return Collections.emptyList();

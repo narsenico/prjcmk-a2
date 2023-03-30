@@ -1,21 +1,48 @@
 package it.amonshore.comikkua.data.release
 
 import android.app.Application
+import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.web.toRelease
 import it.amonshore.comikkua.letNotEmpty
 import it.amonshore.comikkua.services.CmkWebService
+import it.amonshore.comikkua.toYearMonthDay
+import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+
+private const val ONE_DAY: Long = 86_400_000L
 
 class ReleaseRepositoryKt(application: Application) {
 
     private val _releaseDao = ComikkuDatabase.getDatabase(application).releaseDaoKt()
     private val _service = CmkWebService.create()
 
-    fun getComicsReleasesByComicsId(comicsId: Long) =
-        _releaseDao.getComicsReleasesByComicsId(comicsId)
+    fun getComicsReleasesByComicsIdFLow(comicsId: Long) = _releaseDao.getComicsReleasesByComicsIdFLow(comicsId)
 
     suspend fun getComicsReleases(ids: List<Long>) = _releaseDao.getComicsReleases(ids)
+
+    fun getNotableComicsReleasesFlow(): Flow<List<ComicsRelease>> {
+        val today = LocalDate.now()
+        // il giorno di riferimento è il primo giorno della settimana in corso
+        val refDate = today.atFirstDayOfWeek()
+        // la settimana dopo
+        val refNextDate = refDate.plusDays(7)
+        val refOtherDate = refNextDate.plusDays(7)
+        // per quanto riguarda le release precedenti estraggo anche quelle aquistate dal giorno prima (rispetto al corrente)
+        //  (quelle successive verrebbero cmq estratte in quanto fanno parte del "periodo corrente")
+        val retainStart = System.currentTimeMillis() - ONE_DAY
+
+        LogHelper.d("prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart")
+
+        return _releaseDao.getNotableComicsReleasesFlow(
+            refDate = refDate.toYearMonthDay(),
+            refNextDate = refNextDate.toYearMonthDay(),
+            refOtherDate = refOtherDate.toYearMonthDay(),
+            retainStart
+        )
+    }
 
     suspend fun getRelease(id: Long) = _releaseDao.getRelease(id)
 

@@ -1,429 +1,369 @@
-package it.amonshore.comikkua.ui.releases;
+package it.amonshore.comikkua.ui.releases
 
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.content.Context
+import android.content.DialogInterface
+import android.os.Bundle
+import android.view.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ActionMode
+import androidx.core.util.Consumer
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.Data
+import com.bumptech.glide.Glide
+import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.MultiRelease
+import it.amonshore.comikkua.data.release.ReleaseViewModelKt
+import it.amonshore.comikkua.data.release.UiReleaseEvent
+import it.amonshore.comikkua.databinding.FragmentReleasesBinding
+import it.amonshore.comikkua.parcelable
+import it.amonshore.comikkua.ui.ActionModeController
+import it.amonshore.comikkua.ui.BottomSheetDialogHelper
+import it.amonshore.comikkua.ui.OnNavigationFragmentListener
+import it.amonshore.comikkua.ui.ShareHelper
+import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
+import it.amonshore.comikkua.workers.UpdateReleasesWorker
+import it.amonshore.comikkua.workers.enqueueUpdateReleasesWorker
 
-import com.bumptech.glide.Glide;
+private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 
-import java.util.Objects;
+class ReleasesFragment : Fragment() {
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.view.ActionMode;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
-import it.amonshore.comikkua.Constants;
-import it.amonshore.comikkua.LiveDataEx;
-import it.amonshore.comikkua.LogHelper;
-import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.data.release.ComicsRelease;
-import it.amonshore.comikkua.data.release.MultiRelease;
-import it.amonshore.comikkua.data.release.ReleaseViewModel;
-import it.amonshore.comikkua.ui.ActionModeController;
-import it.amonshore.comikkua.ui.BottomSheetDialogHelper;
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener;
-import it.amonshore.comikkua.ui.ShareHelper;
-import it.amonshore.comikkua.workers.UpdateReleasesWorker;
-import it.amonshore.comikkua.workers.WorkerHelperKt;
+    private val _releaseViewModel: ReleaseViewModelKt by viewModels()
 
+    private lateinit var _listener: OnNavigationFragmentListener
+    private lateinit var _adapter: ReleaseAdapter
 
-public class ReleasesFragment extends Fragment {
+    private var _binding: FragmentReleasesBinding? = null
+    private val binding get() = _binding!!
 
-    private final static String BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout";
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentReleasesBinding.inflate(layoutInflater, container, false)
+        binding.list.layoutManager = LinearLayoutManager(requireContext())
 
-    private OnNavigationFragmentListener mListener;
-    private ReleaseAdapter mAdapter;
-    private ReleaseViewModel mReleaseViewModel;
-    private RecyclerView mRecyclerView;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+        val actionModeName = javaClass.simpleName + "_actionMode"
+        val actionModeController = createActionModeController()
+        _adapter = createReleasesAdapter(actionModeName, actionModeController)
 
-    public ReleasesFragment() {
-    }
+        binding.swipeRefresh.setOnRefreshListener(::performUpdate)
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
+        _releaseViewModel.notableReleaseItems.observe(viewLifecycleOwner) { items ->
+            LogHelper.d("release view model data changed size=${items.size}")
+            _adapter.submitList(items)
+        }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_releases, container, false);
-
-        final String actionModeName = getClass().getSimpleName() + "_actionMode";
-        final Context context = requireContext();
-
-        mRecyclerView = view.findViewById(R.id.list);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-        mSwipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
-        mSwipeRefreshLayout.setOnRefreshListener(this::performUpdate);
-
-        final ActionModeController actionModeController = new ActionModeController(R.menu.menu_releases_selected) {
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                final SelectionTracker<Long> tracker = mAdapter.getSelectionTracker();
-                int itemId = item.getItemId();
-                if (itemId == R.id.purchaseReleases) {
-                    if (tracker.hasSelection()) {
-                        // le multi non vengono passate
-                        mReleaseViewModel.togglePurchased(tracker.getSelection());
-                    }
-                    // mantengo la selezione
-                    return true;
-                } else if (itemId == R.id.orderReleases) {
-                    if (tracker.hasSelection()) {
-                        // le multi non vengono passate
-                        mReleaseViewModel.toggleOrdered(tracker.getSelection());
-                    }
-                    // mantengo la selezione
-                    return true;
-                } else if (itemId == R.id.deleteReleases) {
-                    if (tracker.hasSelection()) {
-                        // prima elimino eventuali release ancora in fase di undo
-                        mReleaseViewModel.deleteRemoved();
-                        mReleaseViewModel.remove(tracker.getSelection(), count -> showUndo(count));
-                    }
-                    tracker.clearSelection();
-                    return true;
-                } else if (itemId == R.id.shareReleases) {
-                    LiveDataEx.observeOnce(mReleaseViewModel.getComicsReleases(tracker.getSelection()), getViewLifecycleOwner(),
-                            items -> ShareHelper.shareReleases(requireActivity(), items));
-                    // mantengo la selezione
-                    return true;
-                }
-                return false;
+        _releaseViewModel.events.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is UiReleaseEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
+                is UiReleaseEvent.Sharing -> shareReleases(result.releases)
             }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
-                mAdapter.getSelectionTracker().clearSelection();
-                super.onDestroyActionMode(mode);
-            }
-        };
-
-        // PROBLEMI:
-        // selection changed viene scatenato due volte all'inizio: questo perché il tracker permette la selezione di più item trascinando la selezione
-
-        mAdapter = new ReleaseAdapter.Builder(mRecyclerView)
-                .withOnItemSelectedListener((keys, size) -> {
-                    if (mListener != null) {
-                        if (size == 0) {
-                            mListener.onFragmentRequestActionMode(null, actionModeName, null);
-                        } else {
-                            mListener.onFragmentRequestActionMode(actionModeController, actionModeName,
-                                    getString(R.string.title_selected, size));
-                        }
-                    }
-                })
-                .withReleaseCallback(new ReleaseAdapter.ReleaseCallback() {
-                    @Override
-                    public void onReleaseClick(@NonNull ComicsRelease release) {
-                        // se è una multi release apro il dettaglio del comics
-                        if (release instanceof MultiRelease) {
-                            openComicsDetail(view, release);
-                        } else {
-                            openEdit(view, release);
-                        }
-                    }
-
-                    @Override
-                    public void onReleaseTogglePurchase(@NonNull ComicsRelease release) {
-                        // le multi non vengono passate qua
-                        mReleaseViewModel.updatePurchased(!release.release.purchased, release.release.id);
-                    }
-
-                    @Override
-                    public void onReleaseToggleOrder(@NonNull ComicsRelease release) {
-                        // le multi non vengono passate qua
-                        mReleaseViewModel.updateOrdered(!release.release.ordered, release.release.id);
-                    }
-
-                    @Override
-                    public void onReleaseMenuSelected(@NonNull ComicsRelease release) {
-                        BottomSheetDialogHelper.show(requireActivity(), R.layout.bottomsheet_release,
-                                ShareHelper.formatRelease(context, release), id -> {
-                                    if (id == R.id.gotoComics) {
-                                        openComicsDetail(view, release);
-                                    } else if (id == R.id.share) {
-                                        ShareHelper.shareRelease(requireActivity(), release);
-                                    } else if (id == R.id.deleteRelease) {
-                                        deleteRelease(release);
-                                    } else if (id == R.id.search_starshop) {
-                                        ShareHelper.shareOnStarShop(requireActivity(), release);
-                                    } else if (id == R.id.search_amazon) {
-                                        ShareHelper.shareOnAmazon(requireActivity(), release);
-                                    } else if (id == R.id.search_popstore) {
-                                        ShareHelper.shareOnPopStore(requireActivity(), release);
-                                    } else if (id == R.id.search_google) {
-                                        ShareHelper.shareOnGoogle(requireActivity(), release);
-                                    }
-                                });
-                    }
-                })
-                .withGlide(Glide.with(this))
-                .build();
-
-        // recupero il ViewModel per l'accesso ai dati
-        // lo lego all'activity perché il fragment viene ricrecato ogni volta (!)
-        mReleaseViewModel = new ViewModelProvider(requireActivity())
-                .get(ReleaseViewModel.class);
-        // mi metto in ascolto del cambiamto dei dati (via LiveData) e aggiorno l'adapter di conseguenza
-        mReleaseViewModel.getReleaseViewModelItems().observe(getViewLifecycleOwner(), items -> {
-            LogHelper.d("release viewmodel data changed size:" + items.size());
-            mAdapter.submitList(items);
-        });
+        }
 
         // ripristino la selezione salvata in onSaveInstanceState
-        mAdapter.getSelectionTracker().onRestoreInstanceState(savedInstanceState);
-
-        return view;
+        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+
         // ripristino lo stato del layout (la posizione dello scroll)
         // se non trovo savedInstanceState uso lo stato salvato nel view model
         if (savedInstanceState != null) {
-            Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                    .onRestoreInstanceState(savedInstanceState.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
-        } else if (mReleaseViewModel != null) {
-            Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                    .onRestoreInstanceState(mReleaseViewModel.states.getParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT));
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mRecyclerView != null) {
-            // visto che Navigation ricrea il fragment ogni volta (!)
-            // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
-            //  in onViewCreated
-            mReleaseViewModel.states.putParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT,
-                    Objects.requireNonNull(mRecyclerView.getLayoutManager()).onSaveInstanceState());
-        }
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnNavigationFragmentListener) {
-            mListener = (OnNavigationFragmentListener) context;
+            binding.list.layoutManager?.onRestoreInstanceState(
+                savedInstanceState.parcelable(
+                    BUNDLE_RELEASES_RECYCLER_LAYOUT
+                )
+            )
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnNavigationFragmentListener");
+            binding.list.layoutManager?.onRestoreInstanceState(
+                _releaseViewModel.states.parcelable(
+                    BUNDLE_RELEASES_RECYCLER_LAYOUT
+                )
+            )
         }
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    override fun onPause() {
+        super.onPause()
+        // visto che Navigation ricrea il fragment ogni volta (!)
+        // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
+        //  in onViewCreated
+        _releaseViewModel.states.putParcelable(
+            BUNDLE_RELEASES_RECYCLER_LAYOUT,
+            binding.list.layoutManager?.onSaveInstanceState()
+        )
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            // ripristino le selezioni
-            mAdapter.getSelectionTracker().onSaveInstanceState(outState);
-            // salvo lo stato del layout (la posizione dello scroll)
-            outState.putParcelable(BUNDLE_RELEASES_RECYCLER_LAYOUT,
-                    Objects.requireNonNull(mRecyclerView.getLayoutManager())
-                            .onSaveInstanceState());
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        _listener = if (context is OnNavigationFragmentListener) {
+            context
+        } else {
+            throw RuntimeException("$context must implement OnNavigationFragmentListener")
         }
     }
 
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // ripristino le selezioni
+        _adapter.selectionTracker.onSaveInstanceState(outState)
+        // salvo lo stato del layout (la posizione dello scroll)
+        outState.putParcelable(
+            BUNDLE_RELEASES_RECYCLER_LAYOUT,
+            binding.list.layoutManager?.onSaveInstanceState()
+        )
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_releases_fragment, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.updateReleases) {
-            // TODO: aggiornamento release da remoto
-            performUpdate();
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void performUpdate() {
-        mSwipeRefreshLayout.setRefreshing(true);
-        WorkerHelperKt.enqueueUpdateReleasesWorker(requireActivity(),
-                data -> {
-                    LogHelper.d("Releases updated data=%s", data);
-                    mSwipeRefreshLayout.setRefreshing(false);
-                    onUpdateSuccess(data);
-                },
-                () -> {
-                    LogHelper.w("Failing updating releases");
-                    mSwipeRefreshLayout.setRefreshing(false);
-                }
-        );
-    }
-
-    private void _performUpdate() {
-        // prima dell'aggiornamento elimino eventuali release rimosse nel caso fosse ancora in corso l'undo
-        mReleaseViewModel.deleteRemoved();
-
-        final WorkRequest request = new OneTimeWorkRequest.Builder(UpdateReleasesWorker.class)
-                .setInputData(new Data.Builder()
-                        .putBoolean(UpdateReleasesWorker.PREVENT_NOTIFICATION, true)
-                        .build())
-                // TODO: non funziona! in mancanza di connessione la richiesta rimane in ENQUEUED, mi aspetto che vada in uno stato di errore
-                //  in ogni caso Firestore usa la cache se offline quindi mi va bene togliere il constraint
-//                .setConstraints(new Constraints.Builder()
-//                        .setRequiredNetworkType(NetworkType.CONNECTED)
-//                        .build())
-                .build();
-
-        final WorkManager workManager = WorkManager.getInstance(requireContext());
-        workManager.enqueue(request);
-
-        mSwipeRefreshLayout.setRefreshing(true);
-
-        // TODO: quando si verificano gli altri stati? CONTROLLARE SUBITO
-        // TODO: "marchare" le release inserite con un codice, in modo che possano essere visualizzabilit dall'utente su richiesta
-        //  "sono state aggiunte 2 release" => ok ma quali sono? => tap su snackbar => fragment con solo nuove release aggiunte
-
-        workManager.getWorkInfoByIdLiveData(request.getId()).observe(getViewLifecycleOwner(), workInfo -> {
-            if (workInfo != null) {
-                LogHelper.d("Updating releases state=%s", workInfo.getState());
-                switch (workInfo.getState()) {
-                    case SUCCEEDED:
-                        onUpdateSuccess(workInfo.getOutputData());
-                    case FAILED:
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        break;
-                    case BLOCKED:
-                    case CANCELLED:
-                    case ENQUEUED:
-                    case RUNNING:
-                        break;
+    private fun createActionModeController() =
+        object : ActionModeController(R.menu.menu_releases_selected) {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                val tracker = _adapter.selectionTracker
+                when (item.itemId) {
+                    R.id.purchaseReleases -> {
+                        if (tracker.hasSelection()) {
+                            // le multi non vengono passate
+                            _releaseViewModel.togglePurchased(tracker.selection.toList())
+                        }
+                        return true
+                    }
+                    R.id.orderReleases -> {
+                        if (tracker.hasSelection()) {
+                            // le multi non vengono passate
+                            _releaseViewModel.toggleOrdered(tracker.selection.toList())
+                        }
+                        return true
+                    }
+                    R.id.deleteReleases -> {
+                        _releaseViewModel.markAsRemoved(tracker.selection.toList())
+                        tracker.clearSelection()
+                        return true
+                    }
+                    R.id.shareReleases -> {
+                        _releaseViewModel.getShareableComicsReleases(tracker.selection.toList())
+                        return true
+                    }
+                    else -> return false
                 }
             }
-        });
-    }
 
-    private void onUpdateSuccess(@NonNull Data data) {
-        final int newReleaseCount = data.getInt(UpdateReleasesWorker.RELEASE_COUNT, 0);
-        final String tag = data.getString(UpdateReleasesWorker.RELEASE_TAG);
-
-        LogHelper.d("New releases: %s with tag '%s'", newReleaseCount, tag);
-
-        if (newReleaseCount == 0) {
-            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-                    .setIcon(R.drawable.ic_release)
-                    .setView(R.layout.dialog_no_update)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        //
-                    })
-                    .show();
-        } else {
-//            final View view = getLayoutInflater().inflate(R.layout.dialog_new_update, null);
-//            final TextView txtMessage = view.findViewById(R.id.message);
-//            txtMessage.setText(getResources().getQuantityString(R.plurals.auto_update_available_message, newReleaseCount, newReleaseCount));
-//
-//            final AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-//                    .setIcon(R.drawable.ic_release)
-//                    .setView(view)
-//                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-//                    });
-//            if (tag != null) {
-//                builder.setNeutralButton(R.string.auto_update_view, (dialog, which) -> {
-//                    dialog.dismiss();
-//                    openNewReleases(requireView(), tag);
-//                });
-//            }
-//            builder.show();
-            openNewReleases(requireView(), tag);
+            override fun onDestroyActionMode(mode: ActionMode) {
+                // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
+                _adapter.selectionTracker.clearSelection()
+                super.onDestroyActionMode(mode)
+            }
         }
-    }
 
-    private void openComicsDetail(@NonNull View view, @NonNull ComicsRelease release) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionDestReleasesToComicsDetailFragment(release.comics.id);
-
-        Navigation.findNavController(view).navigate(directions);
-    }
-
-    private void openEdit(@NonNull View view, @NonNull ComicsRelease release) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionReleasesFragmentToReleaseEditFragment(release.comics.id)
-                .setReleaseId(release.release.id);
-
-        Navigation.findNavController(view).navigate(directions);
-    }
-
-    private void openNewReleases(@NonNull View view, @NonNull String tag) {
-        final NavDirections directions = ReleasesFragmentDirections
-                .actionReleasesFragmentToNewReleaseFragment(tag);
-
-        Navigation.findNavController(view).navigate(directions);
-    }
-
-    private void deleteRelease(@NonNull ComicsRelease release) {
-        // nel caso di multi chideo conferma
-        if (release instanceof MultiRelease) {
-            final MultiRelease multiRelease = (MultiRelease) release;
-            new AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-                    .setTitle(release.comics.name)
-                    .setMessage(getString(R.string.confirm_delete_multi_release, multiRelease.size()))
-                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                        // prima elimino eventuali release ancora in fase di undo
-                        mReleaseViewModel.deleteRemoved();
-                        mReleaseViewModel.remove(multiRelease.getAllReleaseId(), this::showUndo);
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .show();
-        } else {
-            // prima elimino eventuali release ancora in fase di undo
-            mReleaseViewModel.deleteRemoved();
-            mReleaseViewModel.remove(release.release.id, this::showUndo);
+    private fun createReleasesAdapter(
+        actionModeName: String,
+        actionModeController: ActionModeController
+    ) = ReleaseAdapter.Builder(binding.list)
+        .withOnItemSelectedListener { _, size ->
+            if (size == 0) {
+                _listener.onFragmentRequestActionMode(null, actionModeName, null)
+            } else {
+                _listener.onFragmentRequestActionMode(
+                    actionModeController, actionModeName,
+                    getString(R.string.title_selected, size)
+                )
+            }
         }
-    }
+        .withReleaseCallback(object : ReleaseCallback {
+            override fun onReleaseClick(release: ComicsRelease) {
+                // se è una multi release apro il dettaglio del comics
+                if (release is MultiRelease) {
+                    openComicsDetail(binding.root, release)
+                } else {
+                    openEdit(binding.root, release)
+                }
+            }
 
-    private void showUndo(int count) {
-        mListener.requestSnackbar(getResources().getQuantityString(R.plurals.release_deleted, count, count),
-                Constants.UNDO_TIMEOUT,
-                (canDelete) -> {
-                    if (canDelete) {
-                        LogHelper.d("Delete removed releases");
-                        mReleaseViewModel.deleteRemoved();
-                    } else {
-                        LogHelper.d("Undo removed releases");
-                        mReleaseViewModel.undoRemoved();
+            override fun onReleaseTogglePurchase(release: ComicsRelease) {
+                // le multi non vengono passate qua
+                _releaseViewModel.updatePurchased(
+                    release.release.id,
+                    !release.release.purchased
+                )
+            }
+
+            override fun onReleaseToggleOrder(release: ComicsRelease) {
+                // le multi non vengono passate qua
+                _releaseViewModel.updateOrdered(
+                    release.release.id,
+                    !release.release.ordered
+                )
+            }
+
+            override fun onReleaseMenuSelected(release: ComicsRelease) {
+                BottomSheetDialogHelper.show(
+                    requireActivity(), R.layout.bottomsheet_release,
+                    ShareHelper.formatRelease(requireContext(), release)
+                ) { id: Int ->
+                    when (id) {
+                        R.id.gotoComics -> {
+                            openComicsDetail(binding.root, release)
+                        }
+                        R.id.share -> {
+                            ShareHelper.shareRelease(requireActivity(), release)
+                        }
+                        R.id.deleteRelease -> {
+                            deleteRelease(release)
+                        }
+                        R.id.search_starshop -> {
+                            ShareHelper.shareOnStarShop(requireActivity(), release)
+                        }
+                        R.id.search_amazon -> {
+                            ShareHelper.shareOnAmazon(requireActivity(), release)
+                        }
+                        R.id.search_popstore -> {
+                            ShareHelper.shareOnPopStore(requireActivity(), release)
+                        }
+                        R.id.search_google -> {
+                            ShareHelper.shareOnGoogle(requireActivity(), release)
+                        }
                     }
-                });
+                }
+            }
+        })
+        .withGlide(Glide.with(this))
+        .build()
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_releases_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == R.id.updateReleases) {
+                    performUpdate()
+                    return true
+                }
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun performUpdate() {
+        // TODO: ma poi perché usare un workmanager qua? fare tutto nel viewmodel che fai prima
+
+        // TODO: non mi piace, è cmq legato al lifeCycle ma mi piacerebbe gestirlo nel viewModel (se è il posto giusto)
+        // TODO: anche gestire qua lo swipe non mi piace, usare uno "state" loading nel viewModel
+        binding.swipeRefresh.isRefreshing = true
+        enqueueUpdateReleasesWorker(requireActivity(),
+            Consumer { data: Data ->
+                LogHelper.d("Releases updated data=%s", data)
+                binding.swipeRefresh.isRefreshing = false
+                onUpdateSuccess(data)
+            },
+            Runnable {
+                LogHelper.w("Failing updating releases")
+                binding.swipeRefresh.isRefreshing = false
+            }
+        )
+    }
+
+    private fun onUpdateSuccess(data: Data) {
+        val newReleaseCount = data.getInt(UpdateReleasesWorker.RELEASE_COUNT, 0)
+        val tag = data.getString(UpdateReleasesWorker.RELEASE_TAG)
+        LogHelper.d("New releases: %s with tag '%s'", newReleaseCount, tag)
+        if (newReleaseCount == 0) {
+            AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+                .setIcon(R.drawable.ic_release)
+                .setView(R.layout.dialog_no_update)
+                .setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, which: Int -> }
+                .show()
+        } else {
+            openNewReleases(requireView(), tag!!)
+        }
+    }
+
+    private fun openComicsDetail(view: View, release: ComicsRelease) {
+        val directions: NavDirections = ReleasesFragmentDirections
+            .actionDestReleasesToComicsDetailFragment(release.comics.id)
+        findNavController(view).navigate(directions)
+    }
+
+    private fun openEdit(view: View, release: ComicsRelease) {
+        val directions: NavDirections = ReleasesFragmentDirections
+            .actionReleasesFragmentToReleaseEditFragment(release.comics.id)
+            .setReleaseId(release.release.id)
+        findNavController(view).navigate(directions)
+    }
+
+    private fun openNewReleases(view: View, tag: String) {
+        val directions: NavDirections = ReleasesFragmentDirections
+            .actionReleasesFragmentToNewReleaseFragment(tag)
+        findNavController(view).navigate(directions)
+    }
+
+    private fun shareReleases(releases: List<ComicsRelease>) {
+        ShareHelper.shareReleases(
+            requireActivity(),
+            releases
+        )
+    }
+
+    private fun deleteRelease(release: ComicsRelease) {
+        TODO()
+//        // nel caso di multi chideo conferma
+//        if (release is MultiRelease) {
+//            val multiRelease = release
+//            AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+//                .setTitle(release.comics.name)
+//                .setMessage(getString(R.string.confirm_delete_multi_release, multiRelease.size()))
+//                .setPositiveButton(android.R.string.yes) { dialog: DialogInterface?, which: Int ->
+//                    // prima elimino eventuali release ancora in fase di undo
+//                    mReleaseViewModel!!.deleteRemoved()
+//                    mReleaseViewModel!!.remove(multiRelease.allReleaseId) { count: Int ->
+//                        showUndo(
+//                            count
+//                        )
+//                    }
+//                }
+//                .setNegativeButton(android.R.string.no, null)
+//                .show()
+//        } else {
+//            // prima elimino eventuali release ancora in fase di undo
+//            mReleaseViewModel!!.deleteRemoved()
+//            mReleaseViewModel!!.remove(release.release.id) { count: Int -> showUndo(count) }
+//        }
+    }
+
+    private fun onMarkedAsRemoved(count: Int) {
+        _releaseViewModel.deleteRemoved()
+
+//        // TODO: questo non porta a nulla di buono!!! _releaseViewModel non è più disponibile se navigo da altre parti!!!
+//        _listener.requestSnackbar(
+//            resources.getQuantityString(R.plurals.release_deleted, count, count),
+//            Constants.UNDO_TIMEOUT
+//        ) { canDelete: Boolean ->
+//            if (canDelete) {
+//                LogHelper.d("Delete removed releases")
+//                _releaseViewModel.deleteRemoved()
+//            } else {
+//                LogHelper.d("Undo removed releases")
+//                _releaseViewModel.undoRemoved()
+//            }
+//        }
     }
 }

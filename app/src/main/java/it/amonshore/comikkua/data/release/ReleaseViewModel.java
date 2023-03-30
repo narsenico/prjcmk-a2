@@ -47,16 +47,16 @@ public class ReleaseViewModel extends AndroidViewModel {
         loading = new MutableLiveData<>();
     }
 
-    public LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
+    private LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
                                                         @NonNull @Size(8) String refNextDate,
                                                         @NonNull @Size(8) String refOtherDate,
                                                         long retainStart) {
         return mRepository.getComicsReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 
-    public LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
-        return mRepository.getComicsReleasesByComicsId(comicsId);
-    }
+//    public LiveData<List<ComicsRelease>> getAllReleases(long comicsId) {
+//        return mRepository.getComicsReleasesByComicsId(comicsId);
+//    }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems() {
         if (mReleaseViewModelItems == null) {
@@ -96,21 +96,24 @@ public class ReleaseViewModel extends AndroidViewModel {
         return mediatorLiveData;
     }
 
-    public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(long comicsId) {
-        LogHelper.d("prepare releases for detail comicsId=%s",
-                comicsId);
-
-        // ogni volta che i dati sottostanti cambiano li riorganizzo aggiungendo gli header di gruppo e raggruppando le release quando necessario
-        // quindi aggiorno mediatorLiveData
-        final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
-        mediatorLiveData.addSource(getAllReleases(comicsId), comicsReleases -> {
-            // TODO: si potrebbero unire tutti i purchased, ma poi al click si devono espandere
-            mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, 0));
-        });
-        return mediatorLiveData;
-    }
+//    public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(long comicsId) {
+//        LogHelper.d("prepare releases for detail comicsId=%s",
+//                comicsId);
+//
+//        // ogni volta che i dati sottostanti cambiano li riorganizzo aggiungendo gli header di gruppo e raggruppando le release quando necessario
+//        // quindi aggiorno mediatorLiveData
+//        final MediatorLiveData<List<IReleaseViewModelItem>> mediatorLiveData = new MediatorLiveData<>();
+//        mediatorLiveData.addSource(getAllReleases(comicsId), comicsReleases -> {
+//            // TODO: si potrebbero unire tutti i purchased, ma poi al click si devono espandere
+//            mediatorLiveData.setValue(mGroupHelper.createViewModelItems(comicsReleases, 0));
+//        });
+//        return mediatorLiveData;
+//    }
 
     public LiveData<List<IReleaseViewModelItem>> getReleaseViewModelItems(String tag) {
+
+        // chiamata in [NewReleasesFragment]
+
         LogHelper.d("prepare releases with tag=%s",
                 tag);
 
@@ -123,32 +126,8 @@ public class ReleaseViewModel extends AndroidViewModel {
         return mediatorLiveData;
     }
 
-    public LiveData<Release> getRelease(long id) {
-        return mRepository.getRelease(id);
-    }
-
     public LiveData<List<ComicsRelease>> getComicsReleases(Iterable<Long> ids) {
         return mRepository.getComicsReleases(Utility.toArray(ids));
-    }
-
-    public void insert(Release... release) {
-        mRepository.insert(release);
-    }
-
-    public long insertSync(Release release) {
-        return mRepository.insertSync(release);
-    }
-
-    public Long[] insertSync(Release... release) {
-        return mRepository.insertSync(release);
-    }
-
-    public void update(Release release) {
-        mRepository.update(release);
-    }
-
-    public void updatePurchased(boolean purchased, Iterable<Long> ids) {
-        updatePurchased(purchased, Utility.toArray(ids));
     }
 
     public void updatePurchased(boolean purchased, Long... ids) {
@@ -179,24 +158,8 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.toggleOrdered(System.currentTimeMillis(), ids);
     }
 
-    public void delete(Iterable<Long> ids) {
-        mRepository.delete(Utility.toArray(ids));
-    }
-
-    public void delete(Long... ids) {
-        mRepository.delete(ids);
-    }
-
-    public int deleteByNumberSync(long comicsId, int... number) {
-        return mRepository.deleteByNumberSync(comicsId, number);
-    }
-
     public void remove(Iterable<Long> ids, ICallback<Integer> callback) {
         remove(Utility.toArray(ids), callback);
-    }
-
-    public void remove(Long... ids) {
-        mRepository.remove(ids);
     }
 
     public void remove(Long id, ICallback<Integer> callback) {
@@ -215,72 +178,72 @@ public class ReleaseViewModel extends AndroidViewModel {
         mRepository.deleteRemoved();
     }
 
-    public LiveData<Release> searchForNextRelease(@NonNull ComicsWithReleases comics) {
-        final MediatorLiveData<Release> data = new MediatorLiveData<>();
-        // cerco le release in base al titolo del comics
-        // che potrebbe anche portare a risultati spiacevoli
-        // ad es. se ci sono più edizioni dello stesso comics
+//    public LiveData<Release> searchForNextRelease(@NonNull ComicsWithReleases comics) {
+//        final MediatorLiveData<Release> data = new MediatorLiveData<>();
+//        // cerco le release in base al titolo del comics
+//        // che potrebbe anche portare a risultati spiacevoli
+//        // ad es. se ci sono più edizioni dello stesso comics
+////        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
 //        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-            LogHelper.d("searchForNextRelease status=%s", resource.status);
-            switch (resource.status) {
-                case SUCCESS:
-                    // se non ci sono release la creo in base ai dati già in mio possesso
-                    if (resource.data == null || resource.data.size() == 0) {
-                        data.postValue(comics.createNextRelease());
-                    } else {
-                        data.postValue(Release.from(comics.comics.id, resource.data.get(0)));
-                    }
-                    loading.postValue(false);
-                    break;
-                case LOADING:
-                    loading.postValue(true);
-                    break;
-                case ERROR:
-                    LogHelper.e("error retrieving web comics releases: " + resource.message);
-                    // TODO: bisogna dare qualche segnalazione all'utente
-                    data.postValue(comics.createNextRelease());
-                    loading.postValue(false);
-                    break;
-            }
-        });
-        return data;
-    }
-
-    public LiveData<List<Release>> getNewReleases(@NonNull ComicsWithReleases comics) {
-        final MediatorLiveData<List<Release>> data = new MediatorLiveData<>();
-        // cerco le release in base al titolo del comics
-        // che potrebbe anche portare a risultati spiacevoli
-        // ad es. se ci sono più edizioni dello stesso comics
+//            LogHelper.d("searchForNextRelease status=%s", resource.status);
+//            switch (resource.status) {
+//                case SUCCESS:
+//                    // se non ci sono release la creo in base ai dati già in mio possesso
+//                    if (resource.data == null || resource.data.size() == 0) {
+//                        data.postValue(comics.createNextRelease());
+//                    } else {
+//                        data.postValue(Release.from(comics.comics.id, resource.data.get(0)));
+//                    }
+//                    loading.postValue(false);
+//                    break;
+//                case LOADING:
+//                    loading.postValue(true);
+//                    break;
+//                case ERROR:
+//                    LogHelper.e("error retrieving web comics releases: " + resource.message);
+//                    // TODO: bisogna dare qualche segnalazione all'utente
+//                    data.postValue(comics.createNextRelease());
+//                    loading.postValue(false);
+//                    break;
+//            }
+//        });
+//        return data;
+//    }
+//
+//    public LiveData<List<Release>> getNewReleases(@NonNull ComicsWithReleases comics) {
+//        final MediatorLiveData<List<Release>> data = new MediatorLiveData<>();
+//        // cerco le release in base al titolo del comics
+//        // che potrebbe anche portare a risultati spiacevoli
+//        // ad es. se ci sono più edizioni dello stesso comics
+////        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
 //        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-        data.addSource(mCmkWebRepository.getReleases(comics.comics.name, comics.getNextReleaseNumber()), resource -> {
-            LogHelper.d("getNewReleases status=%s", resource.status);
-            switch (resource.status) {
-                case SUCCESS:
-                    // se non ci sono release la creo in base ai dati già in mio possesso
-                    if (resource.data != null && resource.data.size() > 0) {
-                        final List<Release> releases = new ArrayList<>();
-                        for (CmkWebRelease cwr : resource.data) {
-                            releases.add(Release.from(comics.comics.id, cwr));
-                        }
-                        data.postValue(releases);
-                    } else {
-                        data.postValue(Collections.emptyList());
-                    }
-                    loading.postValue(false);
-                    break;
-                case LOADING:
-                    loading.postValue(true);
-                    break;
-                case ERROR:
-                    LogHelper.e("error retrieving web comics releases: " + resource.message);
-                    // TODO: bisogna dare qualche segnalazione all'utente
-                    data.postValue(null);
-                    loading.postValue(false);
-                    break;
-            }
-        });
-        return data;
-    }
+//            LogHelper.d("getNewReleases status=%s", resource.status);
+//            switch (resource.status) {
+//                case SUCCESS:
+//                    // se non ci sono release la creo in base ai dati già in mio possesso
+//                    if (resource.data != null && resource.data.size() > 0) {
+//                        final List<Release> releases = new ArrayList<>();
+//                        for (CmkWebRelease cwr : resource.data) {
+//                            releases.add(Release.from(comics.comics.id, cwr));
+//                        }
+//                        data.postValue(releases);
+//                    } else {
+//                        data.postValue(Collections.emptyList());
+//                    }
+//                    loading.postValue(false);
+//                    break;
+//                case LOADING:
+//                    loading.postValue(true);
+//                    break;
+//                case ERROR:
+//                    LogHelper.e("error retrieving web comics releases: " + resource.message);
+//                    // TODO: bisogna dare qualche segnalazione all'utente
+//                    data.postValue(null);
+//                    loading.postValue(false);
+//                    break;
+//            }
+//        });
+//        return data;
+//    }
 
 }

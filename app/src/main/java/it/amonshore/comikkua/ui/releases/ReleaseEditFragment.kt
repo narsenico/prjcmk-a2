@@ -6,24 +6,21 @@ import android.transition.TransitionInflater
 import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.switchMap
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.comics.ComicsViewModelKt
-import it.amonshore.comikkua.data.release.ReleaseViewModelKt
+import it.amonshore.comikkua.data.release.UiReleaseEditResult
+import it.amonshore.comikkua.data.release.ReleaseEditViewModelKt
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 
 private data class Id(val comicsId: Long, val releaseId: Long)
 
 class ReleaseEditFragment : Fragment() {
 
-    private val _comicsViewModel: ComicsViewModelKt by viewModels()
-    private val _releaseViewModel: ReleaseViewModelKt by viewModels()
+    private val _releaseEditViewModel: ReleaseEditViewModelKt by viewModels()
 
     private val _id: Id by lazy {
         val args = ReleaseEditFragmentArgs.fromBundle(requireArguments())
@@ -57,14 +54,17 @@ class ReleaseEditFragment : Fragment() {
         _helper.rootView.findViewById<View>(R.id.release).transitionName =
             "release_tx_${_id.releaseId}"
 
-        _comicsViewModel.getComicsWithReleases(_id.comicsId)
-            .switchMap {
-                _helper.comics = it
-                _releaseViewModel.getPreferredRelease(it, _id.releaseId)
-            }
-            .observe(viewLifecycleOwner) { release ->
+        _releaseEditViewModel.getComicsAndRelease(_id.comicsId, _id.releaseId)
+            .observe(viewLifecycleOwner) { (comics, release) ->
+                _helper.comics = comics
                 _helper.setRelease(release, savedInstanceState)
             }
+
+        _releaseEditViewModel.result.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                UiReleaseEditResult.Inserted -> insertDone()
+            }
+        }
 
         return _helper.rootView
     }
@@ -85,9 +85,7 @@ class ReleaseEditFragment : Fragment() {
                 if (menuItem.itemId == R.id.saveReleases) {
                     _helper.isValid { valid ->
                         // TODO: inserire solo se valido
-                        _releaseViewModel.insertReleases(_helper.createReleases().toList()) {
-                            findNavController().navigateUp()
-                        }
+                        _releaseEditViewModel.insertReleases(_helper.createReleases().toList())
                     }
                     return true
                 }
@@ -108,5 +106,9 @@ class ReleaseEditFragment : Fragment() {
         } else {
             throw RuntimeException("$context must implement OnNavigationFragmentListener")
         }
+    }
+
+    private fun insertDone() {
+        findNavController().navigateUp()
     }
 }

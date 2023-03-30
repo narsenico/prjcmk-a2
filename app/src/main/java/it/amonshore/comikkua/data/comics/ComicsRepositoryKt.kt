@@ -1,7 +1,6 @@
 package it.amonshore.comikkua.data.comics
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import it.amonshore.comikkua.data.ComikkuDatabase
 
 class ComicsRepositoryKt(context: Context) {
@@ -16,11 +15,14 @@ class ComicsRepositoryKt(context: Context) {
 
     suspend fun undoRemoved() = _comicsDao.undoRemoved()
 
-    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int =
-        _comicsDao.updateRemoved(ids, removed)
+    suspend fun setRemoved(ids: List<Long>): Int =
+        _comicsDao.updateRemoved(ids, true)
 
-    fun getComicsWithReleases(id: Long): LiveData<ComicsWithReleases> =
+    suspend fun getComicsWithReleases(id: Long) =
         _comicsDao.getComicsWithReleases(id)
+
+    fun getComicsWithReleasesFlow(id: Long) =
+        _comicsDao.getComicsWithReleasesFlow(id)
 
     fun getComicsWithReleasesPagingSource(like: String? = null) =
         if (like == null) {

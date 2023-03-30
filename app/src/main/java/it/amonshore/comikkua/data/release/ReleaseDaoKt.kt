@@ -1,7 +1,8 @@
 package it.amonshore.comikkua.data.release
 
-import androidx.lifecycle.LiveData
+import androidx.annotation.Size
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReleaseDaoKt {
@@ -39,6 +40,80 @@ interface ReleaseDaoKt {
     suspend fun getComicsReleases(ids: List<Long>): List<ComicsRelease>
 
     @Query(
+        """SELECT ${LostRelease.TYPE} as type, * 
+           FROM vLostReleases 
+           WHERE 
+           rdate < :refDate 
+           AND (rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart)) 
+           UNION 
+           SELECT ${DatedRelease.TYPE} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refDate 
+           and rdate < :refNextDate 
+           UNION 
+           SELECT ${DatedRelease.TYPE_NEXT} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refNextDate and rdate < :refOtherDate 
+           UNION 
+           SELECT ${DatedRelease.TYPE_OTHER} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refOtherDate 
+           UNION 
+           SELECT ${MissingRelease.TYPE} as type, * 
+           FROM vMissingReleases 
+           WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) 
+           ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber
+           """
+    )
+    @Transaction
+    suspend fun getNotableComicsReleases(
+        @Size(8) refDate: String,
+        @Size(8) refNextDate: String,
+        @Size(8) refOtherDate: String,
+        retainStart: Long
+    ): List<ComicsRelease>
+
+@Query(
+        """SELECT ${LostRelease.TYPE} as type, * 
+           FROM vLostReleases 
+           WHERE 
+           rdate < :refDate 
+           AND (rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart)) 
+           UNION 
+           SELECT ${DatedRelease.TYPE} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refDate 
+           and rdate < :refNextDate 
+           UNION 
+           SELECT ${DatedRelease.TYPE_NEXT} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refNextDate and rdate < :refOtherDate 
+           UNION 
+           SELECT ${DatedRelease.TYPE_OTHER} as type, * 
+           FROM vDatedReleases 
+           WHERE 
+           rdate >= :refOtherDate 
+           UNION 
+           SELECT ${MissingRelease.TYPE} as type, * 
+           FROM vMissingReleases 
+           WHERE rpurchased = 0 OR (rpurchased = 1 AND rlastUpdate >= :retainStart) 
+           ORDER BY type, rdate, cname COLLATE NOCASE ASC, rnumber
+           """
+    )
+    @Transaction
+    fun getNotableComicsReleasesFlow(
+        @Size(8) refDate: String,
+        @Size(8) refNextDate: String,
+        @Size(8) refOtherDate: String,
+        retainStart: Long
+    ): Flow<List<ComicsRelease>>
+
+    @Query(
         """
             SELECT ${NotPurchasedRelease.TYPE} as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId
             UNION
@@ -47,6 +122,16 @@ interface ReleaseDaoKt {
             """
     )
     @Transaction
-    fun getComicsReleasesByComicsId(comicsId: Long): LiveData<List<ComicsRelease>>
+    suspend fun getComicsReleasesByComicsId(comicsId: Long): List<ComicsRelease>
 
+    @Query(
+        """
+            SELECT ${NotPurchasedRelease.TYPE} as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId
+            UNION
+            SELECT ${PurchasedRelease.TYPE} as type, * FROM vPurchasedReleases WHERE cid = :comicsId
+            ORDER BY type, rnumber
+            """
+    )
+    @Transaction
+    fun getComicsReleasesByComicsIdFLow(comicsId: Long): Flow<List<ComicsRelease>>
 }

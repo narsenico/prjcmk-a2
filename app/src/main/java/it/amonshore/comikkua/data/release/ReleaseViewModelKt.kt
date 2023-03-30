@@ -1,86 +1,63 @@
 package it.amonshore.comikkua.data.release
 
 import android.app.Application
+import android.os.Bundle
 import androidx.lifecycle.*
-import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.ui.SingleLiveEvent
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+
+sealed class UiReleaseEvent {
+    data class Sharing(val releases: List<ComicsRelease>) : UiReleaseEvent()
+    data class MarkedAsRemoved(val count: Int) : UiReleaseEvent()
+}
 
 class ReleaseViewModelKt(application: Application) : AndroidViewModel(application) {
 
-    private val _repository = ReleaseRepositoryKt(application)
-    private val _releaseViewModelGroupHelper: ReleaseViewModelGroupHelper by lazy {
-        ReleaseViewModelGroupHelper()
-    }
+    private val _releaseRepository = ReleaseRepositoryKt(application)
+    private val _events = SingleLiveEvent<UiReleaseEvent>()
 
-    fun getReleaseViewModelItems(comicsId: Long): LiveData<List<IReleaseViewModelItem>> {
-        return _repository.getComicsReleasesByComicsId(comicsId)
-            .map { comicsReleases ->
-                _releaseViewModelGroupHelper.createViewModelItems(
-                    comicsReleases,
-                    0
-                )
-            }
-    }
+    val states = Bundle()
+    val events: LiveData<UiReleaseEvent> = _events
 
-    fun insertReleases(releases: List<Release>, callback: () -> Unit) = viewModelScope.launch {
-        _repository.insertReleases(releases)
-        callback()
-    }
+    val notableReleaseItems: LiveData<List<IReleaseViewModelItem>> =
+        _releaseRepository.getNotableComicsReleasesFlow()
+            .map { releases -> releases.toReleaseViewModelItems(ComicsReleaseJoinType.MissingReleases) }
+            .asLiveData()
 
     fun updatePurchased(releaseId: Long, purchased: Boolean) = viewModelScope.launch {
-        _repository.updatePurchased(listOf(releaseId), purchased)
+        _releaseRepository.updatePurchased(listOf(releaseId), purchased)
     }
 
     fun updateOrdered(releaseId: Long, ordered: Boolean) = viewModelScope.launch {
-        _repository.updateOrdered(listOf(releaseId), ordered)
+        _releaseRepository.updateOrdered(listOf(releaseId), ordered)
     }
 
     fun togglePurchased(releaseIds: List<Long>) = viewModelScope.launch {
-        _repository.togglePurchased(releaseIds)
+        _releaseRepository.togglePurchased(releaseIds)
     }
 
     fun toggleOrdered(releaseIds: List<Long>) = viewModelScope.launch {
-        _repository.toggleOrdered(releaseIds)
+        _releaseRepository.toggleOrdered(releaseIds)
+    }
+
+    fun markAsRemoved(ids: List<Long>) = viewModelScope.launch {
+        // prima elimino eventuali release ancora in fase di undo
+        _releaseRepository.deleteRemoved()
+        val count = _releaseRepository.updateRemoved(ids, removed = true)
+        _events.postValue(UiReleaseEvent.MarkedAsRemoved(count))
     }
 
     fun deleteRemoved() = viewModelScope.launch {
-        _repository.deleteRemoved()
+        _releaseRepository.deleteRemoved()
     }
 
     fun undoRemoved() = viewModelScope.launch {
-        _repository.undoRemoved()
+        _releaseRepository.undoRemoved()
     }
 
-    fun markAsRemoved(ids: List<Long>, callback: (Int) -> Unit) = viewModelScope.launch {
-        // prima elimino eventuali release ancora in fase di undo
-        _repository.deleteRemoved()
-        val count = _repository.updateRemoved(ids, true)
-        callback(count)
-    }
-
-    fun getComicsReleases(ids: List<Long>, callback: (List<ComicsRelease>) -> Unit) =
-        viewModelScope.launch {
-            val list = _repository.getComicsReleases(ids)
-            callback(list)
-        }
-
-    fun refreshWithNewReleases(comics: ComicsWithReleases, callback: (Result<Int>) -> Unit) =
-        viewModelScope.launch {
-            val result = try {
-                val count = _repository.refreshWithNewReleases(comics)
-                Result.success(count)
-            } catch (ex: Exception) {
-                Result.failure(ex)
-            }
-            callback(result)
-        }
-
-    fun getPreferredRelease(comics: ComicsWithReleases, id: Long) = liveData {
-        val release = if (id == Release.NEW_RELEASE_ID) {
-            comics.createNextRelease()
-        } else {
-            _repository.getRelease(id)
-        }
-        emit(release)
+    fun getShareableComicsReleases(releaseIds: List<Long>) = viewModelScope.launch {
+        val list = _releaseRepository.getComicsReleases(releaseIds)
+        _events.postValue(UiReleaseEvent.Sharing(list))
     }
 }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.lifecycle.*
 import androidx.paging.*
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -12,11 +13,16 @@ import kotlinx.coroutines.launch
 private const val FILTER_DEBOUNCE = 300L;
 private val SPACE_REGEX = "\\s+".toRegex()
 
+sealed class UiComicsEvent {
+    data class MarkedAsRemoved(val comicsIds: List<Long>, val count: Int) : UiComicsEvent()
+}
+
 @OptIn(FlowPreview::class)
 class ComicsViewModelKt(application: Application) : AndroidViewModel(application) {
 
     private val _repository = ComicsRepositoryKt(application)
     private val _filter = MutableLiveData<String>()
+    private val _events = SingleLiveEvent<UiComicsEvent>()
     private var _lastFilter: String = ""
 
     var filter: String
@@ -28,6 +34,8 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
 
     val lastFilter: String
         get() = _lastFilter
+
+    val events: LiveData<UiComicsEvent> = _events
 
     val states = Bundle()
 
@@ -65,8 +73,6 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
         filter = _lastFilter
     }
 
-    fun getComicsWithReleases(id: Long) = _repository.getComicsWithReleases(id)
-
     fun deleteRemoved() = viewModelScope.launch {
         _repository.deleteRemoved()
     }
@@ -75,11 +81,14 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
         _repository.undoRemoved()
     }
 
-    fun markAsRemoved(ids: List<Long>, callback: (Int) -> Unit) = viewModelScope.launch {
+    /**
+     * Notifca l'avvenuta operazione inviando [UiComicsEvent.MarkedAsRemoved] a [ComicsViewModelKt.events].
+     */
+    fun markAsRemoved(comicsIds: List<Long>) = viewModelScope.launch {
         // prima elimino eventuali comics ancora in fase di undo
         _repository.deleteRemoved()
-        val count = _repository.updateRemoved(ids, true)
-        callback(count)
+        val count = _repository.setRemoved(comicsIds)
+        _events.postValue(UiComicsEvent.MarkedAsRemoved(comicsIds, count))
     }
 
     private fun String.toLikeOrNull(): String? {

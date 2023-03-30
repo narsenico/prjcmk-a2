@@ -11,7 +11,6 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,43 +21,50 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.data.comics.UiComicsEvent
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
 import it.amonshore.comikkua.ui.*
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout"
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query"
 
 class ComicsFragment : Fragment() {
 
-    private val _comicsViewModelKt: ComicsViewModelKt by viewModels()
+    private val _comicsViewModel: ComicsViewModelKt by viewModels()
 
-    private lateinit var _binding: FragmentComicsBinding
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: PagedListComicsAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        _binding = FragmentComicsBinding.inflate(layoutInflater)
-    }
+    private var _binding: FragmentComicsBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding.list.layoutManager = LinearLayoutManager(requireContext())
+        _binding = FragmentComicsBinding.inflate(layoutInflater, container, false)
+        binding.list.layoutManager = LinearLayoutManager(requireContext())
 
         val actionModeName = javaClass.simpleName + "_actionMode"
         val actionModeController = createActionModeController()
         _adapter = createComicsAdapter(actionModeName, actionModeController)
 
-        _comicsViewModelKt.comicsWithReleasesPaged
+        _comicsViewModel.comicsWithReleasesPaged
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("comics viewmodel paging data changed")
                 _adapter.submitData(lifecycle, data)
+            }
+
+        _comicsViewModel.events
+            .observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is UiComicsEvent.MarkedAsRemoved -> onMarkedAsRemoved(
+                        result.comicsIds,
+                        result.count
+                    )
+                }
             }
 
         // ripristino la selezione salvata in onSaveInstanceState
@@ -66,7 +72,12 @@ class ComicsFragment : Fragment() {
 //        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
 //        _comicsViewModelKt.useLastFilter()
 
-        return _binding.root
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,14 +87,14 @@ class ComicsFragment : Fragment() {
         // ripristino lo stato del layout (la posizione dello scroll)
         // se non trovo savedInstanceState uso lo stato salvato nel view model
         if (savedInstanceState != null) {
-            _binding.list.layoutManager?.onRestoreInstanceState(
+            binding.list.layoutManager?.onRestoreInstanceState(
                 savedInstanceState.parcelable(
                     BUNDLE_COMICS_RECYCLER_LAYOUT
                 )
             )
         } else {
-            _binding.list.layoutManager?.onRestoreInstanceState(
-                _comicsViewModelKt.states.parcelable(
+            binding.list.layoutManager?.onRestoreInstanceState(
+                _comicsViewModel.states.parcelable(
                     BUNDLE_COMICS_RECYCLER_LAYOUT
                 )
             )
@@ -95,9 +106,9 @@ class ComicsFragment : Fragment() {
         // visto che Navigation ricrea il fragment ogni volta (!)
         // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
         //  in onViewCreated
-        _comicsViewModelKt.states.putParcelable(
+        _comicsViewModel.states.putParcelable(
             BUNDLE_COMICS_RECYCLER_LAYOUT,
-            _binding.list.layoutManager?.onSaveInstanceState()
+            binding.list.layoutManager?.onSaveInstanceState()
         )
     }
 
@@ -117,7 +128,7 @@ class ComicsFragment : Fragment() {
         // salvo lo stato del layout (la posizione dello scroll)
         outState.putParcelable(
             BUNDLE_COMICS_RECYCLER_LAYOUT,
-            _binding.list.layoutManager?.onSaveInstanceState()
+            binding.list.layoutManager?.onSaveInstanceState()
         )
     }
 
@@ -127,12 +138,7 @@ class ComicsFragment : Fragment() {
                 if (item.itemId == R.id.deleteComics) {
                     val tracker = _adapter.selectionTracker
                     val ids = tracker.selection.toList()
-                    _comicsViewModelKt.markAsRemoved(ids) { count ->
-                        showUndo(
-                            ids,
-                            count
-                        )
-                    }
+                    _comicsViewModel.markAsRemoved(ids)
                     tracker.clearSelection()
                     return true
                 }
@@ -153,7 +159,7 @@ class ComicsFragment : Fragment() {
     private fun createComicsAdapter(
         actionModeName: String,
         actionModeController: ActionModeController
-    ) = PagedListComicsAdapter.Builder(_binding.list)
+    ) = PagedListComicsAdapter.Builder(binding.list)
         .withOnItemSelectedListener { _, size ->
             if (size == 0) {
                 _listener.onFragmentRequestActionMode(null, actionModeName, null)
@@ -178,19 +184,14 @@ class ComicsFragment : Fragment() {
                 ) { id: Int ->
                     when (id) {
                         R.id.createNewRelease -> {
-                            openNewRelease(_binding.root, comics)
+                            openNewRelease(binding.root, comics)
                         }
                         R.id.share -> {
                             ShareHelper.shareComics(requireActivity(), comics.comics)
                         }
                         R.id.deleteComics -> {
                             val ids = listOf(comics.comics.id)
-                            _comicsViewModelKt.markAsRemoved(ids) { count ->
-                                showUndo(
-                                    ids,
-                                    count
-                                )
-                            }
+                            _comicsViewModel.markAsRemoved(ids)
                         }
                         R.id.search_starshop -> {
                             ShareHelper.shareOnStarShop(requireActivity(), comics.comics)
@@ -232,10 +233,10 @@ class ComicsFragment : Fragment() {
                 // TODO: al cambio di configurazione (es orientamento) la query viene persa
                 //  è il viewModel che deve tenere memorizzata l'ultima query,
                 //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
-                if (!TextUtils.isEmpty(_comicsViewModelKt.lastFilter)) {
+                if (!TextUtils.isEmpty(_comicsViewModel.lastFilter)) {
                     // lo faccio prima di aver impostato i listener così non scateno più nulla
                     searchItem.expandActionView()
-                    searchView.setQuery(_comicsViewModelKt.lastFilter, false)
+                    searchView.setQuery(_comicsViewModel.lastFilter, false)
                     searchView.clearFocus()
 
                     // TODO: non funziona sulla navigazione (es apro il dettaglio di un comics filtrato),
@@ -249,7 +250,7 @@ class ComicsFragment : Fragment() {
                     }
 
                     override fun onQueryTextChange(newText: String): Boolean {
-                        _comicsViewModelKt.filter = newText // TODO: ok ma aggiungere debounce
+                        _comicsViewModel.filter = newText // TODO: ok ma aggiungere debounce
                         return true
                     }
                 })
@@ -277,9 +278,7 @@ class ComicsFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun showUndo(ids: List<Long>, count: Int) {
-        // uso il contesto applicativo per eliminare le immagini perché il contesto del fragment
-        // non è più valido se navigo da un'altra parte
+    private fun onMarkedAsRemoved(ids: List<Long>, count: Int) {
         val context = requireContext().applicationContext
         _listener.requestSnackbar(
             resources.getQuantityString(R.plurals.comics_deleted, count, count),
@@ -287,13 +286,13 @@ class ComicsFragment : Fragment() {
         ) { canDelete: Boolean ->
             if (canDelete) {
                 LogHelper.d("Delete removed comics")
-                _comicsViewModelKt.deleteRemoved()
+                _comicsViewModel.deleteRemoved()
                 // elimino anche le immagini
                 // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
                 ImageHelper.deleteImageFiles(context, *ids.toTypedArray())
             } else {
                 LogHelper.d("Undo removed comics")
-                _comicsViewModelKt.undoRemoved()
+                _comicsViewModel.undoRemoved()
             }
         }
     }
