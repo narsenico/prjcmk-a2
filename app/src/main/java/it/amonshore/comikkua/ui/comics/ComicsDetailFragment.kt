@@ -79,7 +79,10 @@ class ComicsDetailFragment : Fragment() {
             when (result) {
                 is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
                 is UiComicsDetailEvent.Sharing -> shareReleases(result.releases)
-                is UiComicsDetailEvent.NewReleasesLoaded -> onNewReleasesLoaded(result.count)
+                is UiComicsDetailEvent.NewReleasesLoaded -> onNewReleasesLoaded(
+                    result.count,
+                    result.tag
+                )
                 is UiComicsDetailEvent.NewReleasesError -> onNewReleasesError()
             }
         }
@@ -284,7 +287,8 @@ class ComicsDetailFragment : Fragment() {
         _viewModel.loadNewReleases(_comics)
     }
 
-    private fun onNewReleasesLoaded(count: Int) {
+    private fun onNewReleasesLoaded(count: Int, tag: String) {
+        LogHelper.d("New releases: $count with tag '$tag'")
         binding.swipeRefresh.isRefreshing = false
         if (count > 0) {
             Toast.makeText(

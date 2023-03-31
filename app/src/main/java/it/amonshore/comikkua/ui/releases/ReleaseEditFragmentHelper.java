@@ -4,254 +4,168 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.method.DigitsKeyListener;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LifecycleOwner;
 import it.amonshore.comikkua.DateFormatterHelper;
+import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
+import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
 import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.TextWatcherAdapter;
 
 public class ReleaseEditFragmentHelper {
 
-    static ReleaseEditFragmentHelper init(@NonNull LayoutInflater inflater, ViewGroup container,
+    @NonNull
+    static ReleaseEditFragmentHelper init(@NonNull FragmentReleaseEditBinding binding,
                                           @NonNull LifecycleOwner lifecycleOwner,
                                           @NonNull FragmentManager fragmentManager,
                                           @NonNull RequestManager glideRequestManager) {
-        final View view = inflater.inflate(R.layout.fragment_release_edit, container, false);
         final ReleaseEditFragmentHelper helper = new ReleaseEditFragmentHelper();
-        helper.numberFormat = NumberFormat.getNumberInstance(Locale.US);
-        helper.mGlideRequestManager = glideRequestManager;
-        helper.bind(view, lifecycleOwner, fragmentManager);
+        helper._binding = binding;
+        helper._numberFormat = NumberFormat.getNumberInstance(Locale.US);
+        helper._glideRequestManager = glideRequestManager;
+        helper.bind(lifecycleOwner, fragmentManager);
         return helper;
     }
 
-    final class Preview {
-        TextView numbers, date, title, info, notes;
-        ImageView purchased, ordered, menu;
-        View mainCard, background;
-        float mainCardElevationPx;
-    }
+    private Release _release;
+    private NumberFormat _numberFormat;
+    private RequestManager _glideRequestManager;
+    private FragmentReleaseEditBinding _binding;
+    private MaterialDatePicker<Long> _datePicker;
+    private long _selectedDateInUtc;
+    private float _mainCardElevationPx;
 
-    final class Editor {
-        TextInputLayout numbersLayout, dateLayout;
-        EditText numbers, date, price, notes;
-        SwitchMaterial purchased, ordered;
-        @Nullable
-        MaterialDatePicker<Long> datePicker;
-        long selectedDateInUtc;
-    }
-
-    private View mRootView;
-    private Preview preview;
-    private Editor editor;
-    @NonNull
-    private ComicsWithReleases mComics;
-    @NonNull
-    private Release mRelease;
-    private NumberFormat numberFormat;
-    @NonNull
-    private LifecycleOwner mLifecycleOwner;
-    private RequestManager mGlideRequestManager;
-
-    private void bind(@NonNull View view,
-                      @NonNull LifecycleOwner lifecycleOwner,
+    private void bind(@NonNull LifecycleOwner lifecycleOwner,
                       @NonNull FragmentManager fragmentManager) {
-        mRootView = view;
-        mLifecycleOwner = lifecycleOwner;
-
-        preview = new Preview();
-        preview.numbers = view.findViewById(R.id.txt_release_numbers);
-        preview.date = view.findViewById(R.id.txt_release_date);
-        preview.title = view.findViewById(R.id.txt_release_title);
-        preview.info = view.findViewById(R.id.txt_release_info);
-        preview.notes = view.findViewById(R.id.txt_release_notes);
-        preview.purchased = view.findViewById(R.id.img_release_purchased);
-        preview.ordered = view.findViewById(R.id.img_release_ordered);
-        preview.menu = view.findViewById(R.id.img_release_menu);
-        preview.mainCard = view.findViewById(R.id.release_main_card);
-        preview.background = view.findViewById(R.id.release_background);
-
-        editor = new Editor();
-        editor.numbersLayout = view.findViewById(R.id.til_numbers);
-        editor.numbers = editor.numbersLayout.getEditText();
-        editor.dateLayout = view.findViewById(R.id.til_date);
-        editor.date = editor.dateLayout.getEditText();
-        editor.price = ((TextInputLayout) view.findViewById(R.id.til_price)).getEditText();
-        editor.notes = ((TextInputLayout) view.findViewById(R.id.til_notes)).getEditText();
-        editor.purchased = view.findViewById(R.id.chk_purchased);
-        editor.ordered = view.findViewById(R.id.chk_ordered);
-
         // da xml non riesco a impostarli
-        editor.numbers.setKeyListener(DigitsKeyListener.getInstance("0123456789,-"));
+        _binding.tilNumbers.getEditText().setKeyListener(DigitsKeyListener.getInstance("0123456789,-"));
 
         // la modifica di una proprietà della release si riflette immediatamente sulla preview
-        editor.numbers.addTextChangedListener(new TextWatcherAdapter() {
+        _binding.tilNumbers.getEditText().addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
-                preview.numbers.setText(s.toString().trim());
+                _binding.release.txtReleaseNumbers.setText(s.toString().trim());
             }
         });
 
-        editor.notes.addTextChangedListener(new TextWatcherAdapter() {
+        _binding.tilNotes.getEditText().addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
-                preview.notes.setText(s.toString().trim());
+                _binding.release.txtReleaseNotes.setText(s.toString().trim());
             }
         });
 
-        preview.mainCardElevationPx = preview.mainCard.getElevation(); /*TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                2f,
-                preview.mainCard.getResources().getDisplayMetrics());*/
-        editor.purchased.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        _mainCardElevationPx = _binding.release.releaseMainCard.getElevation();
+        _binding.chkPurchased.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updatePurchased(isChecked);
         });
 
-        editor.ordered.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            preview.ordered.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
+        _binding.chkOrdered.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            _binding.release.imgReleaseOrdered.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
         });
 
         // il campo Date non è editabile
         // quando acquisisce il focus apro il picker
         // quando verrà chiuso il focus rimarrà al campo date
         // quindi al click del campo Date, se ha già il focus riapro il picker
-        editor.date.setInputType(EditorInfo.TYPE_NULL);
-        editor.date.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && editor.datePicker != null) {
-                editor.datePicker.show(fragmentManager, "release_date_picker");
+        _binding.tilDate.getEditText().setInputType(EditorInfo.TYPE_NULL);
+        _binding.tilDate.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && _datePicker != null) {
+                _datePicker.show(fragmentManager, "release_date_picker");
             }
         });
-        editor.date.setOnClickListener(v -> {
-            if (editor.datePicker != null && v.hasFocus()) {
-                editor.datePicker.show(fragmentManager, "release_date_picker");
+        _binding.tilDate.getEditText().setOnClickListener(v -> {
+            if (_datePicker != null && v.hasFocus()) {
+                _datePicker.show(fragmentManager, "release_date_picker");
             }
         });
 
         // icona alla destra del campo Date, elimina la data di rilascio
-        editor.dateLayout.setEndIconOnClickListener(v -> {
-            editor.selectedDateInUtc = 0;
-            editor.date.setText("");
-            preview.date.setText("");
+        _binding.tilDate.setEndIconOnClickListener(v -> {
+            _selectedDateInUtc = 0;
+            _binding.tilDate.getEditText().setText("");
+            _binding.release.txtReleaseDate.setText("");
         });
     }
 
     @NonNull
     View getRootView() {
-        return mRootView;
-    }
-
-    @NonNull
-    ComicsWithReleases getComics() {
-        return mComics;
-    }
-
-    @NonNull
-    Release getRelease() {
-        return mRelease;
-    }
-
-    boolean isNew() {
-        return mRelease.id == Release.NEW_RELEASE_ID;
+        return _binding.getRoot();
     }
 
     void setComics(@NonNull ComicsWithReleases comics) {
-        mComics = comics;
-
-        preview.title.setText(mComics.comics.name);
-        preview.notes.setText(mComics.comics.notes);
-        preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
-        preview.purchased.setVisibility(View.INVISIBLE);
-        preview.ordered.setVisibility(View.INVISIBLE);
-        preview.menu.setVisibility(View.INVISIBLE);
+        _binding.release.txtReleaseTitle.setText(comics.comics.name);
+        _binding.release.txtReleaseNotes.setText(comics.comics.notes);
+        _binding.release.txtReleaseInfo.setText(Utility.join(", ", true, comics.comics.publisher, comics.comics.authors));
+        _binding.release.imgReleasePurchased.setVisibility(View.INVISIBLE);
+        _binding.release.imgReleaseOrdered.setVisibility(View.INVISIBLE);
+        _binding.release.imgReleaseMenu.setVisibility(View.INVISIBLE);
         updatePurchased(false);
 
         if (comics.comics.hasImage()) {
-            mGlideRequestManager
+            _glideRequestManager
                     .load(Uri.parse(comics.comics.image))
                     .apply(ImageHelper.getGlideSquareOptions())
-                    .into(new DrawableTextViewTarget(preview.numbers));
+                    .into(new DrawableTextViewTarget(_binding.release.txtReleaseNumbers));
         }
     }
 
-    void setRelease(/*@NonNull ComicsWithReleases comics, */@NonNull Release release, Bundle savedInstanceState) {
-//        mComics = comics;
-        mRelease = release;
+    void setRelease(@NonNull Release release, Bundle savedInstanceState) {
+        _release = release;
 
         if (savedInstanceState != null) {
-            preview.numbers.setText(savedInstanceState.getString("numbers"));
-//            preview.notes.setText(savedInstanceState.getString("notes", mComics.comics.notes));
-            preview.purchased.setVisibility(savedInstanceState.getBoolean("purchased") ? View.VISIBLE : View.INVISIBLE);
-            preview.ordered.setVisibility(savedInstanceState.getBoolean("ordered") ? View.VISIBLE : View.INVISIBLE);
-            editor.numbers.setText(savedInstanceState.getString("numbers"));
-            editor.price.setText(savedInstanceState.getString("price"));
-            editor.purchased.setChecked(savedInstanceState.getBoolean("purchased"));
-            editor.ordered.setChecked(savedInstanceState.getBoolean("ordered"));
-            editor.notes.setText(savedInstanceState.getString("notes"));
+            _binding.release.txtReleaseNumbers.setText(savedInstanceState.getString("numbers"));
+            _binding.release.imgReleasePurchased.setVisibility(savedInstanceState.getBoolean("purchased") ? View.VISIBLE : View.INVISIBLE);
+            _binding.release.imgReleaseOrdered.setVisibility(savedInstanceState.getBoolean("ordered") ? View.VISIBLE : View.INVISIBLE);
+            _binding.tilNumbers.getEditText().setText(savedInstanceState.getString("numbers"));
+            _binding.tilPrice.getEditText().setText(savedInstanceState.getString("price"));
+            _binding.chkPurchased.setChecked(savedInstanceState.getBoolean("purchased"));
+            _binding.chkOrdered.setChecked(savedInstanceState.getBoolean("ordered"));
+            _binding.tilNotes.getEditText().setText(savedInstanceState.getString("notes"));
             prepareDatePicker(savedInstanceState.getLong("dateUtc"));
         } else {
-            preview.numbers.setText(String.format(Locale.getDefault(), "%d", mRelease.number));
-//            preview.notes.setText(Utility.nvl(mRelease.notes, mComics.comics.notes));
-            preview.purchased.setVisibility(mRelease.purchased ? View.VISIBLE : View.INVISIBLE);
-            preview.ordered.setVisibility(mRelease.ordered ? View.VISIBLE : View.INVISIBLE);
-            editor.numbers.setText(String.format(Locale.getDefault(), "%d", mRelease.number));
-            editor.price.setText(numberFormat.format(mRelease.price));
-            editor.purchased.setChecked(mRelease.purchased);
-            editor.ordered.setChecked(mRelease.ordered);
-            editor.notes.setText(mRelease.notes);
-            prepareDatePicker(mRelease.date);
+            _binding.release.txtReleaseNumbers.setText(String.format(Locale.getDefault(), "%d", _release.number));
+            _binding.release.imgReleasePurchased.setVisibility(_release.purchased ? View.VISIBLE : View.INVISIBLE);
+            _binding.release.imgReleaseOrdered.setVisibility(_release.ordered ? View.VISIBLE : View.INVISIBLE);
+            _binding.tilNumbers.getEditText().setText(String.format(Locale.getDefault(), "%d", _release.number));
+            _binding.tilPrice.getEditText().setText(_numberFormat.format(_release.price));
+            _binding.chkPurchased.setChecked(_release.purchased);
+            _binding.chkOrdered.setChecked(_release.ordered);
+            _binding.tilNotes.getEditText().setText(_release.notes);
+            prepareDatePicker(_release.date);
         }
 
-        updatePurchased(editor.purchased.isChecked());
-
-//        // questi non cambiano mai quindi non ho bisogno di recuperarli anche da savedInstanceState
-//        preview.title.setText(mComics.comics.name);
-//        preview.info.setText(Utility.join(", ", true, mComics.comics.publisher, mComics.comics.authors));
-
-//        if (comics.comics.hasImage()) {
-//            mGlideRequestManager
-//                    .load(Uri.parse(comics.comics.image))
-//                    .apply(ImageHelper.getGlideSquareOptions())
-//                    .into(new DrawableTextViewTarget(preview.numbers));
-//        }
-
-//        preview.menu.setVisibility(View.INVISIBLE);
+        updatePurchased(_binding.chkPurchased.isChecked());
     }
 
     private void updatePurchased(boolean isChecked) {
         if (isChecked) {
-            preview.purchased.setVisibility(View.VISIBLE);
-            preview.mainCard.setElevation(0);
-            preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemPurchased));
+            _binding.release.imgReleasePurchased.setVisibility(View.VISIBLE);
+            _binding.release.releaseMainCard.setElevation(0);
+            _binding.release.releaseBackground.setBackgroundColor(ContextCompat.getColor(_binding.getRoot().getContext(), R.color.colorItemPurchased));
         } else {
-            preview.purchased.setVisibility(View.INVISIBLE);
-            preview.mainCard.setElevation(preview.mainCardElevationPx);
-            preview.background.setBackgroundColor(ContextCompat.getColor(mRootView.getContext(), R.color.colorItemNotPurchased));
+            _binding.release.imgReleasePurchased.setVisibility(View.INVISIBLE);
+            _binding.release.releaseMainCard.setElevation(_mainCardElevationPx);
+            _binding.release.releaseBackground.setBackgroundColor(ContextCompat.getColor(_binding.getRoot().getContext(), R.color.colorItemNotPurchased));
         }
     }
 
@@ -268,65 +182,65 @@ public class ReleaseEditFragmentHelper {
     private void prepareDatePicker(long dateUtc) {
         // MaterialDatePicker accetta date in UTC
 
-        editor.selectedDateInUtc = dateUtc;
+        _selectedDateInUtc = dateUtc;
 
         final long startSelection;
-        if (editor.selectedDateInUtc == 0) {
-            preview.date.setText("");
-            editor.date.setText("");
+        if (_selectedDateInUtc == 0) {
+            _binding.release.txtReleaseDate.setText("");
+            _binding.tilDate.getEditText().setText("");
             // oggi
             startSelection = DateFormatterHelper.toUTCCalendar(System.currentTimeMillis()).getTimeInMillis();
         } else {
-            final String humanized = DateFormatterHelper.toHumanReadable(editor.date.getContext(),
-                    DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(editor.selectedDateInUtc).getTimeInMillis()),
+            final String humanized = DateFormatterHelper.toHumanReadable(_binding.tilDate.getContext(),
+                    DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(_selectedDateInUtc).getTimeInMillis()),
                     DateFormatterHelper.STYLE_FULL);
-            preview.date.setText(humanized);
-            editor.date.setText(humanized);
-            startSelection = editor.selectedDateInUtc;
+            _binding.release.txtReleaseDate.setText(humanized);
+            _binding.tilDate.getEditText().setText(humanized);
+            startSelection = _selectedDateInUtc;
         }
 
-        editor.datePicker = MaterialDatePicker.Builder.datePicker()
+        _datePicker = MaterialDatePicker.Builder.datePicker()
                 .setSelection(startSelection)
                 .setTitleText("Release date")
                 .setCalendarConstraints(new CalendarConstraints.Builder().setOpenAt(startSelection).build())
                 .build();
 
-        editor.datePicker.addOnPositiveButtonClickListener(selection -> {
-            editor.selectedDateInUtc = selection;
+        _datePicker.addOnPositiveButtonClickListener(selection -> {
+            _selectedDateInUtc = selection;
 
-            final String humanized = DateFormatterHelper.toHumanReadable(editor.date.getContext(),
+            final String humanized = DateFormatterHelper.toHumanReadable(_binding.tilDate.getContext(),
                     DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(selection).getTimeInMillis()),
                     DateFormatterHelper.STYLE_FULL);
-            preview.date.setText(humanized);
-            editor.date.setText(humanized);
+            _binding.release.txtReleaseDate.setText(humanized);
+            _binding.tilDate.getEditText().setText(humanized);
         });
     }
 
     Release[] createReleases() {
-        mRelease.date = editor.selectedDateInUtc == 0 ? null :
-                DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(editor.selectedDateInUtc).getTimeInMillis());
-        mRelease.notes = editor.notes.getText().toString().trim();
-        mRelease.purchased = editor.purchased.isChecked();
-        mRelease.ordered = editor.ordered.isChecked();
+        _release.date = _selectedDateInUtc == 0 ? null :
+                DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(_selectedDateInUtc).getTimeInMillis());
+        _release.notes = _binding.tilNotes.getEditText().getText().toString().trim();
+        _release.purchased = _binding.chkPurchased.isChecked();
+        _release.ordered = _binding.chkOrdered.isChecked();
 
-        if (editor.price.length() > 0) {
+        if (_binding.tilPrice.getEditText().length() > 0) {
             try {
-                mRelease.price = numberFormat.parse(editor.price.getText().toString()).doubleValue();
+                _release.price = _numberFormat.parse(_binding.tilPrice.getEditText().getText().toString()).doubleValue();
             } catch (ParseException e) {
-                mRelease.price = 0;
+                _release.price = 0;
                 LogHelper.e("Error parsing release price", e);
             }
         } else {
-            mRelease.price = 0;
+            _release.price = 0;
         }
 
-        final int[] numbers = Utility.parseInterval(editor.numbers.getText().toString().trim(), ",", "-");
+        final int[] numbers = Utility.parseInterval(_binding.tilNumbers.getEditText().getText().toString().trim(), ",", "-");
         final Release[] releases = new Release[numbers.length];
 
-        for (int ii=0; ii<numbers.length; ii++) {
+        for (int ii = 0; ii < numbers.length; ii++) {
             // in questo caso imposto subito lastUpdate perché queste release potrebbero sovrascrivere quelle già esistenti
             // così facendo risultano ancora visibili nell'elenco release anche se già acquistate per tutto il periodo di retain (vedi ReleaeDao.getAllReleases)
-            releases[ii] = Release.create(mRelease, System.currentTimeMillis());
+            releases[ii] = Release.create(_release, System.currentTimeMillis());
             releases[ii].number = numbers[ii];
         }
 
@@ -334,12 +248,12 @@ public class ReleaseEditFragmentHelper {
     }
 
     void saveInstanceState(@NonNull Bundle outState) {
-        outState.putString("numbers", editor.numbers.getText().toString());
-        outState.putLong("dateUtc", editor.selectedDateInUtc);
-        outState.putString("price", editor.price.getText().toString());
-        outState.putString("notes", editor.notes.getText().toString());
-        outState.putBoolean("purchased", editor.purchased.isChecked());
-        outState.putBoolean("ordered", editor.ordered.isChecked());
+        outState.putString("numbers", _binding.tilNumbers.getEditText().getText().toString());
+        outState.putLong("dateUtc", _selectedDateInUtc);
+        outState.putString("price", _binding.tilPrice.getEditText().getText().toString());
+        outState.putString("notes", _binding.tilNotes.getEditText().getText().toString());
+        outState.putBoolean("purchased", _binding.chkPurchased.isChecked());
+        outState.putBoolean("ordered", _binding.chkOrdered.isChecked());
     }
 
     void isValid(@NonNull final ICallback<Boolean> callback) {

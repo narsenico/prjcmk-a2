@@ -12,13 +12,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 
 private data class Id(val comicsId: Long, val releaseId: Long)
 
 class ReleaseEditFragment : Fragment() {
 
-    private val _releaseEditViewModel: ReleaseEditViewModelKt by viewModels()
+    private val _viewModel: ReleaseEditViewModelKt by viewModels()
 
     private val _id: Id by lazy {
         val args = ReleaseEditFragmentArgs.fromBundle(requireArguments())
@@ -26,45 +27,55 @@ class ReleaseEditFragment : Fragment() {
     }
 
     private lateinit var _listener: OnNavigationFragmentListener
-    private lateinit var _helper: ReleaseEditFragmentHelper
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedElementEnterTransition = TransitionInflater.from(context)
-            .inflateTransition(android.R.transition.move)
-    }
+    private var _binding: FragmentReleaseEditBinding? = null
+    private val binding get() = _binding!!
+    private var _helper: ReleaseEditFragmentHelper? = null
+    private val helper get() = _helper!!
+
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        sharedElementEnterTransition = TransitionInflater.from(context)
+//            .inflateTransition(android.R.transition.move)
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        _binding = FragmentReleaseEditBinding.inflate(layoutInflater, container, false)
         _helper = ReleaseEditFragmentHelper.init(
-            inflater,
-            container,
+            binding,
             viewLifecycleOwner,
             parentFragmentManager,
             Glide.with(this)
         )
 
-        // lo stesso nome della transizione è stato assegnato alla view di partenza
-        //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
-        _helper.rootView.findViewById<View>(R.id.release).transitionName =
-            "release_tx_${_id.releaseId}"
+//        // lo stesso nome della transizione è stato assegnato alla view di partenza
+//        //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
+//        helper.rootView.findViewById<View>(R.id.release).transitionName =
+//            "release_tx_${_id.releaseId}"
 
-        _releaseEditViewModel.getComicsAndRelease(_id.comicsId, _id.releaseId)
+        _viewModel.getComicsAndRelease(_id.comicsId, _id.releaseId)
             .observe(viewLifecycleOwner) { (comics, release) ->
-                _helper.comics = comics
-                _helper.setRelease(release, savedInstanceState)
+                helper.setComics(comics)
+                helper.setRelease(release, savedInstanceState)
             }
 
-        _releaseEditViewModel.result.observe(viewLifecycleOwner) { result ->
+        _viewModel.result.observe(viewLifecycleOwner) { result ->
             when (result) {
                 UiReleaseEditResult.Inserted -> insertDone()
             }
         }
 
-        return _helper.rootView
+        return helper.rootView
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _helper = null
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -81,9 +92,9 @@ class ReleaseEditFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.saveReleases) {
-                    _helper.isValid { valid ->
+                    helper.isValid { valid ->
                         // TODO: inserire solo se valido
-                        _releaseEditViewModel.insertReleases(_helper.createReleases().toList())
+                        _viewModel.insertReleases(helper.createReleases().toList())
                     }
                     return true
                 }
@@ -94,7 +105,7 @@ class ReleaseEditFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        _helper.saveInstanceState(outState)
+        helper.saveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
