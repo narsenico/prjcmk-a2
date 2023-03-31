@@ -3,9 +3,7 @@ package it.amonshore.comikkua.ui.comics
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.*
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.MenuHost
@@ -17,8 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.DateFormatterHelper
@@ -26,66 +22,60 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.databinding.FragmentComicsDetailBinding
 import it.amonshore.comikkua.ui.*
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
 
+private val ACTION_MODE_NAME = ComicsDetailFragment::class.java.simpleName + "_actionMode"
+
 class ComicsDetailFragment : Fragment() {
 
-    private val _comicsDetailViewModel: ComicsDetailViewModelKt by viewModels()
+    private val _viewModel: ComicsDetailViewModelKt by viewModels()
 
     private val _comicsId: Long by lazy {
         ComicsDetailFragmentArgs.fromBundle(requireArguments()).comicsId
     }
 
     private lateinit var _listener: OnNavigationFragmentListener
-    private lateinit var _swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var _adapter: ReleaseAdapter
     private lateinit var _comics: ComicsWithReleases
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharedElementEnterTransition = TransitionInflater.from(context)
-            .inflateTransition(android.R.transition.move)
-    }
+    private var _binding: FragmentComicsDetailBinding? = null
+    private val binding get() = _binding!!
+
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        sharedElementEnterTransition = TransitionInflater.from(context)
+//            .inflateTransition(android.R.transition.move)
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_comics_detail, container, false)
+    ): View {
+        _binding = FragmentComicsDetailBinding.inflate(layoutInflater, container, false)
+        binding.list.layoutManager = LinearLayoutManager(requireContext())
+        binding.swipeRefresh.setOnRefreshListener(::loadNewReleases)
 
-        // lo stesso nome della transizione è stato assegnato alla view di partenza
-        //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
-        view.findViewById<View>(R.id.comics).transitionName = "comics_tx_$_comicsId"
+//        // lo stesso nome della transizione è stato assegnato alla view di partenza
+//        //  il nome deve essere univoco altrimenti il meccanismo non saprebbe quali viste animare
+//        view.findViewById<View>(R.id.comics).transitionName = "comics_tx_$_comicsId"
 
-        _swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh).apply {
-            setOnRefreshListener(::loadNewReleases)
-        }
-
-        val recyclerView = view.findViewById<RecyclerView>(R.id.list).apply {
-            layoutManager = LinearLayoutManager(requireContext())
-        }
         val actionModeController = createActionModeController()
-        val actionModeName = javaClass.simpleName + "_actionMode"
-        _adapter = createReleaseAdapter(
-            recyclerView,
-            actionModeName,
-            actionModeController,
-            view
-        )
+        _adapter = createReleaseAdapter(actionModeController)
 
-        _comicsDetailViewModel.getComicsWithReleases(_comicsId)
-            .observe(viewLifecycleOwner, createComicsWithReleasesObserver(view))
+        _viewModel.getComicsWithReleases(_comicsId)
+            .observe(viewLifecycleOwner, createComicsWithReleasesObserver())
 
-        _comicsDetailViewModel.getReleaseViewModelItems(_comicsId)
+        _viewModel.getReleaseViewModelItems(_comicsId)
             .observe(viewLifecycleOwner) { items ->
                 LogHelper.d("release view model data changed size=${items.size}")
                 _adapter.submitList(items)
             }
 
-        _comicsDetailViewModel.events.observe(viewLifecycleOwner) { result ->
+        _viewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
                 is UiComicsDetailEvent.Sharing -> shareReleases(result.releases)
@@ -94,9 +84,12 @@ class ComicsDetailFragment : Fragment() {
             }
         }
 
-        // ripristino la selezione salvata in onSaveInstanceState
-        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
-        return view
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -152,49 +145,6 @@ class ComicsDetailFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun createReleaseAdapter(
-        recyclerView: RecyclerView,
-        actionModeName: String,
-        actionModeController: ActionModeController,
-        view: View
-    ) = ReleaseAdapter.Builder(recyclerView)
-        .withOnItemSelectedListener { _, size ->
-            if (size == 0) {
-                _listener.onFragmentRequestActionMode(null, actionModeName, null)
-            } else {
-                _listener.onFragmentRequestActionMode(
-                    actionModeController,
-                    actionModeName,
-                    getString(R.string.title_selected, size)
-                )
-            }
-        }
-        .withReleaseCallback(object : ReleaseCallback {
-            override fun onReleaseClick(release: ComicsRelease) {
-                openEdit(view, release)
-            }
-
-            override fun onReleaseTogglePurchase(release: ComicsRelease) {
-                _comicsDetailViewModel.updatePurchased(
-                    release.release.id,
-                    !release.release.purchased
-                )
-            }
-
-            override fun onReleaseToggleOrder(release: ComicsRelease) {
-                _comicsDetailViewModel.updateOrdered(
-                    release.release.id,
-                    !release.release.ordered
-                )
-            }
-
-            override fun onReleaseMenuSelected(release: ComicsRelease) {
-                // non gestito
-            }
-        }) // uso la versione "lite" con il layout per gli item più compatta
-        .useLite()
-        .build()
-
     private fun createActionModeController() =
         object : ActionModeController(R.menu.menu_releases_selected) {
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
@@ -202,21 +152,21 @@ class ComicsDetailFragment : Fragment() {
                 when (item.itemId) {
                     R.id.purchaseReleases -> {
                         // TODO: considerare le multi release
-                        _comicsDetailViewModel.togglePurchased(tracker.selection.toList())
+                        _viewModel.togglePurchased(tracker.selection.toList())
                         return true
                     }
                     R.id.orderReleases -> {
                         // TODO: considerare le multi release
-                        _comicsDetailViewModel.toggleOrdered(tracker.selection.toList())
+                        _viewModel.toggleOrdered(tracker.selection.toList())
                         return true
                     }
                     R.id.deleteReleases -> {
-                        _comicsDetailViewModel.markAsRemoved(tracker.selection.toList())
+                        _viewModel.markAsRemoved(tracker.selection.toList())
                         tracker.clearSelection()
                         return true
                     }
                     R.id.shareReleases -> {
-                        _comicsDetailViewModel.getShareableComicsReleases(tracker.selection.toList())
+                        _viewModel.getShareableComicsReleases(tracker.selection.toList())
                         return true
                     }
                 }
@@ -230,19 +180,59 @@ class ComicsDetailFragment : Fragment() {
             }
         }
 
-    private fun createComicsWithReleasesObserver(view: View): Observer<ComicsWithReleases?> {
+    private fun createReleaseAdapter(
+        actionModeController: ActionModeController
+    ) = ReleaseAdapter.Builder(binding.list)
+        .withOnItemSelectedListener { _, size ->
+            if (size == 0) {
+                _listener.onFragmentRequestActionMode(null, ACTION_MODE_NAME, null)
+            } else {
+                _listener.onFragmentRequestActionMode(
+                    actionModeController,
+                    ACTION_MODE_NAME,
+                    getString(R.string.title_selected, size)
+                )
+            }
+        }
+        .withReleaseCallback(object : ReleaseCallback {
+            override fun onReleaseClick(release: ComicsRelease) {
+                openEdit(binding.root, release)
+            }
+
+            override fun onReleaseTogglePurchase(release: ComicsRelease) {
+                _viewModel.updatePurchased(
+                    release.release.id,
+                    !release.release.purchased
+                )
+            }
+
+            override fun onReleaseToggleOrder(release: ComicsRelease) {
+                _viewModel.updateOrdered(
+                    release.release.id,
+                    !release.release.ordered
+                )
+            }
+
+            override fun onReleaseMenuSelected(release: ComicsRelease) {
+                // non gestito
+            }
+        }) // uso la versione "lite" con il layout per gli item più compatta
+        .useLite()
+        .build()
+
+    private fun createComicsWithReleasesObserver(): Observer<ComicsWithReleases> {
         val context = requireContext()
-        val txtInitial = view.findViewById<TextView>(R.id.txt_comics_initial)
-        val txtName = view.findViewById<TextView>(R.id.txt_comics_name)
-        val txtPublisher = view.findViewById<TextView>(R.id.txt_comics_publisher)
-        val txtAuthors = view.findViewById<TextView>(R.id.txt_comics_authors)
-        val txtNotes = view.findViewById<TextView>(R.id.txt_comics_notes)
-        val txtLast = view.findViewById<TextView>(R.id.txt_comics_release_last)
-        val txtNext = view.findViewById<TextView>(R.id.txt_comics_release_next)
-        val txtMissing = view.findViewById<TextView>(R.id.txt_comics_release_missing)
+        val txtInitial = binding.comics.txtComicsInitial
+        val txtName = binding.comics.txtComicsName
+        val txtPublisher = binding.comics.txtComicsPublisher
+        val txtAuthors = binding.comics.txtComicsAuthors
+        val txtNotes = binding.comics.txtComicsNotes
+        val txtLast = binding.comics.txtComicsReleaseLast
+        val txtNext = binding.comics.txtComicsReleaseNext
+        val txtMissing = binding.comics.txtComicsReleaseMissing
 
         return Observer { comics ->
-            _comics = comics!!
+            _comics = comics
             txtName.text = comics.comics.name
             txtPublisher.text = comics.comics.publisher
             txtAuthors.text = comics.comics.authors
@@ -290,12 +280,12 @@ class ComicsDetailFragment : Fragment() {
 
     private fun loadNewReleases() {
         _listener.dismissSnackbar()
-        _swipeRefreshLayout.isRefreshing = true
-        _comicsDetailViewModel.loadNewReleases(_comics)
+        binding.swipeRefresh.isRefreshing = true
+        _viewModel.loadNewReleases(_comics)
     }
 
     private fun onNewReleasesLoaded(count: Int) {
-        _swipeRefreshLayout.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
         if (count > 0) {
             Toast.makeText(
                 requireContext(),
@@ -316,7 +306,7 @@ class ComicsDetailFragment : Fragment() {
     }
 
     private fun onNewReleasesError() {
-        _swipeRefreshLayout.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
         Toast.makeText(
             requireContext(),
             R.string.refresh_release_error,
@@ -345,10 +335,10 @@ class ComicsDetailFragment : Fragment() {
         ) { canDelete: Boolean ->
             if (canDelete) {
                 LogHelper.d("Delete removed releases")
-                _comicsDetailViewModel.deleteRemoved()
+                _viewModel.deleteRemoved()
             } else {
                 LogHelper.d("Undo removed releases")
-                _comicsDetailViewModel.undoRemoved()
+                _viewModel.undoRemoved()
             }
         }
     }
