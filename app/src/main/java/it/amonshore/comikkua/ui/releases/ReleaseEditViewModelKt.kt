@@ -1,9 +1,11 @@
-package it.amonshore.comikkua.data.release
+package it.amonshore.comikkua.ui.releases
 
 import android.app.Application
 import androidx.lifecycle.*
 import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.data.release.ReleaseRepositoryKt
 import kotlinx.coroutines.launch
 
 data class ComicsAndRelease(val comics: ComicsWithReleases, val release: Release)

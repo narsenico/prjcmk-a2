@@ -12,8 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.release.UiReleaseEditResult
-import it.amonshore.comikkua.data.release.ReleaseEditViewModelKt
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 
 private data class Id(val comicsId: Long, val releaseId: Long)

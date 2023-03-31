@@ -33,7 +33,7 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.BackupHelper;
 import it.amonshore.comikkua.data.comics.Comics;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
+import it.amonshore.comikkua.ui.comics.ComicsViewModel;
 
 import static it.amonshore.comikkua.workers.ReleaseNotificationWorker.KEY_NOTIFICATIONS_ENABLED;
 

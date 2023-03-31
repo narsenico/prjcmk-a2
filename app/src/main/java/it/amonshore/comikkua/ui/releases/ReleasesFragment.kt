@@ -21,8 +21,6 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
-import it.amonshore.comikkua.data.release.ReleaseViewModelKt
-import it.amonshore.comikkua.data.release.UiReleaseEvent
 import it.amonshore.comikkua.databinding.FragmentReleasesBinding
 import it.amonshore.comikkua.parcelable
 import it.amonshore.comikkua.ui.ActionModeController

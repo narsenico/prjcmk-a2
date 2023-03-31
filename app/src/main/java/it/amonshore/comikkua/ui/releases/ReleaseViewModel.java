@@ -1,12 +1,10 @@
-package it.amonshore.comikkua.data.release;
+package it.amonshore.comikkua.ui.releases;
 
 import android.app.Application;
 import android.os.Bundle;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -19,8 +17,11 @@ import androidx.lifecycle.MutableLiveData;
 import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.data.web.CmkWebRelease;
+import it.amonshore.comikkua.data.release.ComicsRelease;
+import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
+import it.amonshore.comikkua.data.release.MissingRelease;
+import it.amonshore.comikkua.data.release.ReleaseRepository;
+import it.amonshore.comikkua.data.release.ReleaseViewModelGroupHelper;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
 
 public class ReleaseViewModel extends AndroidViewModel {
@@ -48,9 +49,9 @@ public class ReleaseViewModel extends AndroidViewModel {
     }
 
     private LiveData<List<ComicsRelease>> getAllReleases(@NonNull @Size(8) String refDate,
-                                                        @NonNull @Size(8) String refNextDate,
-                                                        @NonNull @Size(8) String refOtherDate,
-                                                        long retainStart) {
+                                                         @NonNull @Size(8) String refNextDate,
+                                                         @NonNull @Size(8) String refOtherDate,
+                                                         long retainStart) {
         return mRepository.getComicsReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 

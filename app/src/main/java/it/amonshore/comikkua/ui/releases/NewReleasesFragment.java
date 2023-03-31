@@ -28,7 +28,6 @@ import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.MultiRelease;
-import it.amonshore.comikkua.data.release.ReleaseViewModel;
 import it.amonshore.comikkua.ui.ActionModeController;
 import it.amonshore.comikkua.ui.BottomSheetDialogHelper;
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener;

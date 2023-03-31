@@ -34,7 +34,6 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Periodicity;
 import it.amonshore.comikkua.data.release.Release;

@@ -19,9 +19,7 @@ import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
-import it.amonshore.comikkua.data.comics.ComicsViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
-import it.amonshore.comikkua.data.comics.UiComicsEvent
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
 import it.amonshore.comikkua.ui.*

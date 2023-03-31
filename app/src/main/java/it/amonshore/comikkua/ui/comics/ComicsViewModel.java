@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data.comics;
+package it.amonshore.comikkua.ui.comics;
 
 import android.app.Application;
 import android.os.Bundle;
@@ -19,6 +19,9 @@ import androidx.paging.PagingLiveData;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.Utility;
+import it.amonshore.comikkua.data.comics.Comics;
+import it.amonshore.comikkua.data.comics.ComicsRepository;
+import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.web.CmkWebRepository;
 import kotlinx.coroutines.CoroutineScope;
 
@@ -100,7 +103,7 @@ public class ComicsViewModel extends AndroidViewModel {
      * Imposta un filtro sui comics.
      * Gli osservatori collegati a comicsWithReleasesList verranno eccitati di conseguenza.
      *
-     * @param filter    testo da usare come filtro, null o vuoto per togliere il filtro
+     * @param filter testo da usare come filtro, null o vuoto per togliere il filtro
      */
     public void setFilter(String filter) {
         mLastFilter = filter;
@@ -185,7 +188,7 @@ public class ComicsViewModel extends AndroidViewModel {
     }
 
     public void remove(Long id, ICallback2<Long[], Integer> callback) {
-        remove(new Long[] { id }, callback);
+        remove(new Long[]{id}, callback);
     }
 
     public void remove(Long[] ids, ICallback2<Long[], Integer> callback) {

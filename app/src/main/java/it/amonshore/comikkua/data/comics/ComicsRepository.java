@@ -10,95 +10,95 @@ import androidx.paging.PagingSource;
 import it.amonshore.comikkua.ICallback2;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
-class ComicsRepository {
+public class ComicsRepository {
 
     private final ComicsDao mComicsDao;
 
-    ComicsRepository(Application application) {
+    public ComicsRepository(Application application) {
         final ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
         mComicsDao = db.comicsDao();
     }
 
-    LiveData<List<Comics>> getComics() {
+    public LiveData<List<Comics>> getComics() {
         return mComicsDao.getComics();
     }
 
-    LiveData<Comics> getComics(long id) {
+    public LiveData<Comics> getComics(long id) {
         return mComicsDao.getComics(id);
     }
 
-    LiveData<Comics> getComics(String name) {
+    public LiveData<Comics> getComics(String name) {
         return mComicsDao.getComics(name);
     }
 
-    LiveData<ComicsWithReleases> getComicsWithReleases(long id) {
+    public LiveData<ComicsWithReleases> getComicsWithReleases(long id) {
         return mComicsDao.getComicsWithReleases(id);
     }
 
-    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource() {
+    public PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource() {
         return mComicsDao.getComicsWithReleasesPagingSource();
     }
 
-    PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource(String likeName) {
+    public PagingSource<Integer, ComicsWithReleases> getComicsWithReleasesPagingSource(String likeName) {
         return mComicsDao.getComicsWithReleasesPagingSource(likeName);
     }
 
-    LiveData<List<String>> getPublishers() {
+    public LiveData<List<String>> getPublishers() {
         return mComicsDao.getPublishers();
     }
 
-    LiveData<List<String>> getAuthors() {
+    public LiveData<List<String>> getAuthors() {
         return mComicsDao.getAuthors();
     }
 
-    LiveData<List<String>> getComicsName() {
+    public LiveData<List<String>> getComicsName() {
         return mComicsDao.getComicsName();
     }
 
-    void insert(Comics comics) {
+    public void insert(Comics comics) {
         new InsertAsyncTask(mComicsDao).execute(comics);
     }
 
-    long insertSync(Comics comics) {
+    public long insertSync(Comics comics) {
         return mComicsDao.insert(comics);
     }
 
-    void update(Comics comics) {
+    public void update(Comics comics) {
         new UpdateAsyncTask(mComicsDao).execute(comics);
     }
 
-    int updateSync(Comics comics) {
+    public int updateSync(Comics comics) {
         return mComicsDao.update(comics);
     }
 
-    void delete(long id) {
+    public void delete(long id) {
         new DeleteAsyncTask(mComicsDao).execute(id);
     }
 
-    void delete(Long... id) {
+    public void delete(Long... id) {
         new DeleteAsyncTask(mComicsDao).execute(id);
     }
 
-    void deleteAll() {
+    public void deleteAll() {
         new DeleteAllAsyncTask(mComicsDao).execute();
     }
 
-    void remove(Long... id) {
+    public void remove(Long... id) {
         new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.REMOVE, null)
                 .execute(id);
     }
 
-    void remove(Long[] id, ICallback2<Long[], Integer> callback) {
+    public void remove(Long[] id, ICallback2<Long[], Integer> callback) {
         new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.REMOVE, callback)
                 .execute(id);
     }
 
-    void undoRemoved() {
+    public void undoRemoved() {
         new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.UNDO, null)
                 .execute();
     }
 
-    void deleteRemoved() {
+    public void deleteRemoved() {
         new RemoveAsyncTask(mComicsDao, RemoveAsyncTask.DELETE, null)
                 .execute();
     }

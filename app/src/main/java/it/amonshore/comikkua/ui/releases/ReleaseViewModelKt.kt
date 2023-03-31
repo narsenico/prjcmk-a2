@@ -1,8 +1,9 @@
-package it.amonshore.comikkua.data.release
+package it.amonshore.comikkua.ui.releases
 
 import android.app.Application
 import android.os.Bundle
 import androidx.lifecycle.*
+import it.amonshore.comikkua.data.release.*
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch

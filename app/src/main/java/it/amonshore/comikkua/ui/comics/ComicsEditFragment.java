@@ -42,7 +42,6 @@ import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
 import it.amonshore.comikkua.data.comics.Comics;
-import it.amonshore.comikkua.data.comics.ComicsViewModel;
 
 import static it.amonshore.comikkua.data.comics.Comics.NEW_COMICS_ID;
 import static it.amonshore.comikkua.data.comics.Comics.NO_COMICS_ID;

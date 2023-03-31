@@ -12,11 +12,11 @@ import it.amonshore.comikkua.ICallback;
 import it.amonshore.comikkua.LiveEvent;
 import it.amonshore.comikkua.data.ComikkuDatabase;
 
-class ReleaseRepository {
+public class ReleaseRepository {
 
     private ReleaseDao mReleaseDao;
 
-    ReleaseRepository(Application application) {
+    public ReleaseRepository(Application application) {
         final ComikkuDatabase db = ComikkuDatabase.getDatabase(application);
         mReleaseDao = db.releaseDao();
     }
@@ -32,10 +32,10 @@ class ReleaseRepository {
      * @param retainStart  limite inferiore per lastUpdate in ms
      * @return elenco ordinato di release
      */
-    LiveData<List<ComicsRelease>> getComicsReleases(@NonNull @Size(8) String refDate,
-                                                    @NonNull @Size(8) String refNextDate,
-                                                    @NonNull @Size(8) String refOtherDate,
-                                                    long retainStart) {
+    public LiveData<List<ComicsRelease>> getComicsReleases(@NonNull @Size(8) String refDate,
+                                                           @NonNull @Size(8) String refNextDate,
+                                                           @NonNull @Size(8) String refOtherDate,
+                                                           long retainStart) {
         return mReleaseDao.getComicsReleases(refDate, refNextDate, refOtherDate, retainStart);
     }
 
@@ -43,11 +43,11 @@ class ReleaseRepository {
         return mReleaseDao.getComicsReleasesByComicsId(comicsId);
     }
 
-    LiveData<List<ComicsRelease>> getComicsReleasesByTag(String tag) {
+    public LiveData<List<ComicsRelease>> getComicsReleasesByTag(String tag) {
         return mReleaseDao.getComicsReleasesByTag(tag);
     }
 
-    LiveData<List<ComicsRelease>> getComicsReleases(Long... ids) {
+    public LiveData<List<ComicsRelease>> getComicsReleases(Long... ids) {
         return mReleaseDao.getComicsReleases(ids);
     }
 
@@ -71,19 +71,19 @@ class ReleaseRepository {
         new UpdateAsyncTask(mReleaseDao).execute(release);
     }
 
-    void updatePurchased(boolean purchased, long lastUpdate, Long... id) {
+    public void updatePurchased(boolean purchased, long lastUpdate, Long... id) {
         new UpdatePurchasedAsyncTask(mReleaseDao, purchased, lastUpdate).execute(id);
     }
 
-    void togglePurchased(long lastUpdate, Long... id) {
+    public void togglePurchased(long lastUpdate, Long... id) {
         new TogglePurchasedAsyncTask(mReleaseDao, lastUpdate).execute(id);
     }
 
-    void updateOrdered(boolean ordered, long lastUpdate, Long... id) {
+    public void updateOrdered(boolean ordered, long lastUpdate, Long... id) {
         new UpdateOrderedAsyncTask(mReleaseDao, ordered, lastUpdate).execute(id);
     }
 
-    void toggleOrdered(long lastUpdate, Long... id) {
+    public void toggleOrdered(long lastUpdate, Long... id) {
         new ToggleOrderedAsyncTask(mReleaseDao, lastUpdate).execute(id);
     }
 
@@ -100,17 +100,17 @@ class ReleaseRepository {
                 .execute(id);
     }
 
-    void remove(Long[] id, ICallback<Integer> callback) {
+    public void remove(Long[] id, ICallback<Integer> callback) {
         new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.REMOVE, callback)
                 .execute(id);
     }
 
-    void undoRemoved() {
+    public void undoRemoved() {
         new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.UNDO, null)
                 .execute();
     }
 
-    void deleteRemoved() {
+    public void deleteRemoved() {
         new RemoveAsyncTask(mReleaseDao, RemoveAsyncTask.DELETE, null)
                 .execute();
     }

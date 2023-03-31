@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.data.web
+package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
 import androidx.lifecycle.*
@@ -6,6 +6,8 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.containsAll
 import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
 import it.amonshore.comikkua.data.toComics
+import it.amonshore.comikkua.data.web.AvailableComics
+import it.amonshore.comikkua.data.web.CmkWebRepositoryKt
 import it.amonshore.comikkua.splitToWords
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -90,4 +92,3 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
         // TODO: come aggiornare l'ui perché rifletta il cambiamento?
     }
 }
-

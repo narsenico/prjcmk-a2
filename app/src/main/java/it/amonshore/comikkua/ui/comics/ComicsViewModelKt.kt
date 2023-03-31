@@ -1,10 +1,12 @@
-package it.amonshore.comikkua.data.comics
+package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
 import android.os.Bundle
 import androidx.lifecycle.*
 import androidx.paging.*
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*

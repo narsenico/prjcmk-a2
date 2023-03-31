@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
-import it.amonshore.comikkua.data.web.ComicsSelectorViewModel
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.workers.RefreshComicsWorker
