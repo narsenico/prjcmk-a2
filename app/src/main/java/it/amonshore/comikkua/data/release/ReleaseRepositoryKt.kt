@@ -44,6 +44,9 @@ class ReleaseRepositoryKt(application: Application) {
         )
     }
 
+    fun getComicsReleasesByTag(tag: String): Flow<List<ComicsRelease>> =
+        _releaseDao.getComicsReleasesByTag(tag)
+
     suspend fun getRelease(id: Long) = _releaseDao.getRelease(id)
 
     suspend fun insertReleases(releases: List<Release>) = _releaseDao.insert(releases)

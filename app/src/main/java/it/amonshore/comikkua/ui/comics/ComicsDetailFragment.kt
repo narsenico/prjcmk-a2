@@ -93,6 +93,7 @@ class ComicsDetailFragment : Fragment() {
                 is UiComicsDetailEvent.NewReleasesLoaded -> onNewReleasesLoaded(result.count)
                 is UiComicsDetailEvent.NewReleasesLoadingError -> onNewReleasesLoadingError(result.error)
                 is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
+                else -> {}
             }
         }
 

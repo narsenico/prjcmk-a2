@@ -21,6 +21,9 @@ class ComicsRepositoryKt(context: Context) {
     suspend fun getComicsWithReleases(id: Long) =
         _comicsDao.getComicsWithReleases(id)
 
+    suspend fun getRemovedComicsIds(): List<Long> =
+        _comicsDao.getRemovedComicsIds()
+
     fun getComicsWithReleasesFlow(id: Long) =
         _comicsDao.getComicsWithReleasesFlow(id)
 

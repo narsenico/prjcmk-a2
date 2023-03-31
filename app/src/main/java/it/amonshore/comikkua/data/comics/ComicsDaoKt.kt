@@ -32,6 +32,9 @@ interface ComicsDaoKt {
     @Transaction
     suspend fun getComicsWithReleases(id: Long): ComicsWithReleases
 
+    @Query("SELECT id FROM tComics WHERE removed = 1")
+    suspend fun getRemovedComicsIds(): List<Long>
+
     @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     @Transaction
     fun getComicsWithReleasesFlow(id: Long): Flow<ComicsWithReleases>

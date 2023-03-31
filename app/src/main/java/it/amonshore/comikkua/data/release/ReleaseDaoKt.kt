@@ -2,6 +2,7 @@ package it.amonshore.comikkua.data.release
 
 import androidx.annotation.Size
 import androidx.room.*
+import it.amonshore.comikkua.Constants
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -76,7 +77,7 @@ interface ReleaseDaoKt {
         retainStart: Long
     ): List<ComicsRelease>
 
-@Query(
+    @Query(
         """SELECT ${LostRelease.TYPE} as type, * 
            FROM vLostReleases 
            WHERE 
@@ -112,6 +113,15 @@ interface ReleaseDaoKt {
         @Size(8) refOtherDate: String,
         retainStart: Long
     ): Flow<List<ComicsRelease>>
+
+    @Query(
+        """SELECT ${Constants.RELEASE_NEW} as type, * 
+              FROM vComicsReleases 
+              WHERE rtag = :tag 
+              ORDER BY rdate, cname COLLATE NOCASE ASC, rnumber
+              """
+    )
+    fun getComicsReleasesByTag(tag: String): Flow<List<ComicsRelease>>
 
     @Query(
         """

@@ -1,7 +1,6 @@
 package it.amonshore.comikkua.ui.releases
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
@@ -17,6 +16,7 @@ import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.Data
 import com.bumptech.glide.Glide
+import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
@@ -32,10 +32,11 @@ import it.amonshore.comikkua.workers.UpdateReleasesWorker
 import it.amonshore.comikkua.workers.enqueueUpdateReleasesWorker
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
+private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
 
 class ReleasesFragment : Fragment() {
 
-    private val _releaseViewModel: ReleaseViewModelKt by viewModels()
+    private val _viewModel: ReleaseViewModelKt by viewModels()
 
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: ReleaseAdapter
@@ -50,27 +51,23 @@ class ReleasesFragment : Fragment() {
     ): View {
         _binding = FragmentReleasesBinding.inflate(layoutInflater, container, false)
         binding.list.layoutManager = LinearLayoutManager(requireContext())
-
-        val actionModeName = javaClass.simpleName + "_actionMode"
-        val actionModeController = createActionModeController()
-        _adapter = createReleasesAdapter(actionModeName, actionModeController)
-
         binding.swipeRefresh.setOnRefreshListener(::performUpdate)
 
-        _releaseViewModel.notableReleaseItems.observe(viewLifecycleOwner) { items ->
+        val actionModeController = createActionModeController()
+        _adapter = createReleasesAdapter(actionModeController)
+
+        _viewModel.notableReleaseItems.observe(viewLifecycleOwner) { items ->
             LogHelper.d("release view model data changed size=${items.size}")
             _adapter.submitList(items)
         }
 
-        _releaseViewModel.events.observe(viewLifecycleOwner) { result ->
+        _viewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is UiReleaseEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
                 is UiReleaseEvent.Sharing -> shareReleases(result.releases)
             }
         }
 
-        // ripristino la selezione salvata in onSaveInstanceState
-        _adapter.selectionTracker.onRestoreInstanceState(savedInstanceState)
         return binding.root
     }
 
@@ -93,7 +90,7 @@ class ReleasesFragment : Fragment() {
             )
         } else {
             binding.list.layoutManager?.onRestoreInstanceState(
-                _releaseViewModel.states.parcelable(
+                _viewModel.states.parcelable(
                     BUNDLE_RELEASES_RECYCLER_LAYOUT
                 )
             )
@@ -105,7 +102,7 @@ class ReleasesFragment : Fragment() {
         // visto che Navigation ricrea il fragment ogni volta (!)
         // salvo lo stato della lista nel view model in modo da poterlo recuperare se necessario
         //  in onViewCreated
-        _releaseViewModel.states.putParcelable(
+        _viewModel.states.putParcelable(
             BUNDLE_RELEASES_RECYCLER_LAYOUT,
             binding.list.layoutManager?.onSaveInstanceState()
         )
@@ -122,8 +119,6 @@ class ReleasesFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // ripristino le selezioni
-        _adapter.selectionTracker.onSaveInstanceState(outState)
         // salvo lo stato del layout (la posizione dello scroll)
         outState.putParcelable(
             BUNDLE_RELEASES_RECYCLER_LAYOUT,
@@ -137,26 +132,22 @@ class ReleasesFragment : Fragment() {
                 val tracker = _adapter.selectionTracker
                 when (item.itemId) {
                     R.id.purchaseReleases -> {
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            _releaseViewModel.togglePurchased(tracker.selection.toList())
-                        }
+                        // le multi non vengono passate
+                        _viewModel.togglePurchased(tracker.selection.toList())
                         return true
                     }
                     R.id.orderReleases -> {
-                        if (tracker.hasSelection()) {
-                            // le multi non vengono passate
-                            _releaseViewModel.toggleOrdered(tracker.selection.toList())
-                        }
+                        // le multi non vengono passate
+                        _viewModel.toggleOrdered(tracker.selection.toList())
                         return true
                     }
                     R.id.deleteReleases -> {
-                        _releaseViewModel.markAsRemoved(tracker.selection.toList())
+                        _viewModel.markAsRemoved(tracker.selection.toList())
                         tracker.clearSelection()
                         return true
                     }
                     R.id.shareReleases -> {
-                        _releaseViewModel.getShareableComicsReleases(tracker.selection.toList())
+                        _viewModel.getShareableComicsReleases(tracker.selection.toList())
                         return true
                     }
                     else -> return false
@@ -171,15 +162,14 @@ class ReleasesFragment : Fragment() {
         }
 
     private fun createReleasesAdapter(
-        actionModeName: String,
         actionModeController: ActionModeController
     ) = ReleaseAdapter.Builder(binding.list)
         .withOnItemSelectedListener { _, size ->
             if (size == 0) {
-                _listener.onFragmentRequestActionMode(null, actionModeName, null)
+                _listener.onFragmentRequestActionMode(null, ACTION_MODE_NAME, null)
             } else {
                 _listener.onFragmentRequestActionMode(
-                    actionModeController, actionModeName,
+                    actionModeController, ACTION_MODE_NAME,
                     getString(R.string.title_selected, size)
                 )
             }
@@ -196,7 +186,7 @@ class ReleasesFragment : Fragment() {
 
             override fun onReleaseTogglePurchase(release: ComicsRelease) {
                 // le multi non vengono passate qua
-                _releaseViewModel.updatePurchased(
+                _viewModel.updatePurchased(
                     release.release.id,
                     !release.release.purchased
                 )
@@ -204,7 +194,7 @@ class ReleasesFragment : Fragment() {
 
             override fun onReleaseToggleOrder(release: ComicsRelease) {
                 // le multi non vengono passate qua
-                _releaseViewModel.updateOrdered(
+                _viewModel.updateOrdered(
                     release.release.id,
                     !release.release.ordered
                 )
@@ -288,7 +278,7 @@ class ReleasesFragment : Fragment() {
             AlertDialog.Builder(requireContext(), R.style.DialogTheme)
                 .setIcon(R.drawable.ic_release)
                 .setView(R.layout.dialog_no_update)
-                .setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, which: Int -> }
+                .setPositiveButton(android.R.string.ok, null)
                 .show()
         } else {
             openNewReleases(requireView(), tag!!)
@@ -322,46 +312,32 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun deleteRelease(release: ComicsRelease) {
-        TODO()
-//        // nel caso di multi chideo conferma
-//        if (release is MultiRelease) {
-//            val multiRelease = release
-//            AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-//                .setTitle(release.comics.name)
-//                .setMessage(getString(R.string.confirm_delete_multi_release, multiRelease.size()))
-//                .setPositiveButton(android.R.string.yes) { dialog: DialogInterface?, which: Int ->
-//                    // prima elimino eventuali release ancora in fase di undo
-//                    mReleaseViewModel!!.deleteRemoved()
-//                    mReleaseViewModel!!.remove(multiRelease.allReleaseId) { count: Int ->
-//                        showUndo(
-//                            count
-//                        )
-//                    }
-//                }
-//                .setNegativeButton(android.R.string.no, null)
-//                .show()
-//        } else {
-//            // prima elimino eventuali release ancora in fase di undo
-//            mReleaseViewModel!!.deleteRemoved()
-//            mReleaseViewModel!!.remove(release.release.id) { count: Int -> showUndo(count) }
-//        }
+        if (release is MultiRelease) {
+            AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+                .setTitle(release.comics.name)
+                .setMessage(getString(R.string.confirm_delete_multi_release, release.size()))
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    _viewModel.markAsRemoved(release.allReleaseId.toList())
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        } else {
+            _viewModel.markAsRemoved(listOf(release.release.id))
+        }
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        _releaseViewModel.deleteRemoved()
-
-//        // TODO: questo non porta a nulla di buono!!! _releaseViewModel non è più disponibile se navigo da altre parti!!!
-//        _listener.requestSnackbar(
-//            resources.getQuantityString(R.plurals.release_deleted, count, count),
-//            Constants.UNDO_TIMEOUT
-//        ) { canDelete: Boolean ->
-//            if (canDelete) {
-//                LogHelper.d("Delete removed releases")
-//                _releaseViewModel.deleteRemoved()
-//            } else {
-//                LogHelper.d("Undo removed releases")
-//                _releaseViewModel.undoRemoved()
-//            }
-//        }
+        _listener.requestSnackbar(
+            resources.getQuantityString(R.plurals.release_deleted, count, count),
+            Constants.UNDO_TIMEOUT
+        ) { canDelete: Boolean ->
+            if (canDelete) {
+                LogHelper.d("Delete removed releases")
+                _viewModel.deleteRemoved()
+            } else {
+                LogHelper.d("Undo removed releases")
+                _viewModel.undoRemoved()
+            }
+        }
     }
 }
