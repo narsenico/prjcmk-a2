@@ -3,9 +3,9 @@ package it.amonshore.comikkua.ui.releases
 import android.content.Context
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ActionMode
-import androidx.core.util.Consumer
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -14,7 +14,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.Data
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
@@ -28,8 +27,6 @@ import it.amonshore.comikkua.ui.BottomSheetDialogHelper
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.ShareHelper
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
-import it.amonshore.comikkua.workers.UpdateReleasesWorker
-import it.amonshore.comikkua.workers.enqueueUpdateReleasesWorker
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
@@ -51,7 +48,7 @@ class ReleasesFragment : Fragment() {
     ): View {
         _binding = FragmentReleasesBinding.inflate(layoutInflater, container, false)
         binding.list.layoutManager = LinearLayoutManager(requireContext())
-        binding.swipeRefresh.setOnRefreshListener(::performUpdate)
+        binding.swipeRefresh.setOnRefreshListener(::loadNewReleases)
 
         val actionModeController = createActionModeController()
         _adapter = createReleasesAdapter(actionModeController)
@@ -65,6 +62,8 @@ class ReleasesFragment : Fragment() {
             when (result) {
                 is UiReleaseEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
                 is UiReleaseEvent.Sharing -> shareReleases(result.releases)
+                is UiReleaseEvent.NewReleasesLoaded -> onNewReleasesLoaded(result.count, result.tag)
+                is UiReleaseEvent.NewReleasesError -> onNewReleasesError()
             }
         }
 
@@ -243,7 +242,7 @@ class ReleasesFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.updateReleases) {
-                    performUpdate()
+                    loadNewReleases()
                     return true
                 }
                 return false
@@ -251,38 +250,33 @@ class ReleasesFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun performUpdate() {
-        // TODO: ma poi perché usare un workmanager qua? fare tutto nel viewmodel che fai prima
-
-        // TODO: non mi piace, è cmq legato al lifeCycle ma mi piacerebbe gestirlo nel viewModel (se è il posto giusto)
-        // TODO: anche gestire qua lo swipe non mi piace, usare uno "state" loading nel viewModel
+    private fun loadNewReleases() {
+        _listener.dismissSnackbar()
         binding.swipeRefresh.isRefreshing = true
-        enqueueUpdateReleasesWorker(requireActivity(),
-            Consumer { data: Data ->
-                LogHelper.d("Releases updated data=%s", data)
-                binding.swipeRefresh.isRefreshing = false
-                onUpdateSuccess(data)
-            },
-            Runnable {
-                LogHelper.w("Failing updating releases")
-                binding.swipeRefresh.isRefreshing = false
-            }
-        )
+        _viewModel.loadNewReleases()
     }
 
-    private fun onUpdateSuccess(data: Data) {
-        val newReleaseCount = data.getInt(UpdateReleasesWorker.RELEASE_COUNT, 0)
-        val tag = data.getString(UpdateReleasesWorker.RELEASE_TAG)
-        LogHelper.d("New releases: %s with tag '%s'", newReleaseCount, tag)
-        if (newReleaseCount == 0) {
+    private fun onNewReleasesLoaded(count: Int, tag: String) {
+        LogHelper.d("New releases: $count with tag '$tag'")
+        binding.swipeRefresh.isRefreshing = false
+        if (count == 0) {
             AlertDialog.Builder(requireContext(), R.style.DialogTheme)
                 .setIcon(R.drawable.ic_release)
                 .setView(R.layout.dialog_no_update)
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
         } else {
-            openNewReleases(requireView(), tag!!)
+            openNewReleases(requireView(), tag)
         }
+    }
+
+    private fun onNewReleasesError() {
+        binding.swipeRefresh.isRefreshing = false
+        Toast.makeText(
+            requireContext(),
+            R.string.refresh_release_error,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun openComicsDetail(view: View, release: ComicsRelease) {

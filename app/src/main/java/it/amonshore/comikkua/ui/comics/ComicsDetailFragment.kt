@@ -24,9 +24,7 @@ import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.comics.ComicsDetailViewModelKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
-import it.amonshore.comikkua.data.comics.UiComicsDetailEvent
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.ui.*
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter
@@ -63,7 +61,7 @@ class ComicsDetailFragment : Fragment() {
         view.findViewById<View>(R.id.comics).transitionName = "comics_tx_$_comicsId"
 
         _swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh).apply {
-            setOnRefreshListener(::readNewReleases)
+            setOnRefreshListener(::loadNewReleases)
         }
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.list).apply {
@@ -89,11 +87,10 @@ class ComicsDetailFragment : Fragment() {
 
         _comicsDetailViewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
+                is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
                 is UiComicsDetailEvent.Sharing -> shareReleases(result.releases)
                 is UiComicsDetailEvent.NewReleasesLoaded -> onNewReleasesLoaded(result.count)
-                is UiComicsDetailEvent.NewReleasesLoadingError -> onNewReleasesLoadingError(result.error)
-                is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
-                else -> {}
+                is UiComicsDetailEvent.NewReleasesError -> onNewReleasesError()
             }
         }
 
@@ -291,25 +288,10 @@ class ComicsDetailFragment : Fragment() {
         }
     }
 
-    private fun readNewReleases() {
+    private fun loadNewReleases() {
         _listener.dismissSnackbar()
         _swipeRefreshLayout.isRefreshing = true
-
-        _comicsDetailViewModel.readNewReleases(_comics)
-    }
-
-    private fun openEdit(view: View, release: ComicsRelease) {
-        val directions: NavDirections = ComicsDetailFragmentDirections
-            .actionDestComicsDetailFragmentToReleaseEditFragment(release.comics.id)
-            .setReleaseId(release.release.id)
-        findNavController(view).navigate(directions)
-    }
-
-    private fun shareReleases(releases: List<ComicsRelease>) {
-        ShareHelper.shareReleases(
-            requireActivity(),
-            releases
-        )
+        _comicsDetailViewModel.loadNewReleases(_comics)
     }
 
     private fun onNewReleasesLoaded(count: Int) {
@@ -333,15 +315,27 @@ class ComicsDetailFragment : Fragment() {
         }
     }
 
-    private fun onNewReleasesLoadingError(error: Exception) {
+    private fun onNewReleasesError() {
         _swipeRefreshLayout.isRefreshing = false
-        LogHelper.e(error, "Error reading new releases")
         Toast.makeText(
             requireContext(),
             R.string.refresh_release_error,
             Toast.LENGTH_SHORT
         ).show()
+    }
 
+    private fun openEdit(view: View, release: ComicsRelease) {
+        val directions: NavDirections = ComicsDetailFragmentDirections
+            .actionDestComicsDetailFragmentToReleaseEditFragment(release.comics.id)
+            .setReleaseId(release.release.id)
+        findNavController(view).navigate(directions)
+    }
+
+    private fun shareReleases(releases: List<ComicsRelease>) {
+        ShareHelper.shareReleases(
+            requireActivity(),
+            releases
+        )
     }
 
     private fun onMarkedAsRemoved(count: Int) {

@@ -20,7 +20,7 @@ interface ReleaseDaoKt {
 
     @Query("UPDATE tReleases SET ordered = :ordered, lastUpdate = :lastUpdate WHERE id IN (:ids)")
     @Transaction
-    suspend fun updateOrdered(ids: List<Long>, ordered: Boolean, lastUpdate: Long);
+    suspend fun updateOrdered(ids: List<Long>, ordered: Boolean, lastUpdate: Long)
 
     @Query("DELETE FROM tReleases WHERE removed = 1")
     @Transaction
@@ -78,6 +78,17 @@ interface ReleaseDaoKt {
     ): List<ComicsRelease>
 
     @Query(
+        """
+            SELECT ${NotPurchasedRelease.TYPE} as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId
+            UNION
+            SELECT ${PurchasedRelease.TYPE} as type, * FROM vPurchasedReleases WHERE cid = :comicsId
+            ORDER BY type, rnumber
+            """
+    )
+    @Transaction
+    suspend fun getComicsReleasesByComicsId(comicsId: Long): List<ComicsRelease>
+
+    @Query(
         """SELECT ${LostRelease.TYPE} as type, * 
            FROM vLostReleases 
            WHERE 
@@ -121,18 +132,7 @@ interface ReleaseDaoKt {
               ORDER BY rdate, cname COLLATE NOCASE ASC, rnumber
               """
     )
-    fun getComicsReleasesByTag(tag: String): Flow<List<ComicsRelease>>
-
-    @Query(
-        """
-            SELECT ${NotPurchasedRelease.TYPE} as type, * FROM vNotPurchasedReleases WHERE cid = :comicsId
-            UNION
-            SELECT ${PurchasedRelease.TYPE} as type, * FROM vPurchasedReleases WHERE cid = :comicsId
-            ORDER BY type, rnumber
-            """
-    )
-    @Transaction
-    suspend fun getComicsReleasesByComicsId(comicsId: Long): List<ComicsRelease>
+    fun getComicsReleasesByTagFlow(tag: String): Flow<List<ComicsRelease>>
 
     @Query(
         """

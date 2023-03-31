@@ -6,20 +6,26 @@ import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.web.toRelease
-import it.amonshore.comikkua.letNotEmpty
 import it.amonshore.comikkua.services.CmkWebService
 import it.amonshore.comikkua.toYearMonthDay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import java.util.*
 
 private const val ONE_DAY: Long = 86_400_000L
 
+data class NewReleasesCountAndTag(val count: Int, val tag: String)
+
 class ReleaseRepositoryKt(application: Application) {
 
-    private val _releaseDao = ComikkuDatabase.getDatabase(application).releaseDaoKt()
-    private val _service = CmkWebService.create()
+    private val _database = ComikkuDatabase.getDatabase(application)
+    private val _releaseDao = _database.releaseDaoKt()
+    private val _comicsDao by lazy { _database.comicsDaoKt() }
+    private val _service by lazy { CmkWebService.create() }
 
-    fun getComicsReleasesByComicsIdFLow(comicsId: Long) = _releaseDao.getComicsReleasesByComicsIdFLow(comicsId)
+    fun getComicsReleasesByComicsIdFLow(comicsId: Long) =
+        _releaseDao.getComicsReleasesByComicsIdFLow(comicsId)
 
     suspend fun getComicsReleases(ids: List<Long>) = _releaseDao.getComicsReleases(ids)
 
@@ -45,7 +51,7 @@ class ReleaseRepositoryKt(application: Application) {
     }
 
     fun getComicsReleasesByTag(tag: String): Flow<List<ComicsRelease>> =
-        _releaseDao.getComicsReleasesByTag(tag)
+        _releaseDao.getComicsReleasesByTagFlow(tag)
 
     suspend fun getRelease(id: Long) = _releaseDao.getRelease(id)
 
@@ -84,24 +90,69 @@ class ReleaseRepositoryKt(application: Application) {
     suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int =
         _releaseDao.updateRemoved(ids, removed)
 
-    suspend fun refreshWithNewReleases(comics: ComicsWithReleases): Int {
-        if (!comics.comics.isSourced) {
-            return 0
+    suspend fun loadNewReleases(comics: ComicsWithReleases): Result<NewReleasesCountAndTag> =
+        withContext(Dispatchers.IO + SupervisorJob()) {
+            runCatching {
+                val tag = UUID.randomUUID().toString()
+                val releases = loadNewReleasesAsync(comics, tag).await()
+
+                if (releases.isNotEmpty()) {
+                    _releaseDao.insert(releases)
+                }
+
+                val res = NewReleasesCountAndTag(releases.size, tag)
+                return@withContext Result.success(res)
+            }
         }
 
-        val comicsId = comics.comics.id
-        val refId = comics.comics.sourceId // TODO: convertendo Comics in Kotlin potrà essere null
-        val fromNumber = comics.nextReleaseNumber
-        return _service.getReleases(refId, fromNumber)
-            .filter {
-                it.number >= fromNumber // TODO: cmkweb ancora non supporta il parametro fromNumber, quindi devo filtrare
+    suspend fun loadNewReleases(): Result<NewReleasesCountAndTag> =
+        withContext(Dispatchers.IO + SupervisorJob()) {
+            runCatching {
+                val comicsList = _comicsDao.getAllComicsWithReleases()
+                val tag = UUID.randomUUID().toString()
+                val releases = loadNewReleasesAsync(comicsList, tag).awaitAll()
+                    .filter { it.isNotEmpty() }
+                    .flatten()
+
+                if (releases.isNotEmpty()) {
+                    _releaseDao.insert(releases)
+                }
+
+                val res = NewReleasesCountAndTag(releases.size, tag)
+                return@withContext Result.success(res)
             }
-            .map {
-                it.toRelease(comicsId)
+        }
+
+    private suspend fun loadNewReleasesAsync(comics: ComicsWithReleases, tag: String) =
+        coroutineScope {
+            return@coroutineScope async {
+                val refId =
+                    comics.comics.sourceId // TODO: convertendo Comics in Kotlin potrà essere null
+                val fromNumber = comics.nextReleaseNumber
+                return@async _service.getReleases(refId, fromNumber)
+                    .filter {
+                        it.number >= fromNumber // TODO: cmkweb ancora non supporta il parametro fromNumber, quindi devo filtrare
+                    }
+                    .map { it.toRelease(comics.comics.id, tag) }
             }
-            .letNotEmpty {
-                _releaseDao.insert(it)
-                it.size
-            } ?: 0
-    }
+        }
+
+    private suspend fun loadNewReleasesAsync(comicsList: List<ComicsWithReleases>, tag: String) =
+        coroutineScope {
+            val calls = comicsList.map {
+                async {
+                    val comicsId = it.comics.id
+                    val comicsName = it.comics.name
+                    val releaseFrom = it.nextReleaseNumber
+                    val releases = _service.getReleasesByTitle(comicsName, releaseFrom)
+                    // TODO: Come chiave del comics dovrebbe essere usato [CmkWebComicsRelease.refId]
+                    //  ma non esiste in [Release].
+                    //  La chiave attuale è l'id del comics
+                    //  (infatti anche [it.amonshore.comikkua.data.comics.Comics.refJsonId] nessuno lo valorizza).
+                    releases.map { it.toRelease(comicsId, tag) }
+                }
+            }
+
+            return@coroutineScope calls
+        }
 }

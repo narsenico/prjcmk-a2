@@ -1,10 +1,12 @@
-package it.amonshore.comikkua.data.comics
+package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.ComicsReleaseJoinType
 import it.amonshore.comikkua.data.release.ReleaseRepositoryKt
@@ -16,8 +18,8 @@ import kotlinx.coroutines.launch
 sealed class UiComicsDetailEvent {
     data class MarkedAsRemoved(val count: Int) : UiComicsDetailEvent()
     data class Sharing(val releases: List<ComicsRelease>) : UiComicsDetailEvent()
-    data class NewReleasesLoaded(val count: Int) : UiComicsDetailEvent()
-    data class NewReleasesLoadingError(val error: Exception) : UiComicsDetailEvent()
+    data class NewReleasesLoaded(val count: Int, val tag: String) : UiComicsDetailEvent()
+    object NewReleasesError : UiComicsDetailEvent()
 }
 
 class ComicsDetailViewModelKt(application: Application) : AndroidViewModel(application) {
@@ -73,12 +75,10 @@ class ComicsDetailViewModelKt(application: Application) : AndroidViewModel(appli
         _events.postValue(UiComicsDetailEvent.Sharing(list))
     }
 
-    fun readNewReleases(comics: ComicsWithReleases) = viewModelScope.launch {
-        try {
-            val count = _releaseRepository.refreshWithNewReleases(comics)
-            _events.postValue(UiComicsDetailEvent.NewReleasesLoaded(count))
-        } catch (ex: Exception) {
-            _events.postValue(UiComicsDetailEvent.NewReleasesLoadingError(ex))
-        }
+    fun loadNewReleases(comics: ComicsWithReleases) = viewModelScope.launch {
+        val result = _releaseRepository.loadNewReleases(comics)
+        val event = result.map { UiComicsDetailEvent.NewReleasesLoaded(it.count, it.tag) }
+            .getOrElse { UiComicsDetailEvent.NewReleasesError }
+        _events.postValue(event)
     }
 }

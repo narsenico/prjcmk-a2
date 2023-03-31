@@ -2,7 +2,10 @@ package it.amonshore.comikkua.ui.releases
 
 import android.app.Application
 import android.os.Bundle
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import it.amonshore.comikkua.data.release.*
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
@@ -11,6 +14,8 @@ import kotlinx.coroutines.launch
 sealed class UiReleaseEvent {
     data class Sharing(val releases: List<ComicsRelease>) : UiReleaseEvent()
     data class MarkedAsRemoved(val count: Int) : UiReleaseEvent()
+    data class NewReleasesLoaded(val count: Int, val tag: String) : UiReleaseEvent()
+    object NewReleasesError : UiReleaseEvent()
 }
 
 class ReleaseViewModelKt(application: Application) : AndroidViewModel(application) {
@@ -60,5 +65,12 @@ class ReleaseViewModelKt(application: Application) : AndroidViewModel(applicatio
     fun getShareableComicsReleases(releaseIds: List<Long>) = viewModelScope.launch {
         val list = _releaseRepository.getComicsReleases(releaseIds)
         _events.postValue(UiReleaseEvent.Sharing(list))
+    }
+
+    fun loadNewReleases() = viewModelScope.launch {
+        val result = _releaseRepository.loadNewReleases()
+        val event = result.map { UiReleaseEvent.NewReleasesLoaded(it.count, it.tag) }
+            .getOrElse { UiReleaseEvent.NewReleasesError }
+        _events.postValue(event)
     }
 }
