@@ -3,9 +3,9 @@ package it.amonshore.comikkua.ui.comics
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.text.InputType
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.bumptech.glide.RequestManager
 import com.google.android.material.textfield.TextInputLayout
@@ -13,7 +13,6 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Periodicity
-import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 import it.amonshore.comikkua.parseToDouble
 import it.amonshore.comikkua.parseToString
@@ -39,20 +38,19 @@ class ComicsEditFragmentHelperKt(
     private val _comicsImageViewTarget = DrawableTextViewTarget(binding.comics.txtComicsInitial)
 
     private var _comics: Comics? = null
-    private var _comicsImageUri: Uri? = null
+    private var _comicsImagePath: String? = null
 
     val rootView = binding.root
 
     init {
-        val periodicityArrayAdapter = ArrayAdapter(
+        binding.tilPeriodicity.adapter = ArrayAdapter(
             context,
             android.R.layout.simple_spinner_item,
             _periodicityList
         )
-        binding.tilPeriodicity.adapter = periodicityArrayAdapter
 
         binding.tilName.editText!!.doAfterTextChanged {
-            if (_comicsImageUri == null) {
+            if (_comicsImagePath == null) {
                 val name = it.toString().trim()
                 binding.comics.txtComicsName.text = name
                 binding.comics.txtComicsInitial.text = name.getInitial()
@@ -92,10 +90,6 @@ class ComicsEditFragmentHelperKt(
         )
     }
 
-    fun setAvailableComics(availableComicsList: List<AvailableComics>) {
-        // TODO: non ha senso qua, per "seguire" comics che arrivano dal cmkweb usare ComicsSelector
-    }
-
     fun setComics(comics: ComicsWithReleases, savedInstanceState: Bundle?) {
         _comics = comics.comics
         binding.tilName.editText!!.isEnabled = !comics.comics.isSourced
@@ -121,8 +115,8 @@ class ComicsEditFragmentHelperKt(
             context.getString(R.string.release_missing, missingCount)
     }
 
-    fun setComicsImage(uri: Uri?) {
-        updateComicsImageAndInitial(uri, binding.tilName.getText())
+    fun setComicsImagePath(comicsImagePath: String?) {
+        updateComicsImageAndInitial(comicsImagePath, binding.tilName.getText())
     }
 
     fun saveInstanceState(outState: Bundle) {
@@ -133,7 +127,7 @@ class ComicsEditFragmentHelperKt(
         outState.putString(NOTES, binding.tilNotes.getText())
         outState.putString(PRICE, binding.tilPrice.getText())
         outState.putString(PERIODICITY, _periodicityList.getKey(binding.tilPeriodicity.selection))
-        outState.putString(COMICS_IMAGE, _comicsImageUri?.path)
+        outState.putString(COMICS_IMAGE, _comicsImagePath)
     }
 
     fun setError(errorType: UiComicsEditResultErrorType) {
@@ -153,6 +147,13 @@ class ComicsEditFragmentHelperKt(
                 binding.tilName.error = context.getText(R.string.comics_name_notunique_error)
                 binding.tilName.isErrorEnabled = true
             }
+            UiComicsEditResultErrorType.ImageError -> {
+                Toast.makeText(
+                    binding.root.context,
+                    R.string.comics_saving_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -168,6 +169,7 @@ class ComicsEditFragmentHelperKt(
             notes = binding.tilNotes.getText()
             periodicity = _periodicityList.getKey(binding.tilPeriodicity.selection)
             price = parseToDouble(binding.tilPrice.getText())
+            image = _comicsImagePath?.let { Uri.parse(it).toString() }
         }
     }
 
@@ -205,14 +207,10 @@ class ComicsEditFragmentHelperKt(
         updateComicsImageAndInitial(comics.image, comics.name)
     }
 
-    private fun updateComicsImageAndInitial(uri: String?, name: String?) {
-        updateComicsImageAndInitial(uri.toUri(), name)
-    }
-
-    private fun updateComicsImageAndInitial(uri: Uri?, name: String?) {
-        _comicsImageUri = uri?.let {
+    private fun updateComicsImageAndInitial(comicsImagePath: String?, name: String?) {
+        _comicsImagePath = comicsImagePath?.let {
             binding.comics.txtComicsInitial.text = ""
-            glideRequestManager.load(it.path)
+            glideRequestManager.load(it)
                 .apply(ImageHelper.getGlideCircleOptions())
                 .into(_comicsImageViewTarget)
             it
@@ -237,8 +235,6 @@ class ComicsEditFragmentHelperKt(
 
     private fun List<Periodicity>.getKey(position: Int) =
         if (position > 0) get(position).key else get(0).key
-
-    private fun String?.toUri() = if (isNullOrEmpty()) null else Uri.parse(this)
 
     private fun String?.getInitial() = if (isNullOrBlank()) "" else substring(0, 1)
 }

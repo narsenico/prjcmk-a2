@@ -10,8 +10,22 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
+
+private val cropOptions = CropImageContractOptions(
+    uri = null,
+    cropImageOptions = CropImageOptions(
+        guidelines = CropImageView.Guidelines.ON,
+        cropShape = CropImageView.CropShape.OVAL,
+        fixAspectRatio = true,
+    )
+)
 
 class ComicsEditFragment : Fragment() {
 
@@ -22,10 +36,9 @@ class ComicsEditFragment : Fragment() {
     private var _helper: ComicsEditFragmentHelperKt? = null
     private val helper get() = _helper!!
 
-//    private val mCropImageLauncher =
-//        registerForActivityResult<CropImageContractOptions, CropResult>(
-//            CropImageContract(),
-//            ActivityResultCallback<CropResult> { result: CropResult -> cropImageCallback(result) })
+    private val _cropImageLauncher =
+        registerForActivityResult(CropImageContract(), ::onImageCropped)
+
 //    private val mRequestPermissionLauncher =
 //        registerForActivityResult<String, Boolean>(RequestPermission()) { isGranted: Boolean ->
 //            requestPermissionCallback(isGranted)
@@ -71,10 +84,6 @@ class ComicsEditFragment : Fragment() {
             helper.setAuthors(it)
         }
 
-        _viewModel.availableComics.observe(viewLifecycleOwner) {
-            helper.setAvailableComics(it)
-        }
-
         _viewModel.result.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is UiComicsEditResult.Saved -> onSaved()
@@ -117,11 +126,11 @@ class ComicsEditFragment : Fragment() {
                         true
                     }
                     R.id.changeImage -> {
-                        //                        grabImage()
+                        grabImage()
                         true
                     }
                     R.id.removeImage -> {
-                        helper.setComicsImage(null)
+                        helper.setComicsImagePath(null)
                         true
                     }
                     else -> false
@@ -132,7 +141,7 @@ class ComicsEditFragment : Fragment() {
 
     private fun onSaved() {
         Navigation.findNavController(binding.root)
-            .navigateUp();
+            .navigateUp()
     }
 
 //    private fun requestPermissionCallback(isGranted: Boolean) {
@@ -141,7 +150,8 @@ class ComicsEditFragment : Fragment() {
 //        }
 //    }
 
-//    private fun grabImage() {
+    private fun grabImage() {
+        // TODO: controllare permessi per fotocamera
 //        val context = requireContext()
 //        if (ContextCompat.checkSelfPermission(
 //                context,
@@ -183,94 +193,16 @@ class ComicsEditFragment : Fragment() {
 //            // ho il permesso: avvio la procedura di selezione e crop dell'immagine
 //            // il risultato è gestito in onActivityResult
 //            // l'immagine è salvata nella cache
-//            val options = createCropImageContractOptions()
-//            mCropImageLauncher.launch(options)
+        _cropImageLauncher.launch(cropOptions)
 //        }
-//    }
-//
-//    private fun cropImageCallback(result: CropResult) {
-//        LogHelper.d(String.format("crop callback: %s", result))
-//        if (result.isSuccessful) {
-//            val uriFilePath: String = result.getUriFilePath(requireContext(), true)
-//            val resultUri = Uri.parse(uriFilePath)
-//            LogHelper.d("Crop result saved to %s", resultUri)
-//            _helper!!.setComicsImage(resultUri)
-//        } else {
-//            LogHelper.e("Crop error", result.error)
-//        }
-//    }
+    }
 
-    // TODO: è da sostituire, ma con cosa?
-    //    //  il metodo migliore è usare le coroutines di Kotlink, forse è il caso di migrare il fragment in kotlin???
-    //    private static class InsertOrUpdateAsyncTask extends AsyncTask<Void, Void, Long> {
-    //
-    //        private final WeakReference<View> mWeakView;
-    //        private final ComicsViewModel mComicsViewModel;
-    //        private final ComicsEditFragmentHelper mHelper;
-    //        private final boolean mIsNew;
-    //
-    //        InsertOrUpdateAsyncTask(View view, ComicsViewModel comicsViewModel,
-    //                                ComicsEditFragmentHelper helper) {
-    //            mWeakView = new WeakReference<>(view);
-    //            mComicsViewModel = comicsViewModel;
-    //            mHelper = helper;
-    //            mIsNew = mHelper.isNew();
-    //        }
-    //
-    //        @Override
-    //        protected Long doInBackground(final Void... params) {
-    //            // prima di salvare sul DB applico le modifiche su Comics
-    //            final Comics comics = mHelper.writeComics().comics;
-    //            // eseguo l'insert o l'updatePurchased asincroni, perché sono già in un thread separato
-    //            if (mIsNew) {
-    //                // ritorna il nuovo id
-    //                long id = mComicsViewModel.insertSync(comics);
-    //                comics.id = id;
-    //                mHelper.complete(true);
-    //                mComicsViewModel.updateSync(comics);
-    //                return id;
-    //            } else {
-    //                // ritorna il numero dei record aggiornati
-    //                if (mComicsViewModel.updateSync(comics) == 1) {
-    //                    mHelper.complete(true);
-    //                    mComicsViewModel.updateSync(comics);
-    //                    return comics.id;
-    //                } else {
-    //                    // c'è stato qualche problema
-    //                    mHelper.complete(false);
-    //                    return Comics.NO_COMICS_ID;
-    //                }
-    //            }
-    //        }
-    //
-    //        @Override
-    //        protected void onPostExecute(Long comicsId) {
-    //            final View view = mWeakView.get();
-    //            if (view != null) {
-    //                if (comicsId == NO_COMICS_ID) {
-    //                    Toast.makeText(view.getContext(),
-    //                            R.string.comics_saving_error,
-    //                            Toast.LENGTH_LONG).show();
-    //                } else {
-    //                    final NavDirections directions = ComicsEditFragmentDirections
-    //                            .actionDestComicsEditFragmentToComicsDetailFragment(comicsId);
-    //
-    //                    LogHelper.d("SAVE onPostExecute isMainLoop=%s", Utility.isMainLoop());
-    //
-    //                    if (mIsNew) {
-    //                        // se è nuovo navigo al dettaglio ma elimino questa destinazione dal back stack
-    //                        //  in modo che se dal dettaglio vado indietro torno alla lista dei comics
-    //                        Navigation.findNavController(view)
-    //                                .navigate(directions, new NavOptions.Builder()
-    //                                        .setPopUpTo(R.id.comicsEditFragment, true)
-    //                                        .build());
-    //                    } else {
-    //                        // sono in edit, quindi tendenzialmente sono arrivato dal dettaglio
-    //                        Navigation.findNavController(view)
-    //                                .navigateUp();
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
+    private fun onImageCropped(result: CropImageView.CropResult) {
+        if (result.isSuccessful) {
+            val uriFilePath = result.getUriFilePath(requireContext(), true)
+            helper.setComicsImagePath(uriFilePath)
+        } else {
+            LogHelper.e("Crop error", result.error)
+        }
+    }
 }
