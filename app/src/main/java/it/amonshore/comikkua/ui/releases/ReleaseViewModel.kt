@@ -11,22 +11,24 @@ import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-sealed class UiNewReleasesEvent {
-    data class Sharing(val releases: List<ComicsRelease>) : UiNewReleasesEvent()
-    data class MarkedAsRemoved(val count: Int) : UiNewReleasesEvent()
+sealed class UiReleaseEvent {
+    data class Sharing(val releases: List<ComicsRelease>) : UiReleaseEvent()
+    data class MarkedAsRemoved(val count: Int) : UiReleaseEvent()
+    data class NewReleasesLoaded(val count: Int, val tag: String) : UiReleaseEvent()
+    object NewReleasesError : UiReleaseEvent()
 }
 
-class NewReleasesViewModelKt(application: Application) : AndroidViewModel(application) {
+class ReleaseViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _releaseRepository = ReleaseRepositoryKt(application)
-    private val _events = SingleLiveEvent<UiNewReleasesEvent>()
+    private val _events = SingleLiveEvent<UiReleaseEvent>()
 
     val states = Bundle()
-    val events: LiveData<UiNewReleasesEvent> = _events
+    val events: LiveData<UiReleaseEvent> = _events
 
-    fun getReleaseViewModelItems(tag: String): LiveData<List<IReleaseViewModelItem>> =
-        _releaseRepository.getComicsReleasesByTag(tag)
-            .map { releases -> releases.toReleaseViewModelItems(ComicsReleaseJoinType.None) }
+    val notableReleaseItems: LiveData<List<IReleaseViewModelItem>> =
+        _releaseRepository.getNotableComicsReleasesFlow()
+            .map { releases -> releases.toReleaseViewModelItems(ComicsReleaseJoinType.MissingReleases) }
             .asLiveData()
 
     fun updatePurchased(releaseId: Long, purchased: Boolean) = viewModelScope.launch {
@@ -49,7 +51,7 @@ class NewReleasesViewModelKt(application: Application) : AndroidViewModel(applic
         // prima elimino eventuali release ancora in fase di undo
         _releaseRepository.deleteRemoved()
         val count = _releaseRepository.updateRemoved(ids, removed = true)
-        _events.postValue(UiNewReleasesEvent.MarkedAsRemoved(count))
+        _events.postValue(UiReleaseEvent.MarkedAsRemoved(count))
     }
 
     fun deleteRemoved() = viewModelScope.launch {
@@ -62,6 +64,13 @@ class NewReleasesViewModelKt(application: Application) : AndroidViewModel(applic
 
     fun getShareableComicsReleases(releaseIds: List<Long>) = viewModelScope.launch {
         val list = _releaseRepository.getComicsReleases(releaseIds)
-        _events.postValue(UiNewReleasesEvent.Sharing(list))
+        _events.postValue(UiReleaseEvent.Sharing(list))
+    }
+
+    fun loadNewReleases() = viewModelScope.launch {
+        val result = _releaseRepository.loadNewReleases()
+        val event = result.map { UiReleaseEvent.NewReleasesLoaded(it.count, it.tag) }
+            .getOrElse { UiReleaseEvent.NewReleasesError }
+        _events.postValue(event)
     }
 }

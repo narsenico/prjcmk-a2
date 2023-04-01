@@ -31,7 +31,7 @@ private val ACTION_MODE_NAME = ComicsDetailFragment::class.java.simpleName + "_a
 
 class ComicsDetailFragment : Fragment() {
 
-    private val _viewModel: ComicsDetailViewModelKt by viewModels()
+    private val _viewModel: ComicsDetailViewModel by viewModels()
 
     private val _comicsId: Long by lazy {
         ComicsDetailFragmentArgs.fromBundle(requireArguments()).comicsId

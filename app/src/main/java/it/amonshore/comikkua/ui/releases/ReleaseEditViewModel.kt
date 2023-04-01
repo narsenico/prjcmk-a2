@@ -14,7 +14,7 @@ sealed class UiReleaseEditResult {
     object Inserted : UiReleaseEditResult()
 }
 
-class ReleaseEditViewModelKt(application: Application) : AndroidViewModel(application) {
+class ReleaseEditViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _comicsRepository = ComicsRepositoryKt(application)
     private val _releaseRepository = ReleaseRepositoryKt(application)

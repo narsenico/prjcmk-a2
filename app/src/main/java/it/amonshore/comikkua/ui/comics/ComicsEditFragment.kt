@@ -29,11 +29,11 @@ private val cropOptions = CropImageContractOptions(
 
 class ComicsEditFragment : Fragment() {
 
-    private val _viewModel: ComicsEditViewModelKt by viewModels()
+    private val _viewModel: ComicsEditViewModel by viewModels()
 
     private var _binding: FragmentComicsEditBinding? = null
     private val binding get() = _binding!!
-    private var _helper: ComicsEditFragmentHelperKt? = null
+    private var _helper: ComicsEditFragmentHelper? = null
     private val helper get() = _helper!!
 
     private val _cropImageLauncher =
@@ -56,7 +56,7 @@ class ComicsEditFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentComicsEditBinding.inflate(inflater, container, false)
-        _helper = ComicsEditFragmentHelperKt(
+        _helper = ComicsEditFragmentHelper(
             requireContext(),
             binding,
             Glide.with(this)

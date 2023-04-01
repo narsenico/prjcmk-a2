@@ -22,7 +22,7 @@ sealed class UiComicsDetailEvent {
     object NewReleasesError : UiComicsDetailEvent()
 }
 
-class ComicsDetailViewModelKt(application: Application) : AndroidViewModel(application) {
+class ComicsDetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _comicsRepository = ComicsRepositoryKt(application)
     private val _releaseRepository = ReleaseRepositoryKt(application)

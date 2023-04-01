@@ -28,7 +28,7 @@ private const val PRICE = "price"
 private const val PERIODICITY = "periodicity"
 private const val COMICS_IMAGE = "comics_image"
 
-class ComicsEditFragmentHelperKt(
+class ComicsEditFragmentHelper(
     val context: Context,
     val binding: FragmentComicsEditBinding,
     private val glideRequestManager: RequestManager

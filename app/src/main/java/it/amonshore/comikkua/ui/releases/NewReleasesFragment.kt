@@ -36,7 +36,7 @@ private val ACTION_MODE_NAME = NewReleasesFragment::class.java.simpleName + "_ac
  */
 class NewReleasesFragment : Fragment() {
 
-    private val _viewModel: NewReleasesViewModelKt by viewModels()
+    private val _viewModel: NewReleasesViewModel by viewModels()
 
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: ReleaseAdapter

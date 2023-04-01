@@ -18,7 +18,7 @@ private data class Id(val comicsId: Long, val releaseId: Long)
 
 class ReleaseEditFragment : Fragment() {
 
-    private val _viewModel: ReleaseEditViewModelKt by viewModels()
+    private val _viewModel: ReleaseEditViewModel by viewModels()
 
     private val _id: Id by lazy {
         val args = ReleaseEditFragmentArgs.fromBundle(requireArguments())

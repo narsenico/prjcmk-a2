@@ -25,7 +25,7 @@ sealed class UiComicsEditResult {
     data class SaveError(val errorType: UiComicsEditResultErrorType) : UiComicsEditResult()
 }
 
-class ComicsEditViewModelKt(application: Application) : AndroidViewModel(application) {
+class ComicsEditViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _comicsRepository = ComicsRepositoryKt(application)
     private val _result = MutableLiveData<UiComicsEditResult>()
