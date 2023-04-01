@@ -2,7 +2,6 @@ package it.amonshore.comikkua.ui.releases
 
 import android.content.Context
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -45,9 +44,8 @@ class ReleaseEditFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentReleaseEditBinding.inflate(layoutInflater, container, false)
-        _helper = ReleaseEditFragmentHelper.init(
+        _helper = ReleaseEditFragmentHelper(
             binding,
-            viewLifecycleOwner,
             parentFragmentManager,
             Glide.with(this)
         )
