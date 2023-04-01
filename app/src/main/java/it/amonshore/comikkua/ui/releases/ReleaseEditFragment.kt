@@ -70,15 +70,29 @@ class ReleaseEditFragment : Fragment() {
         return helper.rootView
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _helper = null
-        _binding = null
-    }
+        override fun onDestroyView() {
+            super.onDestroyView()
+            _helper = null
+            _binding = null
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupMenu()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        helper.saveInstanceState(outState)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        _listener = if (context is OnNavigationFragmentListener) {
+            context
+        } else {
+            throw RuntimeException("$context must implement OnNavigationFragmentListener")
+        }
     }
 
     private fun setupMenu() {
@@ -99,20 +113,6 @@ class ReleaseEditFragment : Fragment() {
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        helper.saveInstanceState(outState)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        _listener = if (context is OnNavigationFragmentListener) {
-            context
-        } else {
-            throw RuntimeException("$context must implement OnNavigationFragmentListener")
-        }
     }
 
     private fun insertDone() {

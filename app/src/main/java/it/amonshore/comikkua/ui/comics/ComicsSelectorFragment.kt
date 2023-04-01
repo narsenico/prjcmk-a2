@@ -133,6 +133,7 @@ class ComicsSelectorFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    // TODO: leggere direttamente da web senza usare worker
     private fun performUpdate() {
         val request: WorkRequest =
             OneTimeWorkRequest.Builder(RefreshComicsWorker::class.java).build()

@@ -9,6 +9,9 @@ interface ComicsDaoKt {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comics: Comics)
 
+    @Upsert
+    suspend fun upsert(comics: Comics)
+
     @Query("DELETE FROM tComics WHERE removed = 1")
     @Transaction
     suspend fun deleteRemoved()
@@ -23,6 +26,9 @@ interface ComicsDaoKt {
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     suspend fun getComics(): List<Comics>
+
+    @Query("SELECT * FROM tComics WHERE name = :name COLLATE NOCASE AND removed = 0 AND selected = 1")
+    suspend fun getComicsByName(name: String): Comics?
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
@@ -58,4 +64,25 @@ interface ComicsDaoKt {
     )
     @Transaction
     fun getComicsWithReleasesPagingSource(like: String): PagingSource<Int, ComicsWithReleases>
+
+    @Query(
+        """
+        SELECT distinct(publisher) 
+        FROM tComics 
+        WHERE publisher IS NOT NULL AND publisher <> '' 
+        ORDER BY publisher
+        """
+    )
+    suspend fun getPublishers(): List<String>
+
+    @Query(
+        """
+        SELECT distinct(authors) 
+        FROM tComics 
+        WHERE authors IS NOT NULL AND authors <> '' 
+        ORDER BY authors
+        """
+    )
+    suspend fun getAuthors(): List<String>
+
 }

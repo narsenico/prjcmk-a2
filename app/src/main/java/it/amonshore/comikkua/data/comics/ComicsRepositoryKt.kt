@@ -11,6 +11,10 @@ class ComicsRepositoryKt(context: Context) {
         _comicsDao.insert(comics)
     }
 
+    suspend fun upsert(comics: Comics) {
+        _comicsDao.upsert(comics)
+    }
+
     suspend fun deleteRemoved() = _comicsDao.deleteRemoved()
 
     suspend fun undoRemoved() = _comicsDao.undoRemoved()
@@ -21,8 +25,17 @@ class ComicsRepositoryKt(context: Context) {
     suspend fun getComicsWithReleases(id: Long) =
         _comicsDao.getComicsWithReleases(id)
 
+    suspend fun existsComicsWithName(name: String) =
+        _comicsDao.getComicsByName(name) != null
+
     suspend fun getRemovedComicsIds(): List<Long> =
         _comicsDao.getRemovedComicsIds()
+
+    suspend fun getPublishers(): List<String> =
+        _comicsDao.getPublishers()
+
+    suspend fun getAuthors(): List<String> =
+        _comicsDao.getAuthors()
 
     fun getComicsWithReleasesFlow(id: Long) =
         _comicsDao.getComicsWithReleasesFlow(id)
