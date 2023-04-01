@@ -118,11 +118,12 @@ class ReleasesFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // salvo lo stato del layout (la posizione dello scroll)
-        outState.putParcelable(
-            BUNDLE_RELEASES_RECYCLER_LAYOUT,
-            binding.list.layoutManager?.onSaveInstanceState()
-        )
+        _binding?.run {
+            outState.putParcelable(
+                BUNDLE_RELEASES_RECYCLER_LAYOUT,
+                binding.list.layoutManager?.onSaveInstanceState()
+            )
+        }
     }
 
     private fun createActionModeController() =

@@ -83,7 +83,9 @@ class ReleaseEditFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        helper.saveInstanceState(outState)
+        _helper?.run {
+            helper.saveInstanceState(outState)
+        }
     }
 
     override fun onAttach(context: Context) {

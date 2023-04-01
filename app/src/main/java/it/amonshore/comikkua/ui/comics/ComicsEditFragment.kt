@@ -98,7 +98,9 @@ class ComicsEditFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        helper.saveInstanceState(outState)
+        _helper?.run {
+            helper.saveInstanceState(outState)
+        }
     }
 
     private fun setupMenu() {
