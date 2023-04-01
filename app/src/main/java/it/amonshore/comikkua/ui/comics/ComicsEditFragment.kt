@@ -68,7 +68,7 @@ class ComicsEditFragment : Fragment() {
 //            "comics_tx_$comicsId"
 
         val comicsId = ComicsEditFragmentArgs.fromBundle(requireArguments()).comicsId
-        _viewModel.getComicsWithReleasesOrNull(comicsId)
+        _viewModel.getComicsWithReleasesOrNew(comicsId)
             .observe(viewLifecycleOwner) {
                 helper.setComics(
                     it,

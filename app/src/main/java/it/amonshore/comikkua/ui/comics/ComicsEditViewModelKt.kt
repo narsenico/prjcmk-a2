@@ -40,7 +40,7 @@ class ComicsEditViewModelKt(application: Application) : AndroidViewModel(applica
         emit(_comicsRepository.getAuthors())
     }
 
-    fun getComicsWithReleasesOrNull(comicsId: Long): LiveData<ComicsWithReleases> = liveData {
+    fun getComicsWithReleasesOrNew(comicsId: Long): LiveData<ComicsWithReleases> = liveData {
         if (comicsId == Comics.NEW_COMICS_ID) {
             emit(ComicsWithReleases.createNew())
         } else {
