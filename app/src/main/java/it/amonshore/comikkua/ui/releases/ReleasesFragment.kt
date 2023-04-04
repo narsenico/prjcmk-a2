@@ -166,11 +166,12 @@ class ReleasesFragment : Fragment() {
     ) = ReleaseAdapter.Builder(binding.list)
         .withOnItemSelectedListener { _, size ->
             if (size == 0) {
-                _listener.onFragmentRequestActionMode(null, ACTION_MODE_NAME, null)
+                _listener.onFragmentRequestActionMode(ACTION_MODE_NAME)
             } else {
                 _listener.onFragmentRequestActionMode(
-                    actionModeController, ACTION_MODE_NAME,
-                    getString(R.string.title_selected, size)
+                    ACTION_MODE_NAME,
+                    getString(R.string.title_selected, size),
+                    actionModeController
                 )
             }
         }
@@ -252,7 +253,7 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun loadNewReleases() {
-        _listener.dismissSnackbar()
+        _listener.dismissSnackBar()
         binding.swipeRefresh.isRefreshing = true
         _viewModel.loadNewReleases()
     }
@@ -322,10 +323,10 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        _listener.requestSnackbar(
+        _listener.requestSnackBar(
             resources.getQuantityString(R.plurals.release_deleted, count, count),
             Constants.UNDO_TIMEOUT
-        ) { canDelete: Boolean ->
+        ) { canDelete ->
             if (canDelete) {
                 LogHelper.d("Delete removed releases")
                 _viewModel.deleteRemoved()

@@ -1,22 +1,22 @@
-package it.amonshore.comikkua.ui;
+package it.amonshore.comikkua.ui
 
-import android.net.Uri;
+import android.net.Uri
+import androidx.appcompat.view.ActionMode
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.view.ActionMode;
-import it.amonshore.comikkua.ICallback;
+interface OnNavigationFragmentListener {
+    fun onFragmentInteraction(uri: Uri?)
 
-public interface OnNavigationFragmentListener {
-
-    void onFragmentInteraction(Uri uri);
-
-    void onFragmentRequestActionMode(@Nullable ActionMode.Callback callback, String name, CharSequence title);
+    fun onFragmentRequestActionMode(
+        name: String,
+        title: CharSequence? = null,
+        callback: ActionMode.Callback? = null
+    )
 
     /**
      * Richiede una snackbar con un pulsante "annulla".
      * Una eventuale snackbar già presesente al momento della richiesta viene dismessa.
-     * <p>
+     *
+     *
      * La callback viene chiamata quando la snackbar viene dismessa:
      * - timeout => true
      * - richiesta altra snackbar => true
@@ -26,10 +26,10 @@ public interface OnNavigationFragmentListener {
      * @param timeout  timeout scaduto il quale la snackbar viene dismessa
      * @param callback callback chiamato ogni quando la snackbar viene dismessa
      */
-    void requestSnackbar(@NonNull String text, int timeout, @NonNull ICallback<Boolean> callback);
+    fun requestSnackBar(text: String, timeout: Int, callback: (Boolean) -> Unit)
 
     /**
      * Dismette una eventuale snackbar presente.
      */
-    void dismissSnackbar();
+    fun dismissSnackBar()
 }
