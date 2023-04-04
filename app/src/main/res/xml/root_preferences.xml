@@ -17,8 +17,9 @@
             app:key="notifications_enabled"
             app:title="@string/settings_notifications_enabled" />
 
-        <Preference app:key="notifications"
+        <Preference
             app:icon="@drawable/ic_notifications"
+            app:key="notifications"
             app:title="@string/settings_notifications_settings" />
 
     </PreferenceCategory>
