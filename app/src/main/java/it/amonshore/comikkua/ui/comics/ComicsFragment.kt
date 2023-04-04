@@ -271,7 +271,6 @@ class ComicsFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        val context = requireContext().applicationContext
         _listener.requestSnackbar(
             resources.getQuantityString(R.plurals.comics_deleted, count, count),
             Constants.UNDO_TIMEOUT

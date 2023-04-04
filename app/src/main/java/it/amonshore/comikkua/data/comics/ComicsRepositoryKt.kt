@@ -1,9 +1,11 @@
 package it.amonshore.comikkua.data.comics
 
 import android.content.Context
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.ComikkuDatabase
+import it.amonshore.comikkua.ui.ImageHelper
 
-class ComicsRepositoryKt(context: Context) {
+class ComicsRepositoryKt(private val context: Context) {
 
     private val _comicsDao = ComikkuDatabase.getDatabase(context).comicsDaoKt()
 
@@ -15,7 +17,17 @@ class ComicsRepositoryKt(context: Context) {
         _comicsDao.upsert(comics)
     }
 
-    suspend fun deleteRemoved() = _comicsDao.deleteRemoved()
+    suspend fun deleteRemoved() {
+        val removedIds = getRemovedComicsIds()
+        _comicsDao.deleteRemoved()
+        try {
+            // elimino anche le immagini
+            // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
+            ImageHelper.deleteImageFiles(context, *removedIds.toTypedArray())
+        } catch (ex: Exception) {
+            LogHelper.e(ex, "There was an error deleting image files")
+        }
+    }
 
     suspend fun undoRemoved() = _comicsDao.undoRemoved()
 

@@ -7,7 +7,6 @@ import androidx.paging.*
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
-import it.amonshore.comikkua.ui.ImageHelper
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -77,15 +76,7 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
     }
 
     fun deleteRemoved() = viewModelScope.launch {
-        val removedIds = _repository.getRemovedComicsIds()
         _repository.deleteRemoved()
-        try {
-            // elimino anche le immagini
-            // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
-            ImageHelper.deleteImageFiles(getApplication(), *removedIds.toTypedArray())
-        } catch (ex: Exception) {
-            LogHelper.e(ex, "There was an error deleting image files")
-        }
     }
 
     fun undoRemoved() = viewModelScope.launch {
@@ -97,7 +88,7 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
      */
     fun markAsRemoved(comicsIds: List<Long>) = viewModelScope.launch {
         // prima elimino eventuali comics ancora in fase di undo
-        deleteRemoved()
+        _repository.deleteRemoved()
         val count = _repository.setRemoved(comicsIds)
         _events.postValue(UiComicsEvent.MarkedAsRemoved(count))
     }
