@@ -14,9 +14,10 @@ import it.amonshore.comikkua.data.release.toReleaseViewModelItems
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.util.*
 
 sealed class UiComicsDetailEvent {
-    data class MarkedAsRemoved(val count: Int) : UiComicsDetailEvent()
+    data class MarkedAsRemoved(val count: Int, val tag: String) : UiComicsDetailEvent()
     data class Sharing(val releases: List<ComicsRelease>) : UiComicsDetailEvent()
     data class NewReleasesLoaded(val count: Int, val tag: String) : UiComicsDetailEvent()
     object NewReleasesError : UiComicsDetailEvent()
@@ -56,18 +57,9 @@ class ComicsDetailViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun markAsRemoved(ids: List<Long>) = viewModelScope.launch {
-        // prima elimino eventuali release ancora in fase di undo
-        _releaseRepository.deleteRemoved()
-        val count = _releaseRepository.updateRemoved(ids, removed = true)
-        _events.postValue(UiComicsDetailEvent.MarkedAsRemoved(count))
-    }
-
-    fun deleteRemoved() = viewModelScope.launch {
-        _releaseRepository.deleteRemoved()
-    }
-
-    fun undoRemoved() = viewModelScope.launch {
-        _releaseRepository.undoRemoved()
+        val tag = UUID.randomUUID().toString()
+        val count = _releaseRepository.markedAsRemoved(ids, tag)
+        _events.postValue(UiComicsDetailEvent.MarkedAsRemoved(count, tag))
     }
 
     fun getShareableComicsReleases(releaseIds: List<Long>) = viewModelScope.launch {

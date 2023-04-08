@@ -16,7 +16,6 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
@@ -77,7 +76,10 @@ class ComicsDetailFragment : Fragment() {
 
         _viewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
+                is UiComicsDetailEvent.MarkedAsRemoved -> onMarkedAsRemoved(
+                    result.count,
+                    result.tag
+                )
                 is UiComicsDetailEvent.Sharing -> shareReleases(result.releases)
                 is UiComicsDetailEvent.NewReleasesLoaded -> onNewReleasesLoaded(
                     result.count,
@@ -332,7 +334,10 @@ class ComicsDetailFragment : Fragment() {
         )
     }
 
-    private fun onMarkedAsRemoved(count: Int) {
-        _listener.handleUndo(resources.getQuantityString(R.plurals.release_deleted, count, count))
+    private fun onMarkedAsRemoved(count: Int, tag: String) {
+        _listener.handleUndo(
+            resources.getQuantityString(R.plurals.release_deleted, count, count),
+            tag
+        )
     }
 }

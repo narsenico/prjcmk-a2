@@ -60,7 +60,7 @@ class ComicsFragment : Fragment() {
         _viewModel.events
             .observe(viewLifecycleOwner) { result ->
                 when (result) {
-                    is UiComicsEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
+                    is UiComicsEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count, result.tag)
                 }
             }
 
@@ -270,7 +270,7 @@ class ComicsFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun onMarkedAsRemoved(count: Int) {
-        _listener.handleUndo(resources.getQuantityString(R.plurals.comics_deleted, count, count))
+    private fun onMarkedAsRemoved(count: Int, tag: String) {
+        _listener.handleUndo(resources.getQuantityString(R.plurals.comics_deleted, count, count), tag)
     }
 }

@@ -12,17 +12,17 @@ interface ComicsDaoKt {
     @Upsert
     suspend fun upsert(comics: Comics)
 
-    @Query("DELETE FROM tComics WHERE removed = 1")
+    @Query("DELETE FROM tComics WHERE removed = 1 AND tag = :tag")
     @Transaction
-    suspend fun deleteRemoved()
+    suspend fun deleteRemoved(tag: String)
 
-    @Query("UPDATE tComics SET removed = 0")
+    @Query("UPDATE tComics SET removed = 0 WHERE tag = :tag")
     @Transaction
-    suspend fun undoRemoved()
+    suspend fun undoRemoved(tag: String)
 
-    @Query("UPDATE tComics SET removed = :removed WHERE id IN (:ids)")
+    @Query("UPDATE tComics SET removed = 1, tag = :tag WHERE id IN (:ids)")
     @Transaction
-    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int
+    suspend fun markedAsRemoved(ids: List<Long>, tag: String): Int
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     suspend fun getComics(): List<Comics>
@@ -38,8 +38,8 @@ interface ComicsDaoKt {
     @Transaction
     suspend fun getComicsWithReleases(id: Long): ComicsWithReleases
 
-    @Query("SELECT id FROM tComics WHERE removed = 1")
-    suspend fun getRemovedComicsIds(): List<Long>
+    @Query("SELECT id FROM tComics WHERE removed = 1 AND tag = :tag")
+    suspend fun getRemovedComicsIds(tag: String): List<Long>
 
     @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     @Transaction

@@ -22,17 +22,17 @@ interface ReleaseDaoKt {
     @Transaction
     suspend fun updateOrdered(ids: List<Long>, ordered: Boolean, lastUpdate: Long)
 
-    @Query("DELETE FROM tReleases WHERE removed = 1")
+    @Query("DELETE FROM tReleases WHERE removed = 1 AND tag = :tag")
     @Transaction
-    suspend fun deleteRemoved()
+    suspend fun deleteRemoved(tag: String)
 
-    @Query("UPDATE tReleases SET removed = 0")
+    @Query("UPDATE tReleases SET removed = 0 WHERE tag = :tag")
     @Transaction
-    suspend fun undoRemoved()
+    suspend fun undoRemoved(tag: String)
 
-    @Query("UPDATE tReleases SET removed = :removed WHERE id IN (:ids)")
+    @Query("UPDATE tReleases SET removed = 1, tag = :tag WHERE id IN (:ids)")
     @Transaction
-    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int
+    suspend fun markedAsRemoved(ids: List<Long>, tag: String): Int
 
     @Query("SELECT * FROM tReleases WHERE id = :id AND removed = 0")
     suspend fun getRelease(id: Long): Release

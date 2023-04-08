@@ -162,15 +162,15 @@ class MainActivity : AppCompatActivity(),
         return arguments?.getBoolean("hideNavigation", defValue) ?: defValue
     }
 
-    private fun prepareUndoSnackbar(message: String, tag: String?, timeout: Duration): Snackbar {
+    private fun prepareUndoSnackbar(message: String, tag: String, timeout: Duration): Snackbar {
         return Snackbar.make(binding.bottomNav, message, timeout.toSnackbarTimeout())
             .setAction(android.R.string.cancel) {
                 LogHelperKt.d { "handleUndo undo with tag=$tag" }
-                _viewModel.undoRemove()
+                _viewModel.undoRemove(tag)
             }
             .onDismissed {
                 LogHelperKt.d { "handleUndo finalize with tag=$tag" }
-                _viewModel.finalizeRemove()
+                _viewModel.finalizeRemove(tag)
             }
             .also {
                 it.show()
@@ -178,10 +178,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     @Synchronized
-    override fun handleUndo(message: String, tag: String?, timeout: Duration) {
-        // TODO: non va bene perché se in questo momento è ancora attivo la snackbar precedente
-        //  viene dismessa e quindi anche finalizzate le cancellazioni, comprese quelle appena fatte
-        //  soluzione: markare gli elementi cancellati anche con un tag
+    override fun handleUndo(message: String, tag: String, timeout: Duration) {
         resetUndo()
 
         LogHelperKt.d { "handleUndo with tag=$tag" }

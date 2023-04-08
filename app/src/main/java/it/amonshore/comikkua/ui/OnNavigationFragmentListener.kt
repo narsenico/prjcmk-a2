@@ -10,7 +10,7 @@ interface OnNavigationFragmentListener {
         callback: ActionMode.Callback? = null
     )
 
-    fun handleUndo(message: String, tag: String? = null, timeout: Duration = Duration.ZERO)
+    fun handleUndo(message: String, tag: String, timeout: Duration = Duration.ZERO)
 
     fun resetUndo()
 }

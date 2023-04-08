@@ -58,16 +58,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    fun undoRemove() = viewModelScope.launch {
-        LogHelperKt.d { "Restore elements marked as removed" }
-        _releaseRepository.undoRemoved()
-        _comicsRepository.undoRemoved()
+    fun undoRemove(tag: String) = viewModelScope.launch {
+        LogHelperKt.d { "Restore elements marked as removed with tag=$tag" }
+        _releaseRepository.undoRemoved(tag)
+        _comicsRepository.undoRemoved(tag)
     }
 
-    fun finalizeRemove() = viewModelScope.launch {
-        LogHelperKt.d { "Deleting all elements marked as removed" }
-        _releaseRepository.deleteRemoved()
-        _comicsRepository.deleteRemoved()
+    fun finalizeRemove(tag: String) = viewModelScope.launch {
+        LogHelperKt.d { "Deleting all elements marked as removed with tag=$tag" }
+        _releaseRepository.deleteRemoved(tag)
+        _comicsRepository.deleteRemoved(tag)
     }
 
     fun setupWorkers() {

@@ -86,12 +86,12 @@ class ReleaseRepository(context: Context) {
         }
     }
 
-    suspend fun deleteRemoved() = _releaseDao.deleteRemoved()
+    suspend fun deleteRemoved(tag: String) = _releaseDao.deleteRemoved(tag)
 
-    suspend fun undoRemoved() = _releaseDao.undoRemoved()
+    suspend fun undoRemoved(tag: String) = _releaseDao.undoRemoved(tag)
 
-    suspend fun updateRemoved(ids: List<Long>, removed: Boolean): Int =
-        _releaseDao.updateRemoved(ids, removed)
+    suspend fun markedAsRemoved(ids: List<Long>, tag: String): Int =
+        _releaseDao.markedAsRemoved(ids, tag)
 
     suspend fun loadNewReleases(comics: ComicsWithReleases): Result<NewReleasesCountAndTag> =
         withContext(Dispatchers.IO + SupervisorJob()) {

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "81208b7e92bfade027375fd9b11e4bfe",
+    "identityHash": "f6dcfd72ed287c0478bb0748e5f36965",
     "entities": [
       {
         "tableName": "tComics",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `series` TEXT, `publisher` TEXT, `authors` TEXT, `price` REAL NOT NULL, `periodicity` TEXT, `reserved` INTEGER NOT NULL, `notes` TEXT, `image` TEXT, `lastUpdate` INTEGER NOT NULL, `refJsonId` INTEGER NOT NULL, `removed` INTEGER NOT NULL, `sourceId` TEXT, `selected` INTEGER NOT NULL, `version` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `series` TEXT, `publisher` TEXT, `authors` TEXT, `price` REAL NOT NULL, `periodicity` TEXT, `reserved` INTEGER NOT NULL, `notes` TEXT, `image` TEXT, `lastUpdate` INTEGER NOT NULL, `refJsonId` INTEGER NOT NULL, `removed` INTEGER NOT NULL, `tag` TEXT, `sourceId` TEXT, `selected` INTEGER NOT NULL, `version` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -85,6 +85,12 @@
             "columnName": "removed",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "sourceId",
@@ -330,7 +336,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '81208b7e92bfade027375fd9b11e4bfe')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f6dcfd72ed287c0478bb0748e5f36965')"
     ]
   }
 }

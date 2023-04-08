@@ -26,7 +26,6 @@ import it.amonshore.comikkua.ui.BottomSheetDialogHelper
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.ShareHelper
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
-import java.util.UUID
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
@@ -60,7 +59,7 @@ class ReleasesFragment : Fragment() {
 
         _viewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
-                is UiReleaseEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count)
+                is UiReleaseEvent.MarkedAsRemoved -> onMarkedAsRemoved(result.count, result.tag)
                 is UiReleaseEvent.Sharing -> shareReleases(result.releases)
                 is UiReleaseEvent.NewReleasesLoaded -> onNewReleasesLoaded(result.count, result.tag)
                 is UiReleaseEvent.NewReleasesError -> onNewReleasesError()
@@ -322,7 +321,10 @@ class ReleasesFragment : Fragment() {
         }
     }
 
-    private fun onMarkedAsRemoved(count: Int) {
-        _listener.handleUndo(resources.getQuantityString(R.plurals.release_deleted, count, count), tag = UUID.randomUUID().toString())
+    private fun onMarkedAsRemoved(count: Int, tag: String) {
+        _listener.handleUndo(
+            resources.getQuantityString(R.plurals.release_deleted, count, count),
+            tag
+        )
     }
 }

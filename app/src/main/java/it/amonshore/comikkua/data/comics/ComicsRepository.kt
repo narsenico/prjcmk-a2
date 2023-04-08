@@ -17,9 +17,9 @@ class ComicsRepository(private val context: Context) {
         _comicsDao.upsert(comics)
     }
 
-    suspend fun deleteRemoved() {
-        val removedIds = getRemovedComicsIds()
-        _comicsDao.deleteRemoved()
+    suspend fun deleteRemoved(tag: String) {
+        val removedIds = getRemovedComicsIds(tag)
+        _comicsDao.deleteRemoved(tag)
         try {
             // elimino anche le immagini
             // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
@@ -29,10 +29,10 @@ class ComicsRepository(private val context: Context) {
         }
     }
 
-    suspend fun undoRemoved() = _comicsDao.undoRemoved()
+    suspend fun undoRemoved(tag: String) = _comicsDao.undoRemoved(tag)
 
-    suspend fun setRemoved(ids: List<Long>): Int =
-        _comicsDao.updateRemoved(ids, true)
+    suspend fun markedAsRemoved(ids: List<Long>, tag: String): Int =
+        _comicsDao.markedAsRemoved(ids, tag)
 
     suspend fun getComicsWithReleases(id: Long) =
         _comicsDao.getComicsWithReleases(id)
@@ -40,8 +40,8 @@ class ComicsRepository(private val context: Context) {
     suspend fun existsComicsWithName(name: String) =
         _comicsDao.getComicsByName(name) != null
 
-    suspend fun getRemovedComicsIds(): List<Long> =
-        _comicsDao.getRemovedComicsIds()
+    suspend fun getRemovedComicsIds(tag: String): List<Long> =
+        _comicsDao.getRemovedComicsIds(tag)
 
     suspend fun getPublishers(): List<String> =
         _comicsDao.getPublishers()

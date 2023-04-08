@@ -11,12 +11,13 @@ import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 
 private const val FILTER_DEBOUNCE = 300L;
 private val SPACE_REGEX = "\\s+".toRegex()
 
 sealed class UiComicsEvent {
-    data class MarkedAsRemoved(val count: Int) : UiComicsEvent()
+    data class MarkedAsRemoved(val count: Int, val tag: String) : UiComicsEvent()
 }
 
 @OptIn(FlowPreview::class)
@@ -75,22 +76,13 @@ class ComicsViewModel(application: Application) : AndroidViewModel(application) 
         filter = _lastFilter
     }
 
-    fun deleteRemoved() = viewModelScope.launch {
-        _repository.deleteRemoved()
-    }
-
-    fun undoRemoved() = viewModelScope.launch {
-        _repository.undoRemoved()
-    }
-
     /**
      * Notifca l'avvenuta operazione inviando [UiComicsEvent.MarkedAsRemoved] a [ComicsViewModel.events].
      */
     fun markAsRemoved(comicsIds: List<Long>) = viewModelScope.launch {
-        // prima elimino eventuali comics ancora in fase di undo
-        _repository.deleteRemoved()
-        val count = _repository.setRemoved(comicsIds)
-        _events.postValue(UiComicsEvent.MarkedAsRemoved(count))
+        val tag = UUID.randomUUID().toString()
+        val count = _repository.markedAsRemoved(comicsIds, tag)
+        _events.postValue(UiComicsEvent.MarkedAsRemoved(count, tag))
     }
 
     private fun String.toLikeOrNull(): String? {
