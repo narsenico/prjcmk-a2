@@ -32,6 +32,8 @@ public class Comics {
     public long lastUpdate;
     public long refJsonId;
     public boolean removed;
+    @Exclude
+    public String tag;
 
     /**
      * Id della sorgente da cui è stato generato il comics.

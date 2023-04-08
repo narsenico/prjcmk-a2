@@ -15,7 +15,6 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
@@ -27,6 +26,7 @@ import it.amonshore.comikkua.ui.BottomSheetDialogHelper
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.ShareHelper
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
+import java.util.UUID
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
@@ -253,7 +253,7 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun loadNewReleases() {
-        _listener.dismissSnackBar()
+        _listener.resetUndo()
         binding.swipeRefresh.isRefreshing = true
         _viewModel.loadNewReleases()
     }
@@ -323,17 +323,6 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        _listener.requestSnackBar(
-            resources.getQuantityString(R.plurals.release_deleted, count, count),
-            Constants.UNDO_TIMEOUT
-        ) { canDelete ->
-            if (canDelete) {
-                LogHelper.d("Delete removed releases")
-                _viewModel.deleteRemoved()
-            } else {
-                LogHelper.d("Undo removed releases")
-                _viewModel.undoRemoved()
-            }
-        }
+        _listener.handleUndo(resources.getQuantityString(R.plurals.release_deleted, count, count), tag = UUID.randomUUID().toString())
     }
 }

@@ -11,6 +11,8 @@ import androidx.preference.PreferenceManager
 import androidx.work.*
 import it.amonshore.comikkua.*
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.comics.ComicsRepository
+import it.amonshore.comikkua.data.release.ReleaseRepository
 import it.amonshore.comikkua.workers.ReleasesNotificationWorker
 import it.amonshore.comikkua.workers.UpdateReleasesWorker
 import kotlinx.coroutines.launch
@@ -37,6 +39,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+    private val _comicsRepository: ComicsRepository by lazy { ComicsRepository(application) }
+    private val _releaseRepository: ReleaseRepository by lazy { ReleaseRepository(application) }
+
     init {
         if (BuildConfig.DEBUG) {
             WorkManager.getInstance(application).cancelAllWork()
@@ -51,6 +56,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _sharedPreferences.unregisterOnSharedPreferenceChangeListener(
             _onAutoUpdateEnabledChanged
         )
+    }
+
+    fun undoRemove() = viewModelScope.launch {
+        LogHelperKt.d { "Restore elements marked as removed" }
+        _releaseRepository.undoRemoved()
+        _comicsRepository.undoRemoved()
+    }
+
+    fun finalizeRemove() = viewModelScope.launch {
+        LogHelperKt.d { "Deleting all elements marked as removed" }
+        _releaseRepository.deleteRemoved()
+        _comicsRepository.deleteRemoved()
     }
 
     fun setupWorkers() {

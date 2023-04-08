@@ -282,7 +282,7 @@ class ComicsDetailFragment : Fragment() {
     }
 
     private fun loadNewReleases() {
-        _listener.dismissSnackBar()
+        _listener.resetUndo()
         binding.swipeRefresh.isRefreshing = true
         _viewModel.loadNewReleases(_comics)
     }
@@ -333,17 +333,6 @@ class ComicsDetailFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        _listener.requestSnackBar(
-            resources.getQuantityString(R.plurals.release_deleted, count, count),
-            Constants.UNDO_TIMEOUT
-        ) { canDelete ->
-            if (canDelete) {
-                LogHelper.d("Delete removed releases")
-                _viewModel.deleteRemoved()
-            } else {
-                LogHelper.d("Undo removed releases")
-                _viewModel.undoRemoved()
-            }
-        }
+        _listener.handleUndo(resources.getQuantityString(R.plurals.release_deleted, count, count))
     }
 }

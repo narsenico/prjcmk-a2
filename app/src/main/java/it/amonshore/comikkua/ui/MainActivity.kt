@@ -1,6 +1,5 @@
 package it.amonshore.comikkua.ui
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -16,12 +15,12 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback
 import com.google.android.material.snackbar.Snackbar
 import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.ActivityMainBinding
+import java.time.Duration
 
 class MainActivity : AppCompatActivity(),
     OnNavigationFragmentListener,
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var _navController: NavController
 
     private var _actionMode: ActionMode? = null
-    private var _snackBar: Snackbar? = null
+    private var _undoSnackBar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,10 +90,6 @@ class MainActivity : AppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onFragmentInteraction(uri: Uri?) {
-        // TODO: intercettare in qualche modo la selezione di un item dal fragment in modo da attivare l'actionMode?
-    }
-
     override fun onFragmentRequestActionMode(
         name: String,
         title: CharSequence?,
@@ -142,7 +137,7 @@ class MainActivity : AppCompatActivity(),
         supportActionBar?.setSubtitle(extractSubtitle(destination, arguments))
         window.hideKeyboard()
         _actionMode?.finish()
-        dismissSnackBar()
+        resetUndo()
         binding.bottomNav.visibility = if (mustHideNavigation(destination, arguments)) {
             View.GONE
         } else {
@@ -167,31 +162,37 @@ class MainActivity : AppCompatActivity(),
         return arguments?.getBoolean("hideNavigation", defValue) ?: defValue
     }
 
-    override fun requestSnackBar(text: String, timeout: Int, callback: (Boolean) -> Unit) {
-        dismissSnackBar()
-
-        val snackBar = Snackbar.make(binding.bottomNav, text, timeout)
-            .setAction(android.R.string.cancel) { callback(false) }
-            .addCallback(object : BaseCallback<Snackbar>() {
-                override fun onDismissed(_transientBottomBar: Snackbar, event: Int) {
-                    if (event == DISMISS_EVENT_TIMEOUT ||
-                        event == DISMISS_EVENT_MANUAL
-                    ) {
-                        callback(true)
-                    }
-                }
-            })
-
-        snackBar.show()
-
-        _snackBar = snackBar
+    private fun prepareUndoSnackbar(message: String, tag: String?, timeout: Duration): Snackbar {
+        return Snackbar.make(binding.bottomNav, message, timeout.toSnackbarTimeout())
+            .setAction(android.R.string.cancel) {
+                LogHelperKt.d { "handleUndo undo with tag=$tag" }
+                _viewModel.undoRemove()
+            }
+            .onDismissed {
+                LogHelperKt.d { "handleUndo finalize with tag=$tag" }
+                _viewModel.finalizeRemove()
+            }
+            .also {
+                it.show()
+            }
     }
 
-    override fun dismissSnackBar() {
-        _snackBar?.let {
-            if (it.isShown) {
-                it.dismiss()
-            }
+    @Synchronized
+    override fun handleUndo(message: String, tag: String?, timeout: Duration) {
+        // TODO: non va bene perché se in questo momento è ancora attivo la snackbar precedente
+        //  viene dismessa e quindi anche finalizzate le cancellazioni, comprese quelle appena fatte
+        //  soluzione: markare gli elementi cancellati anche con un tag
+        resetUndo()
+
+        LogHelperKt.d { "handleUndo with tag=$tag" }
+        _undoSnackBar = prepareUndoSnackbar(message, tag, timeout).also { it.show() }
+    }
+
+    @Synchronized
+    override fun resetUndo() {
+        if (_undoSnackBar != null) {
+            _undoSnackBar!!.dismiss()
+            _undoSnackBar = null
         }
     }
 }

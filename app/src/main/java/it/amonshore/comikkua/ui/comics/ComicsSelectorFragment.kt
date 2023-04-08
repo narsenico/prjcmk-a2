@@ -147,12 +147,10 @@ class ComicsSelectorFragment : Fragment() {
     }
 
     private fun deleteAvailableComics() {
-        _listener.dismissSnackBar()
         _viewModel.deleteAvailableComics()
     }
 
     private fun loadAvailableComics() {
-        _listener.dismissSnackBar()
         _viewModel.loadAvailableComics()
     }
 

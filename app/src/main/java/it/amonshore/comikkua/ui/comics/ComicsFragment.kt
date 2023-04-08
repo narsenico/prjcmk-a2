@@ -15,7 +15,6 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
@@ -272,17 +271,6 @@ class ComicsFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int) {
-        _listener.requestSnackBar(
-            resources.getQuantityString(R.plurals.comics_deleted, count, count),
-            Constants.UNDO_TIMEOUT
-        ) { canDelete ->
-            if (canDelete) {
-                LogHelper.d("Delete removed comics")
-                _viewModel.deleteRemoved()
-            } else {
-                LogHelper.d("Undo removed comics")
-                _viewModel.undoRemoved()
-            }
-        }
+        _listener.handleUndo(resources.getQuantityString(R.plurals.comics_deleted, count, count))
     }
 }
