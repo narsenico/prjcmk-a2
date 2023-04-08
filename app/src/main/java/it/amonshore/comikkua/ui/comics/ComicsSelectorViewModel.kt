@@ -2,28 +2,38 @@ package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
 import androidx.lifecycle.*
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.containsAll
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.toComics
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.splitToWords
+import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-private const val FILTER_DEBOUNCE = 300L;
+private const val FILTER_DEBOUNCE = 300L
+private const val READ_DEBOUNCE = 300L
+
+sealed class UiComicsSelectorEvent {
+    data class AvailableComicsLoaded(val count: Int) : UiComicsSelectorEvent()
+    object AvailableComicsError : UiComicsSelectorEvent()
+    object AvailableComicsLoading : UiComicsSelectorEvent()
+}
 
 class ComicsSelectorViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _cmkWebRepository = CmkWebRepository(application)
     private val _comicsRepository = ComicsRepository(application)
     private val _filter = MutableLiveData<String>()
+    private val _events = SingleLiveEvent<UiComicsSelectorEvent>()
 
     private var _lastFilter: String = ""
     private var _filteringJob: Job? = null
+    val events: LiveData<UiComicsSelectorEvent> = _events
 
     var filter: String
         get() = _lastFilter
@@ -61,18 +71,17 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
         _filterFlow
             .onStart { emit(emptyList()) }
             .collectLatest { filter ->
-                LogHelper.d("Filtering available comics by $filter")
-                // eventuali precedenti operazioni di filtering vengono annullate
-                _filteringJob?.cancel();
-                // eseguo il filtering in una coroutine in modo da poter annullare la,
-                // e con lei anche il FLow creato al suo interno
+                LogHelperKt.d { "Filtering available comics by $filter" }
+                _filteringJob?.cancel()
                 _filteringJob = viewModelScope.launch {
                     if (filter.isEmpty()) {
                         _cmkWebRepository.getNotFollowedComics()
-                            .catch { LogHelper.e("Error reading available comics", it) }
+                            .debounce(READ_DEBOUNCE)
+                            .catch { LogHelperKt.e("Error reading available comics", it) }
                             .collectLatest { emit(it) }
                     } else {
                         _cmkWebRepository.getNotFollowedComics()
+                            .debounce(READ_DEBOUNCE)
                             .map { data ->
                                 data.filter { comics ->
                                     comics.searchableName.containsAll(
@@ -80,7 +89,7 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
                                     )
                                 }
                             }
-                            .catch { LogHelper.e("Error filtering available comics", it) }
+                            .catch { LogHelperKt.e("Error filtering available comics", it) }
                             .collectLatest { emit(it) }
                     }
                 }
@@ -89,6 +98,18 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
 
     fun followComics(comics: AvailableComics) = viewModelScope.launch {
         _comicsRepository.insert(comics.toComics())
-        // TODO: come aggiornare l'ui perché rifletta il cambiamento?
+    }
+
+    fun deleteAvailableComics() = viewModelScope.launch {
+        _cmkWebRepository.deleteAvailableComics()
+    }
+
+    fun loadAvailableComics() = viewModelScope.launch {
+        _events.postValue(UiComicsSelectorEvent.AvailableComicsLoading)
+
+        val result = _cmkWebRepository.refreshAvailableComics()
+        val event = result.map { UiComicsSelectorEvent.AvailableComicsLoaded(it) }
+            .getOrElse { UiComicsSelectorEvent.AvailableComicsError }
+        _events.postValue(event)
     }
 }

@@ -105,6 +105,7 @@
     <string name="comics_saving_error">I couldn\'t save the comics! Please try again.</string>
     <string name="release_saving_error">I couldn\'t save the release! Please try again.</string>
     <string name="refresh_release_error">There was an error reading new releases</string>
+    <string name="refresh_available_comics_error">There was an error reading available comics</string>
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
@@ -120,6 +121,8 @@
         <item quantity="one">There is a new release today</item>
         <item quantity="other">There are %d new releases today</item>
     </plurals>
+    <string name="notification_available_comics_loaded">Available comics loaded</string>
+    <string name="notification_available_comics_loaded_zero">Sorry, there aren\'t comics available</string>
 
     <string name="auto_update_channel_name">Auto update</string>
     <string name="auto_update_channel_description">Auto update</string>
@@ -173,4 +176,6 @@
     <string name="share_release" translatable="false">%s #%d (%s) %s</string>
     <string name="share_release_nodate" translatable="false">%s #%d %s</string>
     <string name="search_comics_hint">Search comics</string>
+    <string name="load_available_comics">Load available comics</string>
+    <string name="loading_available_comics">Loading available comics</string>
 </resources>

@@ -11,44 +11,38 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
-import it.amonshore.comikkua.workers.RefreshComicsWorker
 
-/**
- * Mostra tutti i comics disponibili per l'auto aggiornamento.
- * Serve per far selezionare all'utnete un nuovo comics da inserire nel proprio elenco.
- */
+//private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics_selector.recycler.layout"
+//private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics_selector.last.query"
+
 class ComicsSelectorFragment : Fragment() {
 
-    private val _comicsSelectorViewModel: ComicsSelectorViewModel by viewModels()
-    private lateinit var _listener: OnNavigationFragmentListener
-    private lateinit var _binding: FragmentComicsSelectorBinding
+    private val _viewModel: ComicsSelectorViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        _binding = FragmentComicsSelectorBinding.inflate(layoutInflater)
-    }
+    private lateinit var _listener: OnNavigationFragmentListener
+
+    private var _binding: FragmentComicsSelectorBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding.list.layoutManager = LinearLayoutManager(context)
+    ): View {
+        _binding = FragmentComicsSelectorBinding.inflate(layoutInflater)
+        binding.list.layoutManager = LinearLayoutManager(context)
 
-        val adapter = AvailableComicsAdapter.Builder(_binding.list)
+        val adapter = AvailableComicsAdapter.Builder(binding.list)
             .withComicsCallback(object : AvailableComicsAdapter.ComicsCallback {
                 override fun onComicsFollowed(comics: AvailableComics) {
-                    _comicsSelectorViewModel.followComics(comics)
+                    _viewModel.followComics(comics)
                 }
 
                 override fun onComicsMenuSelected(comics: AvailableComics) {
@@ -58,18 +52,31 @@ class ComicsSelectorFragment : Fragment() {
             .withGlide(Glide.with(this))
             .build()
 
-        _comicsSelectorViewModel.getNotFollowedComics()
+        _viewModel.getNotFollowedComics()
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("not followed comics count=${data.size}")
                 adapter.submitList(data)
-                _binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
+                binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
 
-        _binding.txtSearch.doAfterTextChanged {
-            _comicsSelectorViewModel.filter = it?.toString() ?: ""
+        _viewModel.events.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is UiComicsSelectorEvent.AvailableComicsLoading -> onAvailableComicsLoading()
+                is UiComicsSelectorEvent.AvailableComicsLoaded -> onAvailableComicsLoaded(result.count)
+                is UiComicsSelectorEvent.AvailableComicsError -> onAvailableComicsError()
+            }
         }
 
-        return _binding.root
+        binding.txtSearch.doAfterTextChanged {
+            _viewModel.filter = it?.toString() ?: ""
+        }
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -123,49 +130,58 @@ class ComicsSelectorFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == R.id.refresh) {
-                    performUpdate()
-                    return true
+                when (menuItem.itemId) {
+                    R.id.refresh -> {
+                        loadAvailableComics()
+                        return true
+                    }
+                    R.id.deleteComics -> {
+                        deleteAvailableComics()
+                        return true
+                    }
+                    else -> return false
                 }
 
-                return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    // TODO: leggere direttamente da web senza usare worker
-    private fun performUpdate() {
-        val request: WorkRequest =
-            OneTimeWorkRequest.Builder(RefreshComicsWorker::class.java).build()
-        val workManager = WorkManager.getInstance(requireContext())
-        workManager.enqueue(request)
-        workManager.getWorkInfoByIdLiveData(request.id)
-            .observe(viewLifecycleOwner) { workInfo: WorkInfo? ->
-                if (workInfo != null) {
-                    LogHelper.d("Updating available comics state=%s", workInfo.state)
-                    when (workInfo.state) {
-                        WorkInfo.State.SUCCEEDED -> {
-                            val count =
-                                workInfo.outputData.getInt(RefreshComicsWorker.REFRESHING_COUNT, 0)
-                            Toast.makeText(
-                                requireContext(),
-                                "Refreshing $count",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        WorkInfo.State.FAILED -> Toast.makeText(
-                            requireContext(),
-                            "Refreshing failed",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        WorkInfo.State.BLOCKED, WorkInfo.State.CANCELLED, WorkInfo.State.ENQUEUED, WorkInfo.State.RUNNING -> {}
-                    }
-                }
-            }
+    private fun deleteAvailableComics() {
+        _listener.dismissSnackBar()
+        _viewModel.deleteAvailableComics()
     }
 
-    companion object {
-        private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics_selector.recycler.layout"
-        private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics_selector.last.query"
+    private fun loadAvailableComics() {
+        _listener.dismissSnackBar()
+        _viewModel.loadAvailableComics()
+    }
+
+    private fun onAvailableComicsLoading() {
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.loading_available_comics),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun onAvailableComicsLoaded(count: Int) {
+        LogHelperKt.d { "New available comics: $count" }
+        val msgId = if (count > 0)
+            R.string.notification_available_comics_loaded
+        else
+            R.string.notification_available_comics_loaded_zero
+        Toast.makeText(
+            requireContext(),
+            msgId,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun onAvailableComicsError() {
+        Toast.makeText(
+            requireContext(),
+            R.string.refresh_available_comics_error,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }
