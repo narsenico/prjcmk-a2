@@ -17,7 +17,7 @@ import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 import it.amonshore.comikkua.parseToDouble
 import it.amonshore.comikkua.parseToString
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
-import it.amonshore.comikkua.ui.ImageHelper
+import it.amonshore.comikkua.ui.ImageHelperKt
 
 private const val NAME = "name"
 private const val PUBLISHER = "publisher"
@@ -211,7 +211,7 @@ class ComicsEditFragmentHelper(
         _comicsImagePath = comicsImagePath?.let {
             binding.comics.txtComicsInitial.text = ""
             glideRequestManager.load(it)
-                .apply(ImageHelper.getGlideCircleOptions())
+                .apply(ImageHelperKt.getInstance(context).circleOptions)
                 .into(_comicsImageViewTarget)
             it
         } ?: run {

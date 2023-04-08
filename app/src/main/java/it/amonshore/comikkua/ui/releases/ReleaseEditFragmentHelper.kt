@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui.releases
 
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.method.DigitsKeyListener
@@ -18,8 +19,10 @@ import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelper
+import it.amonshore.comikkua.ui.ImageHelperKt
 
 class ReleaseEditFragmentHelper(
+    val context: Context,
     val binding: FragmentReleaseEditBinding,
     private val fragmentManager: FragmentManager,
     private val glideRequestManager: RequestManager
@@ -99,7 +102,7 @@ class ReleaseEditFragmentHelper(
         if (comics.comics.hasImage()) {
             glideRequestManager
                 .load(Uri.parse(comics.comics.image))
-                .apply(ImageHelper.getGlideSquareOptions())
+                .apply(ImageHelperKt.getInstance(context).squareOptions)
                 .into(DrawableTextViewTarget(binding.release.txtReleaseNumbers))
         }
     }

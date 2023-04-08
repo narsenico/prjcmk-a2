@@ -246,7 +246,7 @@ class ComicsDetailFragment : Fragment() {
                 txtInitial.text = ""
                 Glide.with(this)
                     .load(Uri.parse(comics.comics.image))
-                    .apply(ImageHelper.getGlideCircleOptions())
+                    .apply(ImageHelperKt.getInstance(context).circleOptions)
                     .into(DrawableTextViewTarget(txtInitial))
             } else {
                 txtInitial.text = comics.comics.initial

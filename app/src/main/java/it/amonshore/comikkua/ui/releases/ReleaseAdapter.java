@@ -42,7 +42,7 @@ import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
-import it.amonshore.comikkua.ui.ImageHelper;
+import it.amonshore.comikkua.ui.ImageHelperKt;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
 
@@ -320,10 +320,12 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
+                final Context context = mRecyclerView.getContext();
+                final int defaultSize = ImageHelperKt.getInstance(context).getDefaultSize();
                 final FixedPreloadSizeProvider<IReleaseViewModelItem> sizeProvider =
-                        new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
+                        new FixedPreloadSizeProvider<>(defaultSize, defaultSize);
                 final ReleasePreloadModelProvider modelProvider =
-                        new ReleasePreloadModelProvider(adapter, mRequestManager);
+                        new ReleasePreloadModelProvider(context, adapter, mRequestManager);
                 final RecyclerViewPreloader<IReleaseViewModelItem> preloader =
                         new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
 
@@ -514,10 +516,14 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
 
     private static class ReleasePreloadModelProvider implements ListPreloader.PreloadModelProvider<IReleaseViewModelItem> {
 
-        private ReleaseAdapter mAdapter;
-        private RequestManager mRequestManager;
+        private final ImageHelperKt mImageHelperKt;
+        private final ReleaseAdapter mAdapter;
+        private final RequestManager mRequestManager;
 
-        ReleasePreloadModelProvider(@NonNull ReleaseAdapter adapter, @NonNull RequestManager requestManager) {
+        ReleasePreloadModelProvider(@NonNull Context context,
+                                    @NonNull ReleaseAdapter adapter,
+                                    @NonNull RequestManager requestManager) {
+            mImageHelperKt = ImageHelperKt.getInstance(context);
             mAdapter = adapter;
             mRequestManager = requestManager;
         }
@@ -542,12 +548,10 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         public RequestBuilder<?> getPreloadRequestBuilder(@NonNull IReleaseViewModelItem item) {
             final ComicsRelease comicsRelease = (ComicsRelease) item;
             if (comicsRelease.comics.hasImage()) {
-//                LogHelper.d("GLIDE getPreloadRequestBuilder on %s uri=%s",
-//                        comicsRelease.comics.name, comicsRelease.comics.image);
                 return mRequestManager
                         .load(Uri.parse(comicsRelease.comics.image))
-                        .listener(ImageHelper.drawableRequestListener)
-                        .apply(ImageHelper.getGlideSquareOptions());
+                        .listener(mImageHelperKt.getDrawableRequestListener())
+                        .apply(mImageHelperKt.getSquareOptions());
 
             } else {
                 return null;

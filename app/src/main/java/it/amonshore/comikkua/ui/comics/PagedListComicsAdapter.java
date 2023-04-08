@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui.comics;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
@@ -27,7 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
-import it.amonshore.comikkua.ui.ImageHelper;
+import it.amonshore.comikkua.ui.ImageHelperKt;
 
 public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases, ComicsViewHolder> {
 
@@ -191,10 +192,12 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
+                final Context context = mRecyclerView.getContext();
+                final int defaultSize = ImageHelperKt.getInstance(context).getDefaultSize();
                 final FixedPreloadSizeProvider<ComicsWithReleases> sizeProvider =
-                        new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
+                        new FixedPreloadSizeProvider<>(defaultSize, defaultSize);
                 final ComicsPreloadModelProvider modelProvider =
-                        new ComicsPreloadModelProvider(adapter, mRequestManager);
+                        new ComicsPreloadModelProvider(context, adapter, mRequestManager);
                 final RecyclerViewPreloader<ComicsWithReleases> preloader =
                         new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
 
@@ -245,10 +248,15 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
 
     private static class ComicsPreloadModelProvider implements ListPreloader.PreloadModelProvider<ComicsWithReleases> {
 
+        private final ImageHelperKt mImageHelperKt;
         private final PagedListComicsAdapter mAdapter;
         private final RequestManager mRequestManager;
 
-        ComicsPreloadModelProvider(@NonNull PagedListComicsAdapter adapter, @NonNull RequestManager requestManager) {
+        ComicsPreloadModelProvider(@NonNull Context context,
+                                   @NonNull PagedListComicsAdapter adapter,
+                                   @NonNull RequestManager requestManager) {
+            mImageHelperKt = ImageHelperKt.getInstance(context);
+            ;
             mAdapter = adapter;
             mRequestManager = requestManager;
         }
@@ -274,13 +282,12 @@ public class PagedListComicsAdapter extends PagingDataAdapter<ComicsWithReleases
             if (item.comics.hasImage()) {
                 return mRequestManager
                         .load(Uri.parse(item.comics.image))
-                        .listener(ImageHelper.drawableRequestListener)
-                        .apply(ImageHelper.getGlideCircleOptions());
+                        .listener(mImageHelperKt.getDrawableRequestListener())
+                        .apply(mImageHelperKt.getCircleOptions());
 
             } else {
                 return null;
             }
         }
     }
-
 }

@@ -24,7 +24,7 @@ object LogHelperKt {
         Log.e(TAG, message)
     }
 
-    fun e(message: String, error: Throwable) {
+    fun e(message: String, error: Throwable? = null) {
         Log.e(TAG, message, error)
     }
 

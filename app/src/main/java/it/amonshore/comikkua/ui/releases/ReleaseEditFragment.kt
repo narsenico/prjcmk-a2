@@ -45,6 +45,7 @@ class ReleaseEditFragment : Fragment() {
     ): View {
         _binding = FragmentReleaseEditBinding.inflate(layoutInflater, container, false)
         _helper = ReleaseEditFragmentHelper(
+            requireContext(),
             binding,
             parentFragmentManager,
             Glide.with(this)

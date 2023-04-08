@@ -1,9 +1,9 @@
 package it.amonshore.comikkua.data.comics
 
 import android.content.Context
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.data.ComikkuDatabase
-import it.amonshore.comikkua.ui.ImageHelper
+import it.amonshore.comikkua.ui.isValidImageFileName
 
 class ComicsRepository(private val context: Context) {
 
@@ -18,14 +18,17 @@ class ComicsRepository(private val context: Context) {
     }
 
     suspend fun deleteRemoved(tag: String) {
-        val removedIds = getRemovedComicsIds(tag)
+        val removedIds = _comicsDao.getRemovedComicsIds(tag)
         _comicsDao.deleteRemoved(tag)
+
+        // elimino anche le immagini
+        // mi fido del fatto che removedIds contenga esattamente i comics rimossi con l'istruzione sopra
         try {
-            // elimino anche le immagini
-            // mi fido del fatto che ids contenga esattamente i comics rimossi con l'istruzione sopra
-            ImageHelper.deleteImageFiles(context, *removedIds.toTypedArray())
+            context.filesDir
+                .listFiles { _, name -> isValidImageFileName(name, removedIds) }
+                ?.forEach { it.delete() }
         } catch (ex: Exception) {
-            LogHelper.e(ex, "There was an error deleting image files")
+            LogHelperKt.e("There was an error deleting image files", ex)
         }
     }
 
@@ -39,9 +42,6 @@ class ComicsRepository(private val context: Context) {
 
     suspend fun existsComicsWithName(name: String) =
         _comicsDao.getComicsByName(name) != null
-
-    suspend fun getRemovedComicsIds(tag: String): List<Long> =
-        _comicsDao.getRemovedComicsIds(tag)
 
     suspend fun getPublishers(): List<String> =
         _comicsDao.getPublishers()

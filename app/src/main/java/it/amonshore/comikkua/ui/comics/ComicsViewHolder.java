@@ -18,8 +18,8 @@ import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.comics.ComicsWithReleases;
 import it.amonshore.comikkua.data.release.Release;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.ImageHelper;
 import it.amonshore.comikkua.ui.IViewHolderWithDetails;
+import it.amonshore.comikkua.ui.ImageHelperKt;
 
 class ComicsViewHolder extends IViewHolderWithDetails<Long> {
     private final TextView mInitial;
@@ -106,7 +106,7 @@ class ComicsViewHolder extends IViewHolderWithDetails<Long> {
             mInitial.setText("");
             requestManager
                     .load(Uri.parse(comics.comics.image))
-                    .apply(ImageHelper.getGlideCircleOptions())
+                    .apply(ImageHelperKt.getInstance(context).getCircleOptions())
                     .into(new DrawableTextViewTarget(mInitial));
         } else {
             mInitial.setText(comics.comics.getInitial());

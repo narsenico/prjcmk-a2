@@ -26,7 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import it.amonshore.comikkua.Constants;
 import it.amonshore.comikkua.LogHelper;
 import it.amonshore.comikkua.data.web.AvailableComics;
-import it.amonshore.comikkua.ui.ImageHelper;
+import it.amonshore.comikkua.ui.ImageHelperKt;
 
 public class AvailableComicsAdapter extends ListAdapter<AvailableComics, AvailableComicsViewHolder> {
 
@@ -187,8 +187,9 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
 
             if (mRequestManager != null) {
                 // precarico le immagini dei comics
+                final int defaultSize = ImageHelperKt.getInstance(mRecyclerView.getContext()).getDefaultSize();
                 final FixedPreloadSizeProvider<AvailableComics> sizeProvider =
-                        new FixedPreloadSizeProvider<>(ImageHelper.getDefaultSize(), ImageHelper.getDefaultSize());
+                        new FixedPreloadSizeProvider<>(defaultSize, defaultSize);
                 final ComicsPreloadModelProvider modelProvider =
                         new ComicsPreloadModelProvider(adapter, mRequestManager);
                 final RecyclerViewPreloader<AvailableComics> preloader =
@@ -242,11 +243,11 @@ public class AvailableComicsAdapter extends ListAdapter<AvailableComics, Availab
     private static class ComicsPreloadModelProvider implements ListPreloader.PreloadModelProvider<AvailableComics> {
 
         private final AvailableComicsAdapter mAdapter;
-        private final RequestManager mRequestManager;
+//        private final RequestManager mRequestManager;
 
         ComicsPreloadModelProvider(@NonNull AvailableComicsAdapter adapter, @NonNull RequestManager requestManager) {
             mAdapter = adapter;
-            mRequestManager = requestManager;
+//            mRequestManager = requestManager;
         }
 
         @NonNull

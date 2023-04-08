@@ -8,7 +8,8 @@ import it.amonshore.comikkua.*
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
-import it.amonshore.comikkua.ui.ImageHelper
+import it.amonshore.comikkua.ui.isValidImageFileName
+import it.amonshore.comikkua.ui.newImageFileName
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -87,7 +88,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
         return try {
             val context: Context = getApplication()
             val tempImageFile = File(Uri.parse(comics.image).path!!)
-            val newImageFile = File(context.filesDir, ImageHelper.newImageFileName(comics.id))
+            val newImageFile = File(context.filesDir, comics.newImageFileName())
             tempImageFile.renameTo(newImageFile)
                 .orFail { UiComicsEditResultErrorType.ImageError }
                 .map { comics.apply { comics.image = Uri.fromFile(newImageFile).toString() } }
@@ -100,13 +101,9 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
     private fun deleteDirtyComicsImages(comics: Comics): ResultEx<Comics, UiComicsEditResultErrorType> =
         try {
             val context: Context = getApplication()
-            val comicsId = comics.id
             val currentImagePath = comics.image?.let { Uri.parse(it).path }
             context.filesDir.listFiles { _, name ->
-                ImageHelper.isValidImageFileName(
-                    name,
-                    comicsId
-                )
+                comics.isValidImageFileName(name)
             }?.filter { file ->
                 if (currentImagePath != null) file.toString() != currentImagePath else true
             }?.forEach { file ->

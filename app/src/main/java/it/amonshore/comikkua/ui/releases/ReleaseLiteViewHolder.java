@@ -22,7 +22,7 @@ import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.MultiRelease;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
-import it.amonshore.comikkua.ui.ImageHelper;
+import it.amonshore.comikkua.ui.ImageHelperKt;
 
 import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
 
@@ -92,7 +92,7 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         if (requestManager != null && item.comics.hasImage()) {
             requestManager
                     .load(Uri.parse(item.comics.image))
-                    .apply(ImageHelper.getGlideSquareOptions())
+                    .apply(ImageHelperKt.getInstance(itemView.getContext()).getSquareOptions())
                     .into(new DrawableTextViewTarget(mNumbers));
         } else {
             mNumbers.setBackgroundColor(itemView.getContext().getResources().getColor(R.color.colorItemBackgroundAlt));

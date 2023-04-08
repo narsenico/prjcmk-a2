@@ -65,9 +65,6 @@ class MainActivity : AppCompatActivity(),
 
         _viewModel.setupWorkers()
 
-        // preparo le opzioni per Glide da poter usare in tutta l'app
-        ImageHelper.prepareGlideOptions(this)
-
         if (BuildConfig.DEBUG) {
             Toast.makeText(
                 this,
