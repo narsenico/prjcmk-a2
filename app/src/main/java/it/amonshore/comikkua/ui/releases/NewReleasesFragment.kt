@@ -14,7 +14,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
@@ -29,10 +29,6 @@ import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.new_releases.recycler.layout"
 private val ACTION_MODE_NAME = NewReleasesFragment::class.java.simpleName + "_actionMode"
 
-/**
- * Vengono mostrate le release con un certo tag.
- * Utilizzata per mostrate all'utente le ultime release aggiunte a fronte di un aggiornamento automatico.
- */
 class NewReleasesFragment : Fragment() {
 
     private val _viewModel: NewReleasesViewModel by viewModels()
@@ -42,6 +38,10 @@ class NewReleasesFragment : Fragment() {
 
     private var _binding: FragmentNewReleasesBinding? = null
     private val binding get() = _binding!!
+
+    private val _tag: String by lazy {
+        NewReleasesFragmentArgs.fromBundle(requireArguments()).tag
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,12 +54,9 @@ class NewReleasesFragment : Fragment() {
         val actionModeController = createActionModeController()
         _adapter = createReleasesAdapter(actionModeController)
 
-        val tag = NewReleasesFragmentArgs.fromBundle(requireArguments()).tag
-        LogHelper.d("NEW RELEASES %s", tag)
-
-        _viewModel.getReleaseViewModelItems(tag)
+        _viewModel.getReleaseViewModelItems(_tag)
             .observe(viewLifecycleOwner) { items ->
-                LogHelper.d("release view model data changed size:${items.size}")
+                LogHelperKt.d { "release view model data changed size:${items.size}" }
                 _adapter.submitList(items)
             }
 
@@ -143,7 +140,7 @@ class NewReleasesFragment : Fragment() {
                         return true
                     }
                     R.id.deleteReleases -> {
-                        _viewModel.markAsRemoved(tracker.selection.toList())
+                        _viewModel.markAsRemovedUsingTag(tracker.selection.toList(), _tag)
                         tracker.clearSelection()
                         return true
                     }
@@ -262,16 +259,17 @@ class NewReleasesFragment : Fragment() {
                 .setTitle(release.comics.name)
                 .setMessage(getString(R.string.confirm_delete_multi_release, release.size()))
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    _viewModel.markAsRemoved(release.allReleaseId.toList())
+                    _viewModel.markAsRemovedUsingTag(release.allReleaseId.toList(), _tag)
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
         } else {
-            _viewModel.markAsRemoved(listOf(release.release.id))
+            _viewModel.markAsRemovedUsingTag(listOf(release.release.id), _tag)
         }
     }
 
     private fun onMarkedAsRemoved(count: Int, tag: String) {
+        assert(tag == _tag) { "Expecting removing tag was equals to tag from input" }
         _listener.handleUndo(
             resources.getQuantityString(R.plurals.release_deleted, count, count),
             tag

@@ -10,7 +10,6 @@ import it.amonshore.comikkua.data.release.*
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 sealed class UiNewReleasesEvent {
     data class Sharing(val releases: List<ComicsRelease>) : UiNewReleasesEvent()
@@ -46,8 +45,7 @@ class NewReleasesViewModel(application: Application) : AndroidViewModel(applicat
         _releaseRepository.toggleOrdered(releaseIds)
     }
 
-    fun markAsRemoved(ids: List<Long>) = viewModelScope.launch {
-        val tag = UUID.randomUUID().toString()
+    fun markAsRemovedUsingTag(ids: List<Long>, tag: String) = viewModelScope.launch {
         val count = _releaseRepository.markedAsRemoved(ids, tag)
         _events.postValue(UiNewReleasesEvent.MarkedAsRemoved(count, tag))
     }
