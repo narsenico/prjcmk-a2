@@ -3,6 +3,8 @@ package it.amonshore.comikkua
 import org.junit.Assert
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class LocalDateExtTest {
 
@@ -56,5 +58,47 @@ class LocalDateExtTest {
 
         // Assert
         Assert.assertEquals(expected, formatted)
+    }
+
+    @Test
+    fun calc_next_morning() {
+        // Arrange
+        val start = LocalDateTime.of(2001, 1, 1, 6, 0, 0)
+        val time = LocalTime.of(8,0,0)
+        val end = LocalDateTime.of(2001, 1, 1, 8, 0, 0)
+
+        // Act
+        val calc = start.next(time)
+
+        //
+        Assert.assertEquals(end, calc)
+    }
+
+    @Test
+    fun calc_next_tomorrow_morning() {
+        // Arrange
+        val start = LocalDateTime.of(2001, 1, 1, 10, 0, 0)
+        val time = LocalTime.of(8,0,0)
+        val end = LocalDateTime.of(2001, 1, 2, 8, 0, 0)
+
+        // Act
+        val calc = start.next(time)
+
+        //
+        Assert.assertEquals(end, calc)
+    }
+
+    @Test
+    fun calc_next_same_time() {
+        // Arrange
+        val start = LocalDateTime.of(2001, 1, 1, 8, 0, 0)
+        val time = LocalTime.of(8,0,0)
+        val end = LocalDateTime.of(2001, 1, 1, 8, 0, 0)
+
+        // Act
+        val calc = start.next(time)
+
+        //
+        Assert.assertEquals(end, calc)
     }
 }

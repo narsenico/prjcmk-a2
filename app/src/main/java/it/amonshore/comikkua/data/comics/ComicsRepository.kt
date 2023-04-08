@@ -5,7 +5,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.ui.ImageHelper
 
-class ComicsRepositoryKt(private val context: Context) {
+class ComicsRepository(private val context: Context) {
 
     private val _comicsDao = ComikkuDatabase.getDatabase(context).comicsDaoKt()
 

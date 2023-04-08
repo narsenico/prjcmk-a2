@@ -1,6 +1,8 @@
 package it.amonshore.comikkua
 
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 fun LocalDate.atFirstDayOfWeek(): LocalDate {
@@ -17,3 +19,12 @@ private val yearMonthDayFormatter by lazy {
 }
 
 fun LocalDate.toYearMonthDay(): String = format(yearMonthDayFormatter)
+
+fun LocalDateTime.next(time: LocalTime): LocalDateTime {
+    val thisTime = toLocalTime()
+    if (thisTime.isAfter(time)) {
+        return plusDays(1).with(time)
+    }
+
+    return with(time)
+}

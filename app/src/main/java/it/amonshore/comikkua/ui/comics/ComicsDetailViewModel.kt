@@ -5,11 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.ComicsReleaseJoinType
-import it.amonshore.comikkua.data.release.ReleaseRepositoryKt
+import it.amonshore.comikkua.data.release.ReleaseRepository
 import it.amonshore.comikkua.data.release.toReleaseViewModelItems
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
@@ -24,8 +24,8 @@ sealed class UiComicsDetailEvent {
 
 class ComicsDetailViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _comicsRepository = ComicsRepositoryKt(application)
-    private val _releaseRepository = ReleaseRepositoryKt(application)
+    private val _comicsRepository = ComicsRepository(application)
+    private val _releaseRepository = ReleaseRepository(application)
     private val _events = SingleLiveEvent<UiComicsDetailEvent>()
 
     val events: LiveData<UiComicsDetailEvent> = _events

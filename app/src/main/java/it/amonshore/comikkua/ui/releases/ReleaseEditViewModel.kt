@@ -2,10 +2,10 @@ package it.amonshore.comikkua.ui.releases
 
 import android.app.Application
 import androidx.lifecycle.*
-import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
-import it.amonshore.comikkua.data.release.ReleaseRepositoryKt
+import it.amonshore.comikkua.data.release.ReleaseRepository
 import kotlinx.coroutines.launch
 
 data class ComicsAndRelease(val comics: ComicsWithReleases, val release: Release)
@@ -16,8 +16,8 @@ sealed class UiReleaseEditResult {
 
 class ReleaseEditViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _comicsRepository = ComicsRepositoryKt(application)
-    private val _releaseRepository = ReleaseRepositoryKt(application)
+    private val _comicsRepository = ComicsRepository(application)
+    private val _releaseRepository = ReleaseRepository(application)
     private val _result = MutableLiveData<UiReleaseEditResult>()
 
     val result: LiveData<UiReleaseEditResult> = _result

@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -15,21 +16,18 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.preference.PreferenceManager
-import androidx.work.WorkManager
 import com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback
 import com.google.android.material.snackbar.Snackbar
 import it.amonshore.comikkua.BuildConfig
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.Utility
-import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.databinding.ActivityMainBinding
-import it.amonshore.comikkua.workers.ReleaseNotificationWorker
-import it.amonshore.comikkua.workers.UpdateReleasesWorker
 
 class MainActivity : AppCompatActivity(),
     OnNavigationFragmentListener,
     NavController.OnDestinationChangedListener {
+
+    private val _viewModel: MainViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var _navController: NavController
@@ -66,25 +64,15 @@ class MainActivity : AppCompatActivity(),
             appBarConfiguration
         )
 
-        if (BuildConfig.DEBUG && BuildConfig.VERSION_CODE < 2) {
-            WorkManager.getInstance(this).cancelAllWork()
-        }
-
-        // preparo il worker per le notifiche sulle nuove uscite
-        ReleaseNotificationWorker.setup(this, this)
-        // preparo il worker per aggiornare le uscite da remoto
-        UpdateReleasesWorker.setup(this, this)
+        _viewModel.setupWorkers()
 
         // preparo le opzioni per Glide da poter usare in tutta l'app
         ImageHelper.prepareGlideOptions(this)
 
         if (BuildConfig.DEBUG) {
             Toast.makeText(
-                this, String.format(
-                    "%s (%s) - %s",
-                    BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE,
-                    CmkWebRepository.getProjectId()
-                ),
+                this,
+                "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -150,15 +138,10 @@ class MainActivity : AppCompatActivity(),
         destination: NavDestination,
         arguments: Bundle?
     ) {
-        LogHelper.d("onDestinationChanged %s (keyboard is closed here)", destination.label)
-        // imposto il sottotitolo che viene passato come argomento della destinazione
-        // i singoli fragment possono sovrascrivere il default chiamando direttamente onSubtitleChanged
+        LogHelperKt.d { "onDestinationChanged ${destination.label} (keyboard is closed here)" }
         supportActionBar?.setSubtitle(extractSubtitle(destination, arguments))
-        // chiudo sempre la tasteira eventualmente aperta
-        Utility.hideKeyboard(window.decorView)
-        // chiudo l'eventuale actionMode eventualmente aperta su richiesta del fragment
+        window.hideKeyboard()
         _actionMode?.finish()
-        // chiudo l'eventuale snackbar
         dismissSnackBar()
         binding.bottomNav.visibility = if (mustHideNavigation(destination, arguments)) {
             View.GONE

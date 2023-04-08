@@ -1,5 +1,7 @@
 package it.amonshore.comikkua.data.release
 
+import it.amonshore.comikkua.data.comics.Comics
+
 enum class ComicsReleaseJoinType(val value: Int) {
     None(0),
     MissingReleases(MissingRelease.TYPE)
@@ -81,3 +83,6 @@ private fun canBeGrouped(
     cr2: ComicsRelease
 ): Boolean =
     cr1.type == joinType.value && cr2.type == joinType.value && cr1.comics.id == cr2.comics.id
+
+operator fun ComicsRelease.component1(): Comics = comics
+operator fun ComicsRelease.component2(): Release = release

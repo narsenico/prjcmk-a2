@@ -4,10 +4,10 @@ import android.app.Application
 import androidx.lifecycle.*
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.containsAll
-import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.toComics
 import it.amonshore.comikkua.data.web.AvailableComics
-import it.amonshore.comikkua.data.web.CmkWebRepositoryKt
+import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.splitToWords
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -18,8 +18,8 @@ private const val FILTER_DEBOUNCE = 300L;
 
 class ComicsSelectorViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _cmkWebRepository = CmkWebRepositoryKt(application)
-    private val _comicsRepository = ComicsRepositoryKt(application)
+    private val _cmkWebRepository = CmkWebRepository(application)
+    private val _comicsRepository = ComicsRepository(application)
     private val _filter = MutableLiveData<String>()
 
     private var _lastFilter: String = ""

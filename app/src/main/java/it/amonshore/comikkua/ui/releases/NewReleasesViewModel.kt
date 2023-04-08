@@ -18,7 +18,7 @@ sealed class UiNewReleasesEvent {
 
 class NewReleasesViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _releaseRepository = ReleaseRepositoryKt(application)
+    private val _releaseRepository = ReleaseRepository(application)
     private val _events = SingleLiveEvent<UiNewReleasesEvent>()
 
     val states = Bundle()

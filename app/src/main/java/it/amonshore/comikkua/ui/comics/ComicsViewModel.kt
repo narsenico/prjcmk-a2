@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.lifecycle.*
 import androidx.paging.*
 import it.amonshore.comikkua.LogHelper
-import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
@@ -20,9 +20,9 @@ sealed class UiComicsEvent {
 }
 
 @OptIn(FlowPreview::class)
-class ComicsViewModelKt(application: Application) : AndroidViewModel(application) {
+class ComicsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _repository = ComicsRepositoryKt(application)
+    private val _repository = ComicsRepository(application)
     private val _filter = MutableLiveData<String>()
     private val _events = SingleLiveEvent<UiComicsEvent>()
     private var _lastFilter: String = ""
@@ -84,7 +84,7 @@ class ComicsViewModelKt(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Notifca l'avvenuta operazione inviando [UiComicsEvent.MarkedAsRemoved] a [ComicsViewModelKt.events].
+     * Notifca l'avvenuta operazione inviando [UiComicsEvent.MarkedAsRemoved] a [ComicsViewModel.events].
      */
     fun markAsRemoved(comicsIds: List<Long>) = viewModelScope.launch {
         // prima elimino eventuali comics ancora in fase di undo

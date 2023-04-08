@@ -1,6 +1,6 @@
 package it.amonshore.comikkua.data.release
 
-import android.app.Application
+import android.content.Context
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
@@ -17,9 +17,9 @@ private const val ONE_DAY: Long = 86_400_000L
 
 data class NewReleasesCountAndTag(val count: Int, val tag: String)
 
-class ReleaseRepositoryKt(application: Application) {
+class ReleaseRepository(context: Context) {
 
-    private val _database = ComikkuDatabase.getDatabase(application)
+    private val _database = ComikkuDatabase.getDatabase(context)
     private val _releaseDao = _database.releaseDaoKt()
     private val _comicsDao by lazy { _database.comicsDaoKt() }
     private val _service by lazy { CmkWebService.create() }
@@ -28,6 +28,9 @@ class ReleaseRepositoryKt(application: Application) {
         _releaseDao.getComicsReleasesByComicsIdFLow(comicsId)
 
     suspend fun getComicsReleases(ids: List<Long>) = _releaseDao.getComicsReleases(ids)
+
+    suspend fun getNotPurchasedComicsReleases(releaseDateFrom: LocalDate, releaseDateTo: LocalDate) =
+        _releaseDao.getNotPurchasedComicsReleases(releaseDateFrom.toYearMonthDay(), releaseDateTo.toYearMonthDay())
 
     fun getNotableComicsReleasesFlow(): Flow<List<ComicsRelease>> {
         val today = LocalDate.now()

@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.*
 import it.amonshore.comikkua.*
 import it.amonshore.comikkua.data.comics.Comics
-import it.amonshore.comikkua.data.comics.ComicsRepositoryKt
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.ui.ImageHelper
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ sealed class UiComicsEditResult {
 
 class ComicsEditViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _comicsRepository = ComicsRepositoryKt(application)
+    private val _comicsRepository = ComicsRepository(application)
     private val _result = MutableLiveData<UiComicsEditResult>()
 
     val result: LiveData<UiComicsEditResult> = _result

@@ -33,7 +33,7 @@ private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics.recycler.layout
 
 class ComicsFragment : Fragment() {
 
-    private val _viewModel: ComicsViewModelKt by viewModels()
+    private val _viewModel: ComicsViewModel by viewModels()
 
     private lateinit var _listener: OnNavigationFragmentListener
     private lateinit var _adapter: PagedListComicsAdapter

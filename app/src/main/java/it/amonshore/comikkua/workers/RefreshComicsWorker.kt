@@ -5,7 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import it.amonshore.comikkua.LogHelper
-import it.amonshore.comikkua.data.web.CmkWebRepositoryKt
+import it.amonshore.comikkua.data.web.CmkWebRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -25,7 +25,7 @@ class RefreshComicsWorker(appContext: Context, params: WorkerParameters) : Corou
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            val cmkWebRepository = CmkWebRepositoryKt(applicationContext)
+            val cmkWebRepository = CmkWebRepository(applicationContext)
             val count = cmkWebRepository.refreshAvailableComics()
             val outData = Data.Builder().putInt(REFRESHING_COUNT, count).build();
             LogHelper.i("Available comics refreshed count=$count")

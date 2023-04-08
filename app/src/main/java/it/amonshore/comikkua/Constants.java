@@ -36,4 +36,5 @@ public final class Constants {
     public static final int VIEWHOLDER_ACTION_CLICK = 406;
     public static final int VIEWHOLDER_ACTION_FOLLOW = 121;
 
+    public final static String KEY_AUTO_UPDATE_ENABLED = "auto_update_enabled";
 }

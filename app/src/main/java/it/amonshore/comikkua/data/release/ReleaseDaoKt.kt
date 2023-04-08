@@ -40,6 +40,9 @@ interface ReleaseDaoKt {
     @Query("SELECT 0 as type, * FROM vComicsReleases WHERE rid in (:ids)")
     suspend fun getComicsReleases(ids: List<Long>): List<ComicsRelease>
 
+    @Query("SELECT ${DatedRelease.TYPE} as type, * FROM vDatedReleases WHERE rpurchased = 0 AND rdate BETWEEN :startDate AND :endDate")
+    suspend fun getNotPurchasedComicsReleases(@Size(8) startDate: String, @Size(8) endDate: String): List<ComicsRelease>
+
     @Query(
         """SELECT ${LostRelease.TYPE} as type, * 
            FROM vLostReleases 

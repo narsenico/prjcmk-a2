@@ -4,7 +4,7 @@ import android.content.Context
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.services.CmkWebService
 
-class CmkWebRepositoryKt(context: Context) {
+class CmkWebRepository(context: Context) {
 
     private val _cmkWebDao = ComikkuDatabase.getDatabase(context).cmkWebDaoKt()
     private val _service = CmkWebService.create()
