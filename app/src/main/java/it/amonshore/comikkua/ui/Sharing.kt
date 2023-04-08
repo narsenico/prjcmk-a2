@@ -1,141 +1,181 @@
-package it.amonshore.comikkua.ui;
+package it.amonshore.comikkua.ui
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import it.amonshore.comikkua.DateFormatterHelper
+import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.comics.Comics
+import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.MultiRelease
+import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.uriEncode
 
-import java.util.List;
+fun Comics.toSharable(): String =
+    arrayOf(name, publisher, authors)
+        .filter { !it.isNullOrBlank() }
+        .joinToString(separator = " - ")
 
-import androidx.annotation.NonNull;
-import it.amonshore.comikkua.DateFormatterHelper;
-import it.amonshore.comikkua.R;
-import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.comics.Comics;
-import it.amonshore.comikkua.data.release.ComicsRelease;
-import it.amonshore.comikkua.data.release.MultiRelease;
-import it.amonshore.comikkua.data.release.Release;
-
-public class ShareHelper {
-
-    private static final String TEXT_PLAIN = "text/plain";
-
-    public static String formatComics(@NonNull Comics comics) {
-        return Utility.join(" - ", true, comics.name, comics.publisher, comics.authors);
+fun Pair<Comics, Release>.toSharable(context: Context): String {
+    val comics = first
+    val release = second
+    if (release.hasDate()) {
+        return context.getString(
+            R.string.share_release,
+            comics.name,
+            release.number,
+            DateFormatterHelper.toHumanReadable(
+                context,
+                release.date,
+                DateFormatterHelper.STYLE_SHORT
+            ),
+            if (release.hasNotes()) release.notes else comics.notes
+        )
     }
 
-    public static String formatRelease(@NonNull Context context, @NonNull ComicsRelease release) {
-        return formatRelease(context, release.comics, release.release);
-    }
+    return context.getString(
+        R.string.share_release_nodate,
+        comics.name,
+        release.number,
+        if (release.hasNotes()) release.notes else comics.notes
+    )
+}
 
-    public static String formatRelease(@NonNull Context context, @NonNull Comics comics, @NonNull Release release) {
-        if (release.hasDate()) {
-            return context.getString(R.string.share_release,
-                    comics.name,
-                    release.number,
-                    DateFormatterHelper.toHumanReadable(context, release.date, DateFormatterHelper.STYLE_SHORT),
-                    release.hasNotes() ? release.notes : comics.notes);
-        } else {
-            return context.getString(R.string.share_release_nodate,
-                    comics.name,
-                    release.number,
-                    release.hasNotes() ? release.notes : comics.notes);
+fun ComicsRelease.toSharable(context: Context): String {
+    val cr = comics to release
+    return cr.toSharable(context)
+}
+
+fun Activity.share(comics: Comics) {
+    shareText(this, comics.toSharable())
+}
+
+fun Activity.share(release: MultiRelease) {
+    val rows = mutableListOf<String>()
+    rows.add(release.toSharable(this))
+    for (other in release.otherReleases) {
+        rows.add((release.comics to other).toSharable(this))
+    }
+    shareText(this, rows)
+}
+
+fun Activity.shareRelease(release: ComicsRelease) {
+    if (release is MultiRelease) {
+        share(release)
+    } else {
+        shareText(this, release.toSharable(this))
+    }
+}
+
+fun Activity.share(releases: List<ComicsRelease>) {
+    if (releases.isNotEmpty()) {
+        val rows = releases.map { it.toSharable(this) }
+        shareText(this, rows)
+    }
+}
+
+fun Activity.shareOnGoogle(comics: Comics) {
+    shareOn(this, comics, "https://www.google.com/search?q=%s&ie=UTF-8")
+}
+
+fun Activity.shareOnGoogle(release: ComicsRelease) {
+    shareOn(this, release, "https://www.google.com/search?q=%s&ie=UTF-8")
+}
+
+fun Activity.shareOnStarShop(comics: Comics) {
+    shareOn(
+        this,
+        comics,
+        "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and"
+    )
+}
+
+fun Activity.shareOnStarShop(release: ComicsRelease) {
+    shareOn(
+        this,
+        release,
+        "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and"
+    )
+}
+
+fun Activity.shareOnAmazon(comics: Comics) {
+    shareOn(this, comics, "https://www.amazon.it/s?k=%s&_encoding=UTF8")
+}
+
+fun Activity.shareOnAmazon(release: ComicsRelease) {
+    shareOn(this, release, "https://www.amazon.it/s?k=%s&_encoding=UTF8")
+}
+
+fun Activity.shareOnPopStore(comics: Comics) {
+    shareOn(this, comics, "https://popstore.it/cerca?controller=search&search_query=%s")
+}
+
+fun Activity.shareOnPopStore(release: ComicsRelease) {
+    shareOn(this, release, "https://popstore.it/cerca?controller=search&search_query=%s")
+}
+
+private fun shareOn(activity: Activity, comics: Comics, format: String) {
+    val encoded =
+        arrayOf(comics.publisher, comics.name).filter { !it.isNullOrBlank() }
+            .joinToString(separator = " ")
+            .uriEncode()
+    val searchUrl = String.format(format, encoded)
+
+    val intent = Intent().apply {
+        action = Intent.ACTION_VIEW
+        data = Uri.parse(searchUrl)
+    }
+    activity.startActivity(intent)
+}
+
+private fun shareOn(activity: Activity, release: ComicsRelease, format: String) {
+    val encoded = arrayOf(
+        release.comics.publisher,
+        release.comics.name,
+        release.release.number.toString()
+    ).filter { !it.isNullOrBlank() }.joinToString(separator = " ").uriEncode()
+    val searchUrl = String.format(format, encoded)
+
+    val intent = Intent().apply {
+        action = Intent.ACTION_VIEW
+        data = Uri.parse(searchUrl)
+    }
+    activity.startActivity(intent)
+}
+
+private const val TEXT_PLAIN = "text/plain"
+
+private fun shareText(activity: Activity, row: String) {
+    if (row.isNotBlank()) {
+        val intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = TEXT_PLAIN
+            putExtra(Intent.EXTRA_TEXT, row)
         }
-    }
 
-    public static void shareComics(@NonNull Activity activity, @NonNull Comics comics) {
-        shareText(activity, formatComics(comics));
+        activity.startActivity(
+            Intent.createChooser(
+                intent,
+                activity.getText(R.string.share_chooser_title)
+            )
+        )
     }
+}
 
-    public static void shareRelease(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        if (release instanceof MultiRelease) {
-            shareRelease(activity, (MultiRelease) release);
-        } else {
-            shareText(activity, formatRelease(activity, release.comics, release.release));
+private fun shareText(activity: Activity, rows: List<String>) {
+    if (rows.isNotEmpty()) {
+        val intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = TEXT_PLAIN
+            putExtra(Intent.EXTRA_TEXT, rows.joinToString("\n"))
         }
-    }
 
-    public static void shareRelease(@NonNull Activity activity, @NonNull MultiRelease release) {
-        final String[] rows = new String[release.size()];
-        rows[0] = formatRelease(activity, release.comics, release.release);
-        for (int ii = 1; ii < rows.length; ii++) {
-            rows[ii] = formatRelease(activity, release.comics, release.otherReleases.get(ii - 1));
-        }
-        shareText(activity, rows);
-    }
-
-    public static void shareReleases(@NonNull Activity activity, @NonNull List<ComicsRelease> releases) {
-        if (!releases.isEmpty()) {
-            final String[] rows = new String[releases.size()];
-            for (int ii = 0; ii < rows.length; ii++) {
-                rows[ii] = formatRelease(activity, releases.get(ii).comics, releases.get(ii).release);
-            }
-            shareText(activity, rows);
-        }
-    }
-
-    public static void shareText(@NonNull Activity activity, @NonNull String... rows) {
-        if (rows.length > 0) {
-            final Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_TEXT, Utility.join("\n", false, rows));
-            intent.setType(TEXT_PLAIN);
-            activity.startActivity(Intent.createChooser(intent, activity.getText(R.string.share_chooser_title)));
-        }
-    }
-
-    public static void shareOn(@NonNull Activity activity, @NonNull String format, @NonNull Comics comics) {
-        final String searchUrl = String.format(format,
-                Uri.encode(Utility.join(" ", true,
-                        comics.publisher,
-                        comics.name)));
-        final Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(searchUrl));
-        activity.startActivity(intent);
-    }
-
-    public static void shareOn(@NonNull Activity activity, @NonNull String format, @NonNull ComicsRelease release) {
-        final String searchUrl = String.format(format,
-                Uri.encode(Utility.join(" ", true,
-                        release.comics.publisher,
-                        release.comics.name,
-                        Integer.toString(release.release.number))));
-        final Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(searchUrl));
-        activity.startActivity(intent);
-    }
-
-    public static void shareOnGoogle(@NonNull Activity activity, @NonNull Comics comics) {
-        shareOn(activity, "https://www.google.com/search?q=%s&ie=UTF-8", comics);
-    }
-
-    public static void shareOnGoogle(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        shareOn(activity, "https://www.google.com/search?q=%s&ie=UTF-8", release);
-    }
-
-    public static void shareOnStarShop(@NonNull Activity activity, @NonNull Comics comics) {
-        shareOn(activity, "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and", comics);
-    }
-
-    public static void shareOnStarShop(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        shareOn(activity, "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and", release);
-    }
-
-    public static void shareOnAmazon(@NonNull Activity activity, @NonNull Comics comics) {
-        shareOn(activity, "https://www.amazon.it/s?k=%s&_encoding=UTF8", comics);
-    }
-
-    public static void shareOnAmazon(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        shareOn(activity, "https://www.amazon.it/s?k=%s&_encoding=UTF8", release);
-    }
-
-    public static void shareOnPopStore(@NonNull Activity activity, @NonNull Comics comics) {
-        shareOn(activity, "https://popstore.it/cerca?controller=search&search_query=%s", comics);
-    }
-
-    public static void shareOnPopStore(@NonNull Activity activity, @NonNull ComicsRelease release) {
-        shareOn(activity, "https://popstore.it/cerca?controller=search&search_query=%s", release);
+        activity.startActivity(
+            Intent.createChooser(
+                intent,
+                activity.getText(R.string.share_chooser_title)
+            )
+        )
     }
 }

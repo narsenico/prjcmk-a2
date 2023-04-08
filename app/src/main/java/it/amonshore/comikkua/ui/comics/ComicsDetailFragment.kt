@@ -328,10 +328,7 @@ class ComicsDetailFragment : Fragment() {
     }
 
     private fun shareReleases(releases: List<ComicsRelease>) {
-        ShareHelper.shareReleases(
-            requireActivity(),
-            releases
-        )
+        requireActivity().share(releases)
     }
 
     private fun onMarkedAsRemoved(count: Int, tag: String) {

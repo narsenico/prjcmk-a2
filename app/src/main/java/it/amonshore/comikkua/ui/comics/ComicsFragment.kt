@@ -21,10 +21,7 @@ import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.ActionModeController
-import it.amonshore.comikkua.ui.BottomSheetDialogHelper
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener
-import it.amonshore.comikkua.ui.ShareHelper
+import it.amonshore.comikkua.ui.*
 
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query"
 private val ACTION_MODE_NAME = ComicsFragment::class.java.simpleName + "_actionMode"
@@ -172,30 +169,30 @@ class ComicsFragment : Fragment() {
             override fun onComicsMenuSelected(comics: ComicsWithReleases) {
                 BottomSheetDialogHelper.show(
                     requireActivity(), R.layout.bottomsheet_comics,
-                    ShareHelper.formatComics(comics.comics)
+                    comics.comics.toSharable()
                 ) { id: Int ->
                     when (id) {
                         R.id.createNewRelease -> {
                             openNewRelease(binding.root, comics)
                         }
                         R.id.share -> {
-                            ShareHelper.shareComics(requireActivity(), comics.comics)
+                            requireActivity().share(comics.comics)
                         }
                         R.id.deleteComics -> {
                             val ids = listOf(comics.comics.id)
                             _viewModel.markAsRemoved(ids)
                         }
                         R.id.search_starshop -> {
-                            ShareHelper.shareOnStarShop(requireActivity(), comics.comics)
+                            requireActivity().shareOnStarShop(comics.comics)
                         }
                         R.id.search_amazon -> {
-                            ShareHelper.shareOnAmazon(requireActivity(), comics.comics)
+                            requireActivity().shareOnAmazon(comics.comics)
                         }
                         R.id.search_popstore -> {
-                            ShareHelper.shareOnPopStore(requireActivity(), comics.comics)
+                            requireActivity().shareOnPopStore(comics.comics)
                         }
                         R.id.search_google -> {
-                            ShareHelper.shareOnGoogle(requireActivity(), comics.comics)
+                            requireActivity().shareOnGoogle(comics.comics)
                         }
                     }
                 }
@@ -271,6 +268,9 @@ class ComicsFragment : Fragment() {
     }
 
     private fun onMarkedAsRemoved(count: Int, tag: String) {
-        _listener.handleUndo(resources.getQuantityString(R.plurals.comics_deleted, count, count), tag)
+        _listener.handleUndo(
+            resources.getQuantityString(R.plurals.comics_deleted, count, count),
+            tag
+        )
     }
 }

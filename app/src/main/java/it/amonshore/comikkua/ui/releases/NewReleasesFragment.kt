@@ -20,10 +20,7 @@ import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.databinding.FragmentNewReleasesBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.ActionModeController
-import it.amonshore.comikkua.ui.BottomSheetDialogHelper
-import it.amonshore.comikkua.ui.OnNavigationFragmentListener
-import it.amonshore.comikkua.ui.ShareHelper
+import it.amonshore.comikkua.ui.*
 import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.new_releases.recycler.layout"
@@ -202,29 +199,29 @@ class NewReleasesFragment : Fragment() {
             override fun onReleaseMenuSelected(release: ComicsRelease) {
                 BottomSheetDialogHelper.show(
                     requireActivity(), R.layout.bottomsheet_release,
-                    ShareHelper.formatRelease(requireContext(), release)
+                    release.toSharable(requireContext())
                 ) { id: Int ->
                     when (id) {
                         R.id.gotoComics -> {
                             openComicsDetail(binding.root, release)
                         }
                         R.id.share -> {
-                            ShareHelper.shareRelease(requireActivity(), release)
+                            requireActivity().shareRelease(release)
                         }
                         R.id.deleteRelease -> {
                             deleteRelease(release)
                         }
                         R.id.search_starshop -> {
-                            ShareHelper.shareOnStarShop(requireActivity(), release)
+                            requireActivity().shareOnStarShop(release)
                         }
                         R.id.search_amazon -> {
-                            ShareHelper.shareOnAmazon(requireActivity(), release)
+                            requireActivity().shareOnAmazon(release)
                         }
                         R.id.search_popstore -> {
-                            ShareHelper.shareOnPopStore(requireActivity(), release)
+                            requireActivity().shareOnPopStore(release)
                         }
                         R.id.search_google -> {
-                            ShareHelper.shareOnGoogle(requireActivity(), release)
+                            requireActivity().shareOnGoogle(release)
                         }
                     }
                 }
@@ -247,10 +244,7 @@ class NewReleasesFragment : Fragment() {
     }
 
     private fun shareReleases(releases: List<ComicsRelease>) {
-        ShareHelper.shareReleases(
-            requireActivity(),
-            releases
-        )
+        requireActivity().share(releases)
     }
 
     private fun deleteRelease(release: ComicsRelease) {
