@@ -16,10 +16,4 @@
         android:title="@string/menu_export_backup"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/fixImages"
-        android:orderInCategory="300"
-        android:title="Fix images"
-        app:showAsAction="never" />
-
 </menu>

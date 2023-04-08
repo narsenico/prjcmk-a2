@@ -75,29 +75,6 @@ public class BackupHelper {
         mReleaseDao = db.releaseDao();
     }
 
-//    public int importFromAssets(@NonNull Context context, @NonNull String fileName, boolean clearData) {
-//        final AssetManager assetManager = context.getAssets();
-//        InputStream stream = null;
-//        try {
-//            stream = assetManager.open(fileName, AssetManager.ACCESS_STREAMING);
-//            final int count = importFromStream(context, stream, clearData);
-//            if (clearData) {
-//                clearCachedData(context);
-//            }
-//            return count;
-//        } catch (Exception ex) {
-//            LogHelper.e("Importing backup from assets", ex);
-//            if (stream != null) {
-//                try {
-//                    stream.close();
-//                } catch (IOException ioex) {
-//                    LogHelper.e("Closing stream", ioex);
-//                }
-//            }
-//            return RETURN_ERR;
-//        }
-//    }
-
     /**
      * @param context   contesto
      * @param file      file da caricare, in formato JSON

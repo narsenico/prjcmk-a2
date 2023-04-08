@@ -10,6 +10,7 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import it.amonshore.comikkua.Exclude;
 import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.web.CmkWebRelease;
 
@@ -35,6 +36,7 @@ public class Release {
     public String notes;
     public long lastUpdate;
     public boolean removed;
+    @Exclude
     public String tag;
 
     public boolean hasNotes() {

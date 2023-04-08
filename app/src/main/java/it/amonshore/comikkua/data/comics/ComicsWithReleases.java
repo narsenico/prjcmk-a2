@@ -6,6 +6,7 @@ import org.w3c.dom.Text;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
@@ -153,6 +154,7 @@ public class ComicsWithReleases {
      *
      * @return nuova istanza vuota
      */
+    @NonNull
     public static ComicsWithReleases createNew() {
         final ComicsWithReleases cwr = new ComicsWithReleases();
         cwr.comics = Comics.create("");

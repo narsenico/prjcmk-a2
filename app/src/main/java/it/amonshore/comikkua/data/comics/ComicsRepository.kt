@@ -49,6 +49,8 @@ class ComicsRepository(private val context: Context) {
     suspend fun getAuthors(): List<String> =
         _comicsDao.getAuthors()
 
+    suspend fun getAllComicsWithReleases() = _comicsDao.getAllComicsWithReleases()
+
     fun getComicsWithReleasesFlow(id: Long) =
         _comicsDao.getComicsWithReleasesFlow(id)
 

@@ -3,9 +3,20 @@ package it.amonshore.comikkua.ui
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.workers.BackupWorker
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -26,41 +37,55 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        setupMenu()
-//    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupMenu()
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_backup, menu)
+                menu.findItem(R.id.settings).isVisible = false
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.importBackup -> {
+                        importBackup()
+                        true
+                    }
+                    R.id.exportBackup -> {
+                        exportBackup()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    fun importBackup() {
+        TODO()
+    }
+
+    fun exportBackup() {
+        val workManager = WorkManager.getInstance(requireContext())
+        val request = OneTimeWorkRequest.Builder(BackupWorker::class.java)
+            .build()
+        workManager.enqueueUniqueWork(
+            BackupWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+
+        // TODO: mostrare risultato export (ci mette poco, non c'è bisogno di progress bar)
+//        workManager.getWorkInfoByIdLiveData(request.id).observe(viewLifecycleOwner) {
 //
-//    private fun setupMenu() {
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.menu_backup, menu)
-//
-////                        // nascondo il menu settings
-////        menu.findItem(R.id.settings).isVisible = false
-//            }
-//
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//return when (menuItem.itemId) {
-//            R.id.importBackup -> {
-//                importBackup()
-//                true
-//            }
-//            R.id.exportBackup -> {
-//                exportBackup()
-//                true
-//            }
-//            R.id.fixImages -> {
-//                fixImages()
-//                true
-//            }
-//            else -> false
 //        }
-//            }
-//
-//        })
-//    }
+    }
 //
 //    override fun onRequestPermissionsResult(
 //        requestCode: Int,
@@ -199,98 +224,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 //        }
 //    }
 //
-//    private fun fixImages() {
-//        val comicsViewModel = ViewModelProvider(requireActivity())
-//            .get(ComicsViewModel::class.java)
-//        val context = requireContext()
-//        LiveDataEx.observeOnce(comicsViewModel.comics, this) { list: List<Comics> ->
-//            for (comics in list) {
-//                if (comics.hasImage() && !ImageHelper.isValidImageFileName(
-//                        comics.image,
-//                        comics.id
-//                    )
-//                ) {
-//                    val srcFile = File(Uri.parse(comics.image).path)
-//                    val dstFile = File(context.filesDir, ImageHelper.newImageFileName(comics.id))
-//                    LogHelper.d("======> move file from '%s' to '%s'", srcFile, dstFile)
-//                    if (srcFile.renameTo(dstFile)) {
-//                        comics.image = Uri.fromFile(dstFile).toString()
-//                        comicsViewModel.update(comics)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private class ImportAsyncTask internal constructor(context: Context, importer: BackupHelper) :
-//        AsyncTask<File?, Void?, Int>() {
-//        // TODO: mostrare dialog con barra progressione (infinita)
-//        private val mWeakContext: WeakReference<Context>
-//        private val mHeper: BackupHelper
-//
-//        init {
-//            mWeakContext = WeakReference(context)
-//            mHeper = importer
-//        }
-//
-//        protected override fun doInBackground(vararg files: File): Int {
-//            val context = mWeakContext.get()
-//            return if (context != null) {
-//                mHeper.importFromFile(context, files[0], true)
-//            } else BackupHelper.RETURN_ERR
-//        }
-//
-//        override fun onPostExecute(count: Int) {
-//            val context = mWeakContext.get()
-//            if (context != null) {
-//                if (count == BackupHelper.RETURN_ERR) {
-//                    Toast.makeText(
-//                        context,
-//                        "There was a problem importing data from file.",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                } else {
-//                    Toast.makeText(context, "Import completed.", Toast.LENGTH_LONG).show()
-//                }
-//            }
-//        }
-//    }
-//
-//    private class ExportAsyncTask internal constructor(context: Context, importer: BackupHelper) :
-//        AsyncTask<File?, Void?, Int>() {
-//        // TODO: mostrare dialog con barra progressione (infinita)
-//        private val mWeakContext: WeakReference<Context>
-//        private val mHelper: BackupHelper
-//
-//        init {
-//            mWeakContext = WeakReference(context)
-//            mHelper = importer
-//        }
-//
-//        protected override fun doInBackground(vararg files: File): Int {
-//            val context = mWeakContext.get()
-//            return if (context == null) {
-//                BackupHelper.RETURN_ERR
-//            } else {
-//                mHelper.exportToFile(context, files[0])
-//            }
-//        }
-//
-//        override fun onPostExecute(count: Int) {
-//            val context = mWeakContext.get()
-//            if (context != null) {
-//                if (count == BackupHelper.RETURN_ERR) {
-//                    Toast.makeText(
-//                        context,
-//                        "There was a problem exporting data to file.",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                } else {
-//                    Toast.makeText(context, "Export completed.", Toast.LENGTH_LONG).show()
-//                }
-//            }
-//        }
-//    }
+
 //
 //    companion object {
 //        private const val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 456

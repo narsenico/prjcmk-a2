@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import it.amonshore.comikkua.Exclude;
 
 @Entity(tableName = "tComics",
         indices = {@Index("name"), @Index("sourceId")})
@@ -26,6 +27,7 @@ public class Comics {
     public String periodicity;
     public boolean reserved;
     public String notes;
+    @Exclude
     public String image;
     public long lastUpdate;
     public long refJsonId;
