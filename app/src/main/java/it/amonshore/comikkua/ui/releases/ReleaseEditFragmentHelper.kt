@@ -38,11 +38,11 @@ class ReleaseEditFragmentHelper(
 
         // la modifica di una proprietà della release si riflette immediatamente sulla preview
         binding.tilNumbers.editText!!.doAfterTextChanged {
-            binding.release.txtReleaseNumbers.text = toString().trim { it <= ' ' }
+            binding.release.txtReleaseNumbers.text = it.toString().trim()
         }
 
         binding.tilNotes.editText!!.doAfterTextChanged {
-            binding.release.txtReleaseNotes.text = toString().trim { it <= ' ' }
+            binding.release.txtReleaseNotes.text = it.toString().trim()
         }
 
         binding.chkPurchased.setOnCheckedChangeListener { _, isChecked ->
@@ -64,13 +64,13 @@ class ReleaseEditFragmentHelper(
         binding.tilDate.editText!!.apply {
             inputType = EditorInfo.TYPE_NULL
             onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
-                if (hasFocus && _datePicker != null) {
-                    _datePicker!!.show(fragmentManager, "release_date_picker")
+                if (hasFocus) {
+                    _datePicker?.show(fragmentManager, "release_date_picker")
                 }
             }
             setOnClickListener { view ->
-                if (_datePicker != null && view.hasFocus()) {
-                    _datePicker!!.show(fragmentManager, "release_date_picker")
+                if (view.hasFocus()) {
+                    _datePicker?.show(fragmentManager, "release_date_picker")
                 }
             }
         }
