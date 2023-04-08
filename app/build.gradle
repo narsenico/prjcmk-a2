@@ -61,7 +61,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.google.code.gson:gson:2.9.0'
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.0'
 
     // Coroutine
     def coroutinesVersion = '1.6.4'
@@ -90,7 +90,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui:$nav_version"
 
     // Room components
-    def roomVersion = '2.5.0'
+    def roomVersion = '2.5.1'
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
     implementation "androidx.room:room-paging:$roomVersion"
@@ -98,7 +98,7 @@ dependencies {
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     // Lifecycle components
-    def archLifecycleVersion = '2.6.0'
+    def archLifecycleVersion = '2.6.1'
     implementation "androidx.lifecycle:lifecycle-common-java8:$archLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycleVersion"
 
@@ -108,11 +108,11 @@ dependencies {
     testImplementation "androidx.paging:paging-common:$pagingVersion"
 
     // Material
-    def materialVersion = '1.8.0-rc01'
+    def materialVersion = '1.9.0-beta01' // TODO: la versioe 1.10.0 richiede sdk android-UpsideDownCake
     implementation "com.google.android.material:material:$materialVersion"
 
     // WorkManager
-    def workVersion = '2.8.0'
+    def workVersion = '2.8.1'
     implementation "androidx.work:work-runtime:$workVersion"
     implementation "androidx.work:work-runtime-ktx:$workVersion"
     androidTestImplementation "androidx.work:work-testing:$workVersion"
