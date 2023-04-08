@@ -41,6 +41,8 @@ class ImageHelperKt private constructor(
     val defaultSize: Int
     val squareOptions: RequestOptions
     val circleOptions: RequestOptions
+
+    @Deprecated("Spostare fuori dalla classe appena possibile")
     val drawableRequestListener: RequestListener<Drawable> = object : RequestListener<Drawable> {
         override fun onLoadFailed(
             e: GlideException?,
@@ -76,13 +78,13 @@ class ImageHelperKt private constructor(
             .override(defaultSize)
             .transform(colorFilterTransformation)
             .placeholder(backgroundColorDrawable)
-            .error(backgroundColorDrawable);
+            .error(backgroundColorDrawable)
 
         circleOptions = RequestOptions()
             .override(defaultSize)
             .apply(RequestOptions.circleCropTransform())
             .placeholder(R.drawable.background_comics_initial_noborder)
-            .error(R.drawable.background_comics_initial_noborder);
+            .error(R.drawable.background_comics_initial_noborder)
     }
 
     companion object {
