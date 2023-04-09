@@ -8,4 +8,4 @@ infix fun String.containsAll(values: List<String>) =
 private val SPLIT_REGEX = "\\W+".toRegex()
 fun String.splitToWords() = if (isBlank()) emptyList() else split(SPLIT_REGEX)
 
-fun String.uriEncode() = Uri.encode(this)
+fun String.uriEncode() = Uri.encode(this) ?: this
