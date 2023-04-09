@@ -5,9 +5,11 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
@@ -17,100 +19,87 @@ import androidx.recyclerview.selection.ItemDetailsLookup;
 import it.amonshore.comikkua.DateFormatterHelper;
 import it.amonshore.comikkua.R;
 import it.amonshore.comikkua.Utility;
-import it.amonshore.comikkua.data.comics.Comics;
 import it.amonshore.comikkua.data.release.ComicsRelease;
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
 import it.amonshore.comikkua.data.release.MultiRelease;
+import it.amonshore.comikkua.databinding.ListitemReleaseLiteBinding;
 import it.amonshore.comikkua.ui.DrawableTextViewTarget;
 import it.amonshore.comikkua.ui.ImageHelperKt;
 
-import static it.amonshore.comikkua.data.release.Release.NO_RELEASE_ID;
-
 public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
 
-    private final TextView mNumbers, mDate, mNotes;
-    private final View mPurchased, mOrdered, mMainCard, mBackground;
+    private final ListitemReleaseLiteBinding _binding;
+    private final float _mainCardElevation;
+    private IReleaseViewModelItem _item;
 
-    private long mComicsId;
-    private long mId;
-
-    private final float mMainCardElevationPx;
-
-    private ReleaseLiteViewHolder(View itemView, final IReleaseViewHolderCallback callback) {
+    private ReleaseLiteViewHolder(View itemView) {
         super(itemView);
-        mNumbers = itemView.findViewById(R.id.txt_release_numbers);
-        mDate = itemView.findViewById(R.id.txt_release_date);
-        mNotes = itemView.findViewById(R.id.txt_release_notes);
-        mPurchased = itemView.findViewById(R.id.img_release_purchased);
-        mOrdered = itemView.findViewById(R.id.img_release_ordered);
-        mMainCard = itemView.findViewById(R.id.release_main_card);
-        mBackground = itemView.findViewById(R.id.release_background);
-
-        mMainCardElevationPx = mMainCard.getElevation();
-
-        if (callback != null) {
-            itemView.setOnClickListener(v -> callback.onReleaseClick(mComicsId, mId, getLayoutPosition()));
-        } else {
-            itemView.setOnClickListener(null);
-        }
+        _binding = ListitemReleaseLiteBinding.bind(itemView);
+        _mainCardElevation = _binding.releaseMainCard.getElevation();
     }
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ReleaseItemDetails(getLayoutPosition(), mId);
+        return new ReleaseItemDetails(getLayoutPosition(), _item.getId());
     }
 
     @Override
-    public void bind(@NonNull IReleaseViewModelItem item, boolean selected, RequestManager requestManager) {
-        bind((ComicsRelease) item, selected, requestManager);
-    }
+    public void bind(@NonNull IReleaseViewModelItem item,
+                     boolean selected,
+                     @Nullable RequestManager requestManager,
+                     @Nullable IReleaseViewHolderCallback callback) {
+        _item = item;
 
-    private void bind(@NonNull ComicsRelease item, boolean selected, RequestManager requestManager) {
+        if (callback != null) {
+            itemView.setOnClickListener(v -> callback.onReleaseClick(item, getLayoutPosition()));
+        } else {
+            itemView.setOnClickListener(null);
+        }
+
         itemView.setActivated(selected);
-        mComicsId = item.comics.id;
-        mId = item.release.id;
-        if (item instanceof MultiRelease) {
-            mNumbers.setText(extractNumbers((MultiRelease) item));
+        final ComicsRelease release = (ComicsRelease) item;
+        if (release instanceof MultiRelease) {
+            _binding.txtReleaseNumbers.setText(extractNumbers((MultiRelease) release));
         } else {
-            mNumbers.setText(String.format(Locale.getDefault(), "%d", item.release.number));
+            _binding.txtReleaseNumbers.setText(String.format(Locale.getDefault(), "%d", release.release.number));
         }
-        mDate.setText(TextUtils.isEmpty(item.release.date) ?
+        _binding.txtReleaseDate.setText(TextUtils.isEmpty(release.release.date) ?
                 null :
-                DateFormatterHelper.toHumanReadable(itemView.getContext(), item.release.date, DateFormatterHelper.STYLE_FULL));
-        mNotes.setText(item.release.notes);
-        mOrdered.setVisibility(item.release.ordered ? View.VISIBLE : View.INVISIBLE);
-        if (item.release.purchased) {
-            mPurchased.setVisibility(View.VISIBLE);
-            mMainCard.setElevation(0);
-            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemPurchased));
+                DateFormatterHelper.toHumanReadable(itemView.getContext(), release.release.date, DateFormatterHelper.STYLE_FULL));
+        _binding.txtReleaseNotes.setText(release.release.notes);
+        _binding.imgReleaseOrdered.setVisibility(release.release.ordered ? View.VISIBLE : View.INVISIBLE);
+        if (release.release.purchased) {
+            _binding.imgReleasePurchased.setVisibility(View.VISIBLE);
+            _binding.releaseMainCard.setElevation(0);
+            _binding.releaseBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemPurchased));
         } else {
-            mPurchased.setVisibility(View.INVISIBLE);
-            mMainCard.setElevation(mMainCardElevationPx);
-            mBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemNotPurchased));
+            _binding.imgReleasePurchased.setVisibility(View.INVISIBLE);
+            _binding.releaseMainCard.setElevation(_mainCardElevation);
+            _binding.releaseBackground.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorItemNotPurchased));
         }
 
-        if (requestManager != null && item.comics.hasImage()) {
+        if (requestManager != null && release.comics.hasImage()) {
             requestManager
-                    .load(Uri.parse(item.comics.image))
+                    .load(Uri.parse(release.comics.image))
                     .apply(ImageHelperKt.getInstance(itemView.getContext()).getSquareOptions())
-                    .into(new DrawableTextViewTarget(mNumbers));
+                    .into(new DrawableTextViewTarget(_binding.txtReleaseNumbers));
         } else {
-            mNumbers.setBackgroundColor(itemView.getContext().getResources().getColor(R.color.colorItemBackgroundAlt));
+            _binding.txtReleaseNumbers.setBackgroundColor(itemView.getContext().getResources().getColor(R.color.colorItemBackgroundAlt));
         }
     }
 
     @Override
     public void clear() {
         itemView.setActivated(false);
-        mComicsId = Comics.NO_COMICS_ID;
-        mId = NO_RELEASE_ID;
-        mNumbers.setText("");
-        mDate.setText("");
-        mNotes.setText("");
-        mPurchased.setVisibility(View.INVISIBLE);
-        mOrdered.setVisibility(View.INVISIBLE);
+        _item = null;
+        _binding.txtReleaseNumbers.setText("");
+        _binding.txtReleaseDate.setText("");
+        _binding.txtReleaseNotes.setText("");
+        _binding.imgReleasePurchased.setVisibility(View.INVISIBLE);
+        _binding.imgReleaseOrdered.setVisibility(View.INVISIBLE);
     }
 
+    @NonNull
     private String extractNumbers(@NonNull MultiRelease multiRelease) {
         final int[] numbers = new int[1 + multiRelease.otherReleases.size()];
         numbers[0] = multiRelease.release.number;
@@ -120,8 +109,10 @@ public class ReleaseLiteViewHolder extends AReleaseViewModelItemViewHolder {
         return Utility.formatInterval(null, ",", "~", numbers).toString();
     }
 
-    static ReleaseLiteViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, IReleaseViewHolderCallback callback) {
-        return new ReleaseLiteViewHolder(inflater.inflate(R.layout.listitem_release_lite, parent, false), callback);
+    @NonNull
+    @Contract("_, _ -> new")
+    static ReleaseLiteViewHolder create(@NonNull LayoutInflater inflater,
+                                        @NonNull ViewGroup parent) {
+        return new ReleaseLiteViewHolder(inflater.inflate(R.layout.listitem_release_lite, parent, false));
     }
-
 }

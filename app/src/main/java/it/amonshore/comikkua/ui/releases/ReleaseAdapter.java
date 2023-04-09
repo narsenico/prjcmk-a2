@@ -46,27 +46,30 @@ import it.amonshore.comikkua.ui.ImageHelperKt;
 
 public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder> {
 
-    private SelectionTracker<Long> mSelectionTracker;
-    private IReleaseViewHolderCallback mReleaseViewHolderCallback;
-    private boolean mUseLite;
-    private RequestManager mRequestManager;
+    private final boolean _useLite;
+    private final RequestManager _requestManager;
+    private SelectionTracker<Long> _selectionTracker;
+    private IReleaseViewHolderCallback _releaseViewHolderCallback;
 
-    private ReleaseAdapter() {
+    private ReleaseAdapter(boolean useLite,
+                           @Nullable RequestManager requestManager) {
         super(DIFF_CALLBACK);
+        _useLite = useLite;
+        _requestManager = requestManager;
     }
 
     @Override
     public void onBindViewHolder(@NonNull AReleaseViewModelItemViewHolder holder, int position) {
         final IReleaseViewModelItem item = getItem(position);
-        if (item != null) {
-            if (item.getItemType() == ReleaseHeader.ITEM_TYPE) {
-                holder.bind(item, false, null);
-            } else {
-                final ComicsRelease release = (ComicsRelease) item;
-                holder.bind(item, mSelectionTracker.isSelected(release.release.id), mRequestManager);
-            }
-        } else {
+        if (item == null) {
             holder.clear();
+            return;
+        }
+
+        if (item.getItemType() == ReleaseHeader.ITEM_TYPE) {
+            holder.bind(item, false, null, null);
+        } else {
+            holder.bind(item, _selectionTracker.isSelected(item.getId()), _requestManager, _releaseViewHolderCallback);
         }
     }
 
@@ -75,20 +78,22 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
     public AReleaseViewModelItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ReleaseHeader.ITEM_TYPE) {
             return ReleaseHeaderViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
-        } else if (mUseLite) {
-            return ReleaseLiteViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mReleaseViewHolderCallback);
-        } else {
-            return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent, mReleaseViewHolderCallback);
         }
+
+        if (_useLite) {
+            return ReleaseLiteViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
+        }
+
+        return ReleaseViewHolder.create(LayoutInflater.from(parent.getContext()), parent);
     }
 
     public long getSelectionKey(int position) {
         final IReleaseViewModelItem item = getItem(position);
         if (item == null) {
             return RecyclerView.NO_ID;
-        } else {
-            return item.getId();
         }
+
+        return item.getId();
     }
 
     public int getPosition(long selectionKey) {
@@ -116,14 +121,14 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         final IReleaseViewModelItem item = getItem(position);
         if (item == null) {
             return RecyclerView.INVALID_TYPE;
-        } else {
-//            LogHelper.d("getItemViewType(%s) = %s", position, item.getItemType());
-            return item.getItemType();
         }
+
+        return item.getItemType();
+
     }
 
     public SelectionTracker<Long> getSelectionTracker() {
-        return mSelectionTracker;
+        return _selectionTracker;
     }
 
     public interface OnItemSelectedListener {
@@ -140,6 +145,177 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         void onReleaseToggleOrder(@NonNull ComicsRelease release);
 
         void onReleaseMenuSelected(@NonNull ComicsRelease release);
+    }
+
+    @NonNull
+    private static SelectionTracker<Long> createSelectionTracker(@NonNull RecyclerView recyclerView,
+                                                                 @Nullable OnItemSelectedListener onItemSelectedListener) {
+        final MyItemKeProvider itemKeyProvider = new MyItemKeProvider(recyclerView, ItemKeyProvider.SCOPE_MAPPED);
+        final SelectionTracker.SelectionPredicate<Long> selectionPredicate = new SelectionTracker.SelectionPredicate<Long>() {
+            @Override
+            public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
+                // escludo dalla selezione gli header e le multi
+                final int pos = itemKeyProvider.getPosition(key);
+                if (pos != RecyclerView.NO_POSITION) {
+                    return recyclerView.getAdapter().getItemViewType(pos) == ComicsRelease.ITEM_TYPE;
+                }
+
+                return key < ReleaseHeader.BASE_ID;
+            }
+
+            @Override
+            public boolean canSetStateAtPosition(int position, boolean nextState) {
+                return true;
+            }
+
+            @Override
+            public boolean canSelectMultiple() {
+                return true;
+            }
+        };
+
+        final SelectionTracker<Long> selectionTracker = new SelectionTracker.Builder<>(
+                "release-selection",
+                recyclerView,
+                itemKeyProvider,
+                new ReleaseItemDetailsLookup(recyclerView),
+                StorageStrategy.createLongStorage())
+                .withSelectionPredicate(selectionPredicate)
+                .build();
+
+        if (onItemSelectedListener != null) {
+            selectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
+                @Override
+                public void onSelectionChanged() {
+                    if (selectionTracker.hasSelection()) {
+                        final Selection<Long> selection = selectionTracker.getSelection();
+                        onItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
+                    } else {
+                        onItemSelectedListener.onSelectionChanged(null, 0);
+                    }
+                }
+
+                @Override
+                public void onSelectionRestored() {
+                    LogHelper.d("fire selection changed onSelectionRestored");
+                    if (selectionTracker.hasSelection()) {
+                        final Selection<Long> selection = selectionTracker.getSelection();
+                        onItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
+                    } else {
+                        onItemSelectedListener.onSelectionChanged(null, 0);
+                    }
+                    super.onSelectionRestored();
+                }
+            });
+        }
+
+        return selectionTracker;
+    }
+
+    private static IReleaseViewHolderCallback createReleaseViewHolderCallback(@NonNull SelectionTracker<Long> selectionTracker,
+                                                                              @Nullable ReleaseCallback releaseCallback) {
+        if (releaseCallback == null) {
+            return null;
+        }
+
+        return new IReleaseViewHolderCallback() {
+            @Override
+            public void onReleaseClick(@NonNull IReleaseViewModelItem item, int position) {
+                // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
+                if (!selectionTracker.hasSelection()) {
+                    if (item.getItemType() != ReleaseHeader.ITEM_TYPE) {
+                        final ComicsRelease release = (ComicsRelease) item;
+                        releaseCallback.onReleaseClick(release);
+                    }
+                }
+            }
+
+            @Override
+            public void onReleaseMenuSelected(@NonNull IReleaseViewModelItem item, int position) {
+                if (item.getItemType() != ReleaseHeader.ITEM_TYPE) {
+                    final ComicsRelease release = (ComicsRelease) item;
+                    releaseCallback.onReleaseMenuSelected(release);
+                }
+            }
+        };
+    }
+
+    private static void setupSwipe(@NonNull RecyclerView recyclerView,
+                                   @NonNull ReleaseAdapter releaseAdapter,
+                                   @Nullable ReleaseCallback releaseCallback) {
+
+        // senza callback non gestisco lo swipe, ne tantomeno l'ItemDecoration
+        if (releaseCallback == null) {
+            return;
+        }
+
+        // gestisco con uno swipe il purchase
+        final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return false;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
+                if (releaseAdapter.getSelectionTracker().hasSelection()) return 0;
+                if (releaseAdapter.getItemViewType(viewHolder.getLayoutPosition()) != ComicsRelease.ITEM_TYPE)
+                    return 0;
+                return super.getSwipeDirs(recyclerView, viewHolder);
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                final IReleaseViewModelItem item = releaseAdapter.getItem(viewHolder.getLayoutPosition());
+                if (item != null) {
+                    final ComicsRelease release = (ComicsRelease) item;
+                    if (direction == ItemTouchHelper.RIGHT) {
+                        releaseCallback.onReleaseTogglePurchase(release);
+                    } else if (direction == ItemTouchHelper.LEFT) {
+                        releaseCallback.onReleaseToggleOrder(release);
+                    }
+                }
+            }
+        };
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+
+        recyclerView.addItemDecoration(new SwappableItemDecoration(recyclerView.getContext(),
+                R.drawable.ic_purchased,
+                R.drawable.ic_ordered,
+                R.color.colorPrimary,
+                R.color.colorItemBackgroundLighterX2,
+                0,
+                10,
+                1f,
+                .85f,
+                R.string.swipe_purchase,
+                R.string.swipe_order));
+    }
+
+    private static void setupImagePreloader(@NonNull RecyclerView recyclerView,
+                                            @NonNull ReleaseAdapter releaseAdapter,
+                                            @Nullable RequestManager requestManager) {
+        if (requestManager == null) {
+            return;
+        }
+
+        final Context context = recyclerView.getContext();
+        final int defaultSize = ImageHelperKt.getInstance(context).getDefaultSize();
+        final FixedPreloadSizeProvider<IReleaseViewModelItem> sizeProvider =
+                new FixedPreloadSizeProvider<>(defaultSize, defaultSize);
+        final ReleasePreloadModelProvider modelProvider =
+                new ReleasePreloadModelProvider(context, releaseAdapter, requestManager);
+        final RecyclerViewPreloader<IReleaseViewModelItem> preloader =
+                new RecyclerViewPreloader<>(requestManager, modelProvider, sizeProvider, 10);
+
+        recyclerView.addOnScrollListener(preloader);
     }
 
     public static class Builder {
@@ -174,171 +350,23 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         }
 
         public ReleaseAdapter build() {
-            final ReleaseAdapter adapter = new ReleaseAdapter();
-            adapter.mUseLite = useLite;
-            adapter.mReleaseViewHolderCallback = new IReleaseViewHolderCallback() {
-                @Override
-                public void onReleaseClick(long comicsId, long id, int position) {
-                    // se capita che venga scatenato il click anche se è in corso una selezione devo skippare
-                    if (releaseCallback != null && !adapter.mSelectionTracker.hasSelection()) {
-                        final IReleaseViewModelItem item = adapter.getItem(position);
-                        if (item != null) {
-                            final ComicsRelease release = (ComicsRelease) item;
-                            releaseCallback.onReleaseClick(release);
-                        }
-                    }
-                }
-
-                @Override
-                public void onReleaseMenuSelected(long comicsId, long id, int position) {
-                    if (releaseCallback != null) {
-                        final IReleaseViewModelItem item = adapter.getItem(position);
-                        if (item != null) {
-                            final ComicsRelease release = (ComicsRelease) item;
-                            releaseCallback.onReleaseMenuSelected(release);
-                        }
-                    }
-                }
-            };
-//            // questo è necessario insieme all'override di getItemId() per funzionare con SelectionTracker
-//            adapter.setHasStableIds(true);
+            final ReleaseAdapter adapter = new ReleaseAdapter(useLite, mRequestManager);
             mRecyclerView.setAdapter(adapter);
 
-            final MyItemKeProvider itemKeyProvider = new MyItemKeProvider(mRecyclerView, ItemKeyProvider.SCOPE_MAPPED);
-            final SelectionTracker.Builder<Long> builder = new SelectionTracker.Builder<>(
-                    "release-selection",
-                    mRecyclerView,
-                    itemKeyProvider,
-                    new ReleaseItemDetailsLookup(mRecyclerView),
-                    StorageStrategy.createLongStorage())
-                    .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
-                        @Override
-                        public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
-                            // escludo dalla selezione gli header e le multi
-                            final int pos = itemKeyProvider.getPosition(key);
-                            if (pos != RecyclerView.NO_POSITION) {
-                                final IReleaseViewModelItem item = adapter.getItem(pos);
-                                return (item != null && item.getItemType() == ComicsRelease.ITEM_TYPE);
-                            } else {
-                                return key < ReleaseHeader.BASE_ID;
-                            }
-                        }
+            final SelectionTracker<Long> selectionTracker = createSelectionTracker(mRecyclerView, mOnItemSelectedListener);
+            final IReleaseViewHolderCallback releaseViewHolderCallback = createReleaseViewHolderCallback(selectionTracker, releaseCallback);
+            adapter._selectionTracker = selectionTracker;
+            adapter._releaseViewHolderCallback = releaseViewHolderCallback;
 
-                        @Override
-                        public boolean canSetStateAtPosition(int position, boolean nextState) {
-                            return true;
-                        }
-
-                        @Override
-                        public boolean canSelectMultiple() {
-                            return true;
-                        }
-                    });
-
-            adapter.mSelectionTracker = builder.build();
-
-            if (mOnItemSelectedListener != null) {
-                adapter.mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
-                    @Override
-                    public void onSelectionChanged() {
-                        if (adapter.mSelectionTracker.hasSelection()) {
-                            final Selection<Long> selection = adapter.getSelectionTracker().getSelection();
-                            mOnItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
-                        } else {
-                            mOnItemSelectedListener.onSelectionChanged(null, 0);
-                        }
-                    }
-
-                    @Override
-                    public void onSelectionRestored() {
-                        LogHelper.d("fire selection changed onSelectionRestored");
-                        if (adapter.mSelectionTracker.hasSelection()) {
-                            final Selection<Long> selection = adapter.getSelectionTracker().getSelection();
-                            mOnItemSelectedListener.onSelectionChanged(selection.iterator(), selection.size());
-                        } else {
-                            mOnItemSelectedListener.onSelectionChanged(null, 0);
-                        }
-                        super.onSelectionRestored();
-                    }
-                });
-            }
-
-            // senza callback non gestisco lo swipe, ne tantomeno l'ItemDecoration
-            if (releaseCallback != null) {
-                // gestisco con uno swipe il purchase
-                final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
-
-                    @Override
-                    public boolean isLongPressDragEnabled() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                        return false;
-                    }
-
-                    @Override
-                    public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                        // inibisco lo swipe per gli header e le multi release e se è in corso una selezione
-//                    if (viewHolder instanceof ReleaseHeaderViewHolder) return 0;
-                        if (adapter.mSelectionTracker.hasSelection()) return 0;
-                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getLayoutPosition());
-                        // escludo header e multi
-                        if (item == null || item.getItemType() != ComicsRelease.ITEM_TYPE) return 0;
-                        return super.getSwipeDirs(recyclerView, viewHolder);
-                    }
-
-                    @Override
-                    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-//                    LogHelper.d("Release swiped direction=%s", direction);
-                        final IReleaseViewModelItem item = adapter.getItem(viewHolder.getLayoutPosition());
-                        if (item != null) {
-                            final ComicsRelease release = (ComicsRelease) item;
-                            if (direction == ItemTouchHelper.RIGHT) {
-                                releaseCallback.onReleaseTogglePurchase(release);
-                            } else if (direction == ItemTouchHelper.LEFT) {
-                                releaseCallback.onReleaseToggleOrder(release);
-                            }
-                        }
-                    }
-                };
-                new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
-
-                mRecyclerView.addItemDecoration(new SwappableItemDecoration(mRecyclerView.getContext(),
-                        R.drawable.ic_purchased,
-                        R.drawable.ic_ordered,
-                        R.color.colorPrimary,
-                        R.color.colorItemBackgroundLighterX2,
-                        0,
-                        10,
-                        1f,
-                        .85f,
-                        R.string.swipe_purchase,
-                        R.string.swipe_order));
-            }
-
-            if (mRequestManager != null) {
-                // precarico le immagini dei comics
-                final Context context = mRecyclerView.getContext();
-                final int defaultSize = ImageHelperKt.getInstance(context).getDefaultSize();
-                final FixedPreloadSizeProvider<IReleaseViewModelItem> sizeProvider =
-                        new FixedPreloadSizeProvider<>(defaultSize, defaultSize);
-                final ReleasePreloadModelProvider modelProvider =
-                        new ReleasePreloadModelProvider(context, adapter, mRequestManager);
-                final RecyclerViewPreloader<IReleaseViewModelItem> preloader =
-                        new RecyclerViewPreloader<>(mRequestManager, modelProvider, sizeProvider, 10);
-
-                adapter.mRequestManager = mRequestManager;
-                mRecyclerView.addOnScrollListener(preloader);
-            }
+            setupSwipe(mRecyclerView, adapter, releaseCallback);
+            setupImagePreloader(mRecyclerView, adapter, mRequestManager);
 
             return adapter;
         }
     }
 
     private static class MyItemKeProvider extends ItemKeyProvider<Long> {
-        private ReleaseAdapter mAdapter;
+        private final ReleaseAdapter mAdapter;
 
         public MyItemKeProvider(@NonNull RecyclerView recyclerView, int scope) {
             super(scope);
@@ -357,7 +385,7 @@ public class ReleaseAdapter extends ListAdapter<IReleaseViewModelItem, AReleaseV
         }
     }
 
-    private static DiffUtil.ItemCallback<IReleaseViewModelItem> DIFF_CALLBACK =
+    private static final DiffUtil.ItemCallback<IReleaseViewModelItem> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<IReleaseViewModelItem>() {
                 // ComicsRelease details may have changed if reloaded from the database,
                 // but ID is fixed.

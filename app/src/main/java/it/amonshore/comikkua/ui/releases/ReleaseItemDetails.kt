@@ -1,26 +1,17 @@
-package it.amonshore.comikkua.ui.releases;
+package it.amonshore.comikkua.ui.releases
 
-import androidx.annotation.Nullable;
-import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 
-public class ReleaseItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
+data class ReleaseItemDetails(
+    private val position: Int,
+    private val selectionKey: Long
+) : ItemDetails<Long>() {
 
-    private int mPosition;
-    private Long mSelectionKey;
-
-    public ReleaseItemDetails(int position, Long selectionKey) {
-        mPosition = position;
-        mSelectionKey = selectionKey;
+    override fun getPosition(): Int {
+        return position
     }
 
-    @Override
-    public int getPosition() {
-        return mPosition;
-    }
-
-    @Nullable
-    @Override
-    public Long getSelectionKey() {
-        return mSelectionKey;
+    override fun getSelectionKey(): Long {
+        return selectionKey
     }
 }

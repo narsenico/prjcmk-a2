@@ -1,13 +1,6 @@
-package it.amonshore.comikkua.data.release;
+package it.amonshore.comikkua.data.release
 
-public interface IReleaseViewModelItem {
-
-    /**
-     *
-     * @return id univoco all'interno di un elenco
-     */
-    long getId();
-
-    int getItemType();
-
+interface IReleaseViewModelItem {
+    val id: Long
+    val itemType: Int
 }

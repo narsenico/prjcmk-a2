@@ -1,20 +1,19 @@
-package it.amonshore.comikkua.ui.releases;
+package it.amonshore.comikkua.ui.releases
 
-import android.view.View;
+import android.view.View
+import com.bumptech.glide.RequestManager
+import it.amonshore.comikkua.data.release.IReleaseViewModelItem
+import it.amonshore.comikkua.ui.IViewHolderWithDetails
 
-import com.bumptech.glide.RequestManager;
+abstract class AReleaseViewModelItemViewHolder(itemView: View) :
+    IViewHolderWithDetails<Long>(itemView) {
 
-import androidx.annotation.NonNull;
-import it.amonshore.comikkua.data.release.IReleaseViewModelItem;
-import it.amonshore.comikkua.ui.IViewHolderWithDetails;
+    abstract fun bind(
+        item: IReleaseViewModelItem,
+        selected: Boolean,
+        requestManager: RequestManager?,
+        callback: IReleaseViewHolderCallback?
+    )
 
-public abstract class AReleaseViewModelItemViewHolder extends IViewHolderWithDetails<Long> {
-
-    public AReleaseViewModelItemViewHolder(View itemView) {
-        super(itemView);
-    }
-
-    public abstract void bind(@NonNull IReleaseViewModelItem item, boolean selected, RequestManager requestManager);
-
-    public abstract void clear();
+    abstract fun clear()
 }

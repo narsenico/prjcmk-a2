@@ -3,9 +3,10 @@ package it.amonshore.comikkua.ui.releases;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
+
+import org.jetbrains.annotations.Nullable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemDetailsLookup;
@@ -18,69 +19,70 @@ import it.amonshore.comikkua.data.release.MissingRelease;
 import it.amonshore.comikkua.data.release.NotPurchasedRelease;
 import it.amonshore.comikkua.data.release.PurchasedRelease;
 import it.amonshore.comikkua.data.release.ReleaseHeader;
+import it.amonshore.comikkua.databinding.ListitemReleaseHeaderBinding;
 
 public class ReleaseHeaderViewHolder extends AReleaseViewModelItemViewHolder {
-    private final TextView mTitle, mInfo;
-    private final View mSeparator;
-    private long mId;
+
+    private final ListitemReleaseHeaderBinding _binding;
+    private IReleaseViewModelItem _item;
 
     private ReleaseHeaderViewHolder(View itemView) {
         super(itemView);
-        mTitle = itemView.findViewById(R.id.txt_title);
-        mInfo = itemView.findViewById(R.id.txt_info);
-        mSeparator = itemView.findViewById(R.id.separator);
+        _binding = ListitemReleaseHeaderBinding.bind(itemView);
     }
 
     @Override
     public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new ReleaseItemDetails(getAdapterPosition(), mId);
+        return new ReleaseItemDetails(getLayoutPosition(), _item.getId());
     }
 
     @Override
-    public void bind(@NonNull IReleaseViewModelItem item, boolean selected, RequestManager requestManager) {
-        bind((ReleaseHeader) item);
-    }
+    public void bind(@NonNull IReleaseViewModelItem item,
+                     boolean _selected,
+                     @Nullable RequestManager _requestManager,
+                     @Nullable IReleaseViewHolderCallback _callback) {
+        _item = item;
 
-    private void bind(@NonNull ReleaseHeader item) {
-        mId = item.getId();
-        switch (item.getType()) {
+        final ReleaseHeader header = (ReleaseHeader) item;
+        switch (header.getItemType()) {
             case LostRelease.TYPE:
-                mTitle.setText(R.string.header_lost);
+                _binding.txtTitle.setText(R.string.header_lost);
                 break;
             case MissingRelease.TYPE:
-                mTitle.setText(R.string.header_missing);
+                _binding.txtTitle.setText(R.string.header_missing);
                 break;
             case DatedRelease.TYPE:
-                mTitle.setText(R.string.header_current_period);
+                _binding.txtTitle.setText(R.string.header_current_period);
                 break;
             case DatedRelease.TYPE_NEXT:
-                mTitle.setText(R.string.header_next_period);
+                _binding.txtTitle.setText(R.string.header_next_period);
                 break;
             case NotPurchasedRelease.TYPE:
-                mTitle.setText(R.string.header_not_purchased);
+                _binding.txtTitle.setText(R.string.header_not_purchased);
                 break;
             case PurchasedRelease.TYPE:
-                mTitle.setText(R.string.header_purchased);
+                _binding.txtTitle.setText(R.string.header_purchased);
                 break;
             case Constants.RELEASE_NEW:
-                mTitle.setText(R.string.header_new_releases);
+                _binding.txtTitle.setText(R.string.header_new_releases);
                 break;
             case DatedRelease.TYPE_OTHER:
             default:
-                mTitle.setText(R.string.header_other);
+                _binding.txtTitle.setText(R.string.header_other);
                 break;
         }
-        mInfo.setText(itemView.getResources().getString(R.string.header_count, item.purchasedCount, item.totalCount));
-        mSeparator.setVisibility(getAdapterPosition() == 0 ? View.GONE : View.VISIBLE);
+        _binding.txtInfo.setText(itemView.getResources().getString(R.string.header_count, header.purchasedCount, header.totalCount));
+        _binding.separator.setVisibility(getLayoutPosition() == 0 ? View.GONE : View.VISIBLE);
     }
 
     @Override
     public void clear() {
-        mTitle.setText("");
-        mInfo.setText("");
+        _binding.txtTitle.setText("");
+        _binding.txtInfo.setText("");
     }
 
-    static ReleaseHeaderViewHolder create(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent) {
+    static ReleaseHeaderViewHolder create(@NonNull LayoutInflater inflater,
+                                          @NonNull ViewGroup parent) {
         return new ReleaseHeaderViewHolder(inflater.inflate(R.layout.listitem_release_header, parent, false));
     }
 }
