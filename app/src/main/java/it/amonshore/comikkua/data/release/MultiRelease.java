@@ -30,4 +30,12 @@ public class MultiRelease extends ComicsRelease {
         return ids;
     }
 
+    public int[] getAllNumbers() {
+        final int[] numbers = new int[otherReleases.size() + 1];
+        numbers[0] = release.number;
+        for (int ii = 0; ii < otherReleases.size(); ii++) {
+            numbers[ii + 1] = this.otherReleases.get(ii).number;
+        }
+        return numbers;
+    }
 }

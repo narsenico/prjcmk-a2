@@ -10,9 +10,9 @@ abstract class AReleaseViewModelItemViewHolder(itemView: View) :
 
     abstract fun bind(
         item: IReleaseViewModelItem,
-        selected: Boolean,
-        requestManager: RequestManager?,
-        callback: IReleaseViewHolderCallback?
+        selected: Boolean = false,
+        requestManager: RequestManager? = null,
+        callback: IReleaseViewHolderCallback? = null
     )
 
     abstract fun clear()

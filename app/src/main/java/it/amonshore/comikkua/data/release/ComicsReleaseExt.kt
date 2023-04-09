@@ -1,6 +1,10 @@
 package it.amonshore.comikkua.data.release
 
+import android.content.Context
+import it.amonshore.comikkua.DateFormatterHelper
+import it.amonshore.comikkua.Utility
 import it.amonshore.comikkua.data.comics.Comics
+import it.amonshore.comikkua.joinToString
 
 enum class ComicsReleaseJoinType(val value: Int) {
     None(0),
@@ -83,6 +87,33 @@ private fun canBeGrouped(
     cr2: ComicsRelease
 ): Boolean =
     cr1.type == joinType.value && cr2.type == joinType.value && cr1.comics.id == cr2.comics.id
+
+fun ComicsRelease.notes(): String? = if (release.hasNotes()) release.notes else comics.notes
+
+fun ComicsRelease.toPair(): Pair<Comics, Release> = Pair(comics, release)
+
+fun Pair<Comics, Release>.notes(): String? = if (second.hasNotes()) second.notes else first.notes
+
+fun ComicsRelease.toNumbersString(): String {
+    if (this is MultiRelease) {
+        Utility.formatInterval(null, ",", "~", *allNumbers).toString()
+    }
+
+    return release.number.toString()
+}
+
+fun ComicsRelease.toHumanReadableDate(context: Context) =
+    if (release.date.isNullOrEmpty()) {
+        null
+    } else {
+        DateFormatterHelper.toHumanReadable(
+            context,
+            release.date,
+            DateFormatterHelper.STYLE_FULL
+        )
+    }
+
+fun ComicsRelease.info() = arrayOf(comics.publisher, comics.authors).joinToString(", ")
 
 operator fun ComicsRelease.component1(): Comics = comics
 operator fun ComicsRelease.component2(): Release = release

@@ -7,9 +7,7 @@ import android.net.Uri
 import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
-import it.amonshore.comikkua.data.release.ComicsRelease
-import it.amonshore.comikkua.data.release.MultiRelease
-import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.data.release.*
 import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.uriEncode
 
@@ -17,35 +15,29 @@ fun Comics.toSharable(): String =
     arrayOf(name, publisher, authors)
         .joinToString(" - ")
 
+fun ComicsRelease.toSharable(context: Context): String = toPair().toSharable(context)
+
 fun Pair<Comics, Release>.toSharable(context: Context): String {
-    val comics = first
-    val release = second
-    if (release.hasDate()) {
+    if (second.hasDate()) {
         return context.getString(
             R.string.share_release,
-            comics.name,
-            release.number,
+            first.name,
+            second.number,
             DateFormatterHelper.toHumanReadable(
                 context,
-                release.date,
+                second.date,
                 DateFormatterHelper.STYLE_SHORT
             ),
-            if (release.hasNotes()) release.notes else comics.notes
+            notes()
         )
     }
 
     return context.getString(
         R.string.share_release_nodate,
-        comics.name,
-        release.number,
-        if (release.hasNotes()) release.notes else comics.notes
-    )
-}
-
-fun ComicsRelease.toSharable(context: Context): String {
-    val cr = comics to release
-    return cr.toSharable(context)
-}
+        first.name,
+        second.number,
+        notes()
+    )}
 
 fun Activity.share(comics: Comics) {
     shareText(this, comics.toSharable())
