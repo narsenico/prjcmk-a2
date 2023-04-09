@@ -11,7 +11,6 @@ import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.splitToWords
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -28,73 +27,37 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
 
     private val _cmkWebRepository = CmkWebRepository(application)
     private val _comicsRepository = ComicsRepository(application)
-    private val _filter = MutableLiveData<String>()
     private val _events = SingleLiveEvent<UiComicsSelectorEvent>()
+    private val _filterFlow = MutableStateFlow("")
 
-    private var _lastFilter: String = ""
-    private var _filteringJob: Job? = null
     val events: LiveData<UiComicsSelectorEvent> = _events
 
     var filter: String
-        get() = _lastFilter
+        get() = _filterFlow.value
         set(value) {
-            _lastFilter = value
-            _filter.postValue(_lastFilter)
+            _filterFlow.value = value
         }
 
-    @FlowPreview
-    private val _filterFlow: Flow<List<String>> = flow {
-        _filter.asFlow()
-            .debounce(FILTER_DEBOUNCE)
+    @OptIn(FlowPreview::class)
+    private val comicsFlow = _cmkWebRepository.getNotFollowedComics()
+        .debounce(READ_DEBOUNCE)
+
+    @OptIn(FlowPreview::class)
+    val filteredNotFollowedComics: LiveData<List<AvailableComics>> =
+        _filterFlow
             .map { it.trim() }
             .distinctUntilChanged()
-            .map {
-                if (it.isEmpty()) {
-                    emptyList()
+            .debounce(FILTER_DEBOUNCE)
+            .map { it.splitToWords() }
+            .combine(comicsFlow) { filter, comicsList ->
+                LogHelperKt.d { "Filtering available comics by $filter over ${comicsList.size} comics" }
+                if (filter.isEmpty()) {
+                    comicsList
                 } else {
-                    it.splitToWords()
+                    comicsList.filter { comics -> comics.searchableName.containsAll(filter) }
                 }
             }
-            .collect { emit(it) }
-    }
-
-//    fun useLastFilter(): String {
-//        _filter.postValue(_lastFilter)
-//        return _lastFilter
-//    }
-
-    /**
-     * LiveData con i comics disponibili filtrati grazie alla proprietà [ComicsSelectorViewModel.filter].
-     */
-    @OptIn(FlowPreview::class)
-    fun getNotFollowedComics(): LiveData<List<AvailableComics>> = liveData {
-        _filterFlow
-            .onStart { emit(emptyList()) }
-            .collectLatest { filter ->
-                LogHelperKt.d { "Filtering available comics by $filter" }
-                _filteringJob?.cancel()
-                _filteringJob = viewModelScope.launch {
-                    if (filter.isEmpty()) {
-                        _cmkWebRepository.getNotFollowedComics()
-                            .debounce(READ_DEBOUNCE)
-                            .catch { LogHelperKt.e("Error reading available comics", it) }
-                            .collectLatest { emit(it) }
-                    } else {
-                        _cmkWebRepository.getNotFollowedComics()
-                            .debounce(READ_DEBOUNCE)
-                            .map { data ->
-                                data.filter { comics ->
-                                    comics.searchableName.containsAll(
-                                        filter
-                                    )
-                                }
-                            }
-                            .catch { LogHelperKt.e("Error filtering available comics", it) }
-                            .collectLatest { emit(it) }
-                    }
-                }
-            }
-    }
+            .asLiveData(viewModelScope.coroutineContext)
 
     fun followComics(comics: AvailableComics) = viewModelScope.launch {
         _comicsRepository.insert(comics.toComics())

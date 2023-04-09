@@ -52,7 +52,7 @@ class ComicsSelectorFragment : Fragment() {
             .withGlide(Glide.with(this))
             .build()
 
-        _viewModel.getNotFollowedComics()
+        _viewModel.filteredNotFollowedComics
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d("not followed comics count=${data.size}")
                 adapter.submitList(data)
