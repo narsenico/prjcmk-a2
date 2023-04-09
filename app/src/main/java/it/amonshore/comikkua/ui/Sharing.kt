@@ -10,12 +10,12 @@ import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.uriEncode
 
 fun Comics.toSharable(): String =
     arrayOf(name, publisher, authors)
-        .filter { !it.isNullOrBlank() }
-        .joinToString(separator = " - ")
+        .joinToString(" - ")
 
 fun Pair<Comics, Release>.toSharable(context: Context): String {
     val comics = first
@@ -117,8 +117,8 @@ fun Activity.shareOnPopStore(release: ComicsRelease) {
 
 private fun shareOn(activity: Activity, comics: Comics, format: String) {
     val encoded =
-        arrayOf(comics.publisher, comics.name).filter { !it.isNullOrBlank() }
-            .joinToString(separator = " ")
+        arrayOf(comics.publisher, comics.name)
+            .joinToString(" ")
             .uriEncode()
     val searchUrl = String.format(format, encoded)
 
@@ -134,7 +134,7 @@ private fun shareOn(activity: Activity, release: ComicsRelease, format: String) 
         release.comics.publisher,
         release.comics.name,
         release.release.number.toString()
-    ).filter { !it.isNullOrBlank() }.joinToString(separator = " ").uriEncode()
+    ).joinToString(" ").uriEncode()
     val searchUrl = String.format(format, encoded)
 
     val intent = Intent().apply {
