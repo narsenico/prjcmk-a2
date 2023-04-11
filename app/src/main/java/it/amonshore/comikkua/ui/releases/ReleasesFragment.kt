@@ -22,7 +22,7 @@ import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.databinding.FragmentReleasesBinding
 import it.amonshore.comikkua.parcelable
 import it.amonshore.comikkua.ui.*
-import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
+import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
@@ -159,8 +159,9 @@ class ReleasesFragment : Fragment() {
 
     private fun createReleasesAdapter(
         actionModeController: ActionModeController
-    ) = ReleaseAdapter.Builder(binding.list)
-        .withOnItemSelectedListener { _, size ->
+    ) = ReleaseAdapter.create(
+        recyclerView = binding.list,
+        onSelectionChange = { size ->
             if (size == 0) {
                 _listener.onFragmentRequestActionMode(ACTION_MODE_NAME)
             } else {
@@ -170,66 +171,61 @@ class ReleasesFragment : Fragment() {
                     actionModeController
                 )
             }
-        }
-        .withReleaseCallback(object : ReleaseCallback {
-            override fun onReleaseClick(release: ComicsRelease) {
-                // se è una multi release apro il dettaglio del comics
-                if (release is MultiRelease) {
-                    openComicsDetail(binding.root, release)
-                } else {
-                    openEdit(binding.root, release)
-                }
+        },
+        onReleaseClick = { release ->
+            // se è una multi release apro il dettaglio del comics
+            if (release is MultiRelease) {
+                openComicsDetail(binding.root, release)
+            } else {
+                openEdit(binding.root, release)
             }
-
-            override fun onReleaseTogglePurchase(release: ComicsRelease) {
-                // le multi non vengono passate qua
-                _viewModel.updatePurchased(
-                    release.release.id,
-                    !release.release.purchased
-                )
-            }
-
-            override fun onReleaseToggleOrder(release: ComicsRelease) {
-                // le multi non vengono passate qua
-                _viewModel.updateOrdered(
-                    release.release.id,
-                    !release.release.ordered
-                )
-            }
-
-            override fun onReleaseMenuSelected(release: ComicsRelease) {
-                BottomSheetDialogHelper.show(
-                    requireActivity(), R.layout.bottomsheet_release,
-                    release.toSharable(requireContext())
-                ) { id: Int ->
-                    when (id) {
-                        R.id.gotoComics -> {
-                            openComicsDetail(binding.root, release)
-                        }
-                        R.id.share -> {
-                            requireActivity().shareRelease(release)
-                        }
-                        R.id.deleteRelease -> {
-                            deleteRelease(release)
-                        }
-                        R.id.search_starshop -> {
-                            requireActivity().shareOnStarShop(release)
-                        }
-                        R.id.search_amazon -> {
-                            requireActivity().shareOnAmazon(release)
-                        }
-                        R.id.search_popstore -> {
-                            requireActivity().shareOnPopStore(release)
-                        }
-                        R.id.search_google -> {
-                            requireActivity().shareOnGoogle(release)
-                        }
+        },
+        onReleaseTogglePurchase = { release ->
+            // le multi non vengono passate qua
+            _viewModel.updatePurchased(
+                release.release.id,
+                !release.release.purchased
+            )
+        },
+        onReleaseToggleOrder = { release ->
+            // le multi non vengono passate qua
+            _viewModel.updateOrdered(
+                release.release.id,
+                !release.release.ordered
+            )
+        },
+        onReleaseMenuClick = { release ->
+            BottomSheetDialogHelper.show(
+                requireActivity(), R.layout.bottomsheet_release,
+                release.toSharable(requireContext())
+            ) { id: Int ->
+                when (id) {
+                    R.id.gotoComics -> {
+                        openComicsDetail(binding.root, release)
+                    }
+                    R.id.share -> {
+                        requireActivity().shareRelease(release)
+                    }
+                    R.id.deleteRelease -> {
+                        deleteRelease(release)
+                    }
+                    R.id.search_starshop -> {
+                        requireActivity().shareOnStarShop(release)
+                    }
+                    R.id.search_amazon -> {
+                        requireActivity().shareOnAmazon(release)
+                    }
+                    R.id.search_popstore -> {
+                        requireActivity().shareOnPopStore(release)
+                    }
+                    R.id.search_google -> {
+                        requireActivity().shareOnGoogle(release)
                     }
                 }
             }
-        })
-        .withGlide(Glide.with(this))
-        .build()
+        },
+        glide = Glide.with(this)
+    )
 
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()

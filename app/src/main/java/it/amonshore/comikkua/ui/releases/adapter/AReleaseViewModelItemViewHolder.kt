@@ -1,4 +1,4 @@
-package it.amonshore.comikkua.ui.releases
+package it.amonshore.comikkua.ui.releases.adapter
 
 import android.view.View
 import com.bumptech.glide.RequestManager

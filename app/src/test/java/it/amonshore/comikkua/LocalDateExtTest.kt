@@ -41,7 +41,7 @@ class LocalDateExtTest {
         val expected = "20230327"
 
         // Act
-        val formatted = monday.toYearMonthDay()
+        val formatted = monday.toReleaseDate()
 
         // Assert
         Assert.assertEquals(expected, formatted)
@@ -54,7 +54,7 @@ class LocalDateExtTest {
         val expected = "20230301"
 
         // Act
-        val formatted = monday.toYearMonthDay()
+        val formatted = monday.toReleaseDate()
 
         // Assert
         Assert.assertEquals(expected, formatted)

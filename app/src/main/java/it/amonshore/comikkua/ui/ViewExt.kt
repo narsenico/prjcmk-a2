@@ -1,8 +1,14 @@
 package it.amonshore.comikkua.ui
 
 import android.app.Activity
+import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import it.amonshore.comikkua.Constants
@@ -26,3 +32,6 @@ fun Snackbar.onDismissed(block: () -> Unit): Snackbar =
 
 fun Duration.toSnackbarTimeout(): Int =
     if (isZero) Constants.UNDO_TIMEOUT else toMillis().toInt()
+
+fun Context.getDrawableFromResource(@DrawableRes res: Int, @ColorInt tint: Int): Drawable =
+    ResourcesCompat.getDrawable(resources, res, theme)!!.mutate().apply { setTint(tint) }

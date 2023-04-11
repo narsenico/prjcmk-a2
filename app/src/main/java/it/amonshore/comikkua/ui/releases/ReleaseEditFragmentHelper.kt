@@ -18,8 +18,9 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
-import it.amonshore.comikkua.ui.ImageHelper
 import it.amonshore.comikkua.ui.ImageHelperKt
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class ReleaseEditFragmentHelper(
     val context: Context,
@@ -169,6 +170,10 @@ class ReleaseEditFragmentHelper(
     }
 
     private fun prepareDatePicker(dateUtc: Long) {
+
+        // TODO: usare MaterialDatePicker.todayInUtcMilliseconds()
+        // TODO: ZonedDateTime.now() ritorna utc
+
         // MaterialDatePicker accetta date in UTC
         _selectedDateInUtc = dateUtc
         val startSelection: Long
@@ -197,16 +202,22 @@ class ReleaseEditFragmentHelper(
             .setTitleText("Release date")
             .setCalendarConstraints(CalendarConstraints.Builder().setOpenAt(startSelection).build())
             .build()
-        _datePicker!!.addOnPositiveButtonClickListener { selection: Long ->
-            _selectedDateInUtc = selection
-            val humanized = DateFormatterHelper.toHumanReadable(
-                binding.tilDate.context,
-                DateFormatterHelper.timeToString8(DateFormatterHelper.fromUTCCalendar(selection).timeInMillis),
-                DateFormatterHelper.STYLE_FULL
-            )
-            binding.release.txtReleaseDate.text = humanized
-            binding.tilDate.editText!!.setText(humanized)
-        }
+            .apply {
+                addOnPositiveButtonClickListener { selection: Long ->
+                    _selectedDateInUtc = selection
+                    val humanized = DateFormatterHelper.toHumanReadable(
+                        binding.tilDate.context,
+                        DateFormatterHelper.timeToString8(
+                            DateFormatterHelper.fromUTCCalendar(
+                                selection
+                            ).timeInMillis
+                        ),
+                        DateFormatterHelper.STYLE_FULL
+                    )
+                    binding.release.txtReleaseDate.text = humanized
+                    binding.tilDate.editText!!.setText(humanized)
+                }
+            }
     }
 
     fun createReleases(): List<Release> {

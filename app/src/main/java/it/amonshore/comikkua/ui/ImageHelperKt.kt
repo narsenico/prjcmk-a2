@@ -32,6 +32,30 @@ fun isValidImageFileName(fileName: String, comicsIds: List<Long>): Boolean {
 
 fun isValidImageFileName(fileName: String): Boolean = rgImageFileName.matches(fileName)
 
+fun createDrawableRequestListener(): RequestListener<Drawable> = object : RequestListener<Drawable> {
+    override fun onLoadFailed(
+        e: GlideException?,
+        model: Any?,
+        target: Target<Drawable>?,
+        isFirstResource: Boolean
+    ): Boolean {
+        LogHelperKt.e("GLIDE LOAD FAILED with url=$model", e)
+        // important to return false so the error placeholder can be placed
+        return false
+    }
+
+    override fun onResourceReady(
+        resource: Drawable?,
+        model: Any?,
+        target: Target<Drawable>?,
+        dataSource: DataSource?,
+        isFirstResource: Boolean
+    ): Boolean {
+        // everything worked out, so probably nothing to do
+        return false
+    }
+}
+
 class ImageHelperKt private constructor(
     _defaultSize: Int,
     @ColorInt backgroundColor: Int,
@@ -43,29 +67,7 @@ class ImageHelperKt private constructor(
     val circleOptions: RequestOptions
 
     @Deprecated("Spostare fuori dalla classe appena possibile")
-    val drawableRequestListener: RequestListener<Drawable> = object : RequestListener<Drawable> {
-        override fun onLoadFailed(
-            e: GlideException?,
-            model: Any?,
-            target: Target<Drawable>?,
-            isFirstResource: Boolean
-        ): Boolean {
-            LogHelperKt.e("GLIDE LOAD FAILED with url=$model", e)
-            // important to return false so the error placeholder can be placed
-            return false
-        }
-
-        override fun onResourceReady(
-            resource: Drawable?,
-            model: Any?,
-            target: Target<Drawable>?,
-            dataSource: DataSource?,
-            isFirstResource: Boolean
-        ): Boolean {
-            // everything worked out, so probably nothing to do
-            return false
-        }
-    }
+    val drawableRequestListener: RequestListener<Drawable> = createDrawableRequestListener()
 
     init {
         defaultSize = _defaultSize

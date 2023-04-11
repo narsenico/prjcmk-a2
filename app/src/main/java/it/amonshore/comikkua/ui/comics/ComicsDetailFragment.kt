@@ -23,8 +23,7 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.databinding.FragmentComicsDetailBinding
 import it.amonshore.comikkua.ui.*
-import it.amonshore.comikkua.ui.releases.ReleaseAdapter
-import it.amonshore.comikkua.ui.releases.ReleaseAdapter.ReleaseCallback
+import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
 
 private val ACTION_MODE_NAME = ComicsDetailFragment::class.java.simpleName + "_actionMode"
 
@@ -187,8 +186,10 @@ class ComicsDetailFragment : Fragment() {
 
     private fun createReleaseAdapter(
         actionModeController: ActionModeController
-    ) = ReleaseAdapter.Builder(binding.list)
-        .withOnItemSelectedListener { _, size ->
+    ) = ReleaseAdapter.create(
+        recyclerView = binding.list,
+        useLite = true,
+        onSelectionChange = { size ->
             if (size == 0) {
                 _listener.onFragmentRequestActionMode(ACTION_MODE_NAME)
             } else {
@@ -198,32 +199,23 @@ class ComicsDetailFragment : Fragment() {
                     actionModeController
                 )
             }
+        },
+        onReleaseClick = { release ->
+            openEdit(binding.root, release)
+        },
+        onReleaseTogglePurchase = { release ->
+            _viewModel.updatePurchased(
+                release.release.id,
+                !release.release.purchased
+            )
+        },
+        onReleaseToggleOrder = { release ->
+            _viewModel.updateOrdered(
+                release.release.id,
+                !release.release.ordered
+            )
         }
-        .withReleaseCallback(object : ReleaseCallback {
-            override fun onReleaseClick(release: ComicsRelease) {
-                openEdit(binding.root, release)
-            }
-
-            override fun onReleaseTogglePurchase(release: ComicsRelease) {
-                _viewModel.updatePurchased(
-                    release.release.id,
-                    !release.release.purchased
-                )
-            }
-
-            override fun onReleaseToggleOrder(release: ComicsRelease) {
-                _viewModel.updateOrdered(
-                    release.release.id,
-                    !release.release.ordered
-                )
-            }
-
-            override fun onReleaseMenuSelected(release: ComicsRelease) {
-                // non gestito
-            }
-        }) // uso la versione "lite" con il layout per gli item più compatta
-        .useLite()
-        .build()
+    )
 
     private fun createComicsWithReleasesObserver(): Observer<ComicsWithReleases> {
         val context = requireContext()
