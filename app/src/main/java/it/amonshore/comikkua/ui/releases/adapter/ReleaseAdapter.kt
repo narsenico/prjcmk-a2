@@ -55,8 +55,6 @@ class ReleaseAdapter private constructor(
             ReleaseHeader.ITEM_TYPE -> holder.bind(item)
             else -> holder.bind(
                 item,
-                // TODO: questo è sbagliato, dovrebbe essere il "dato" contenuto nel ViewHolder
-                //  a mantenere l'informazione se è selezionato  è meno
                 selectionTracker.isSelected(item.id),
                 glide,
                 _releaseViewHolderCallback
