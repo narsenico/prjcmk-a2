@@ -167,10 +167,11 @@ class ComicsFragment : Fragment() {
             }
 
             override fun onComicsMenuSelected(comics: ComicsWithReleases) {
-                BottomSheetDialogHelper.show(
-                    requireActivity(), R.layout.bottomsheet_comics,
-                    comics.comics.toSharable()
-                ) { id: Int ->
+                showBottomSheetDialog(
+                    activity = requireActivity(),
+                    layout = R.layout.bottomsheet_comics,
+                    title = comics.comics.toSharable()
+                ) { id ->
                     when (id) {
                         R.id.createNewRelease -> {
                             openNewRelease(binding.root, comics)

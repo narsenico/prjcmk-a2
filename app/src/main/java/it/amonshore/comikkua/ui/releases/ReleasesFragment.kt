@@ -2,7 +2,12 @@ package it.amonshore.comikkua.ui.releases
 
 import android.content.Context
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ActionMode
@@ -21,8 +26,17 @@ import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.databinding.FragmentReleasesBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.*
+import it.amonshore.comikkua.ui.ActionModeController
+import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
+import it.amonshore.comikkua.ui.share
+import it.amonshore.comikkua.ui.shareOnAmazon
+import it.amonshore.comikkua.ui.shareOnGoogle
+import it.amonshore.comikkua.ui.shareOnPopStore
+import it.amonshore.comikkua.ui.shareOnStarShop
+import it.amonshore.comikkua.ui.shareRelease
+import it.amonshore.comikkua.ui.showBottomSheetDialog
+import it.amonshore.comikkua.ui.toSharable
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.releases.recycler.layout"
 private val ACTION_MODE_NAME = ReleasesFragment::class.java.simpleName + "_actionMode"
@@ -132,20 +146,24 @@ class ReleasesFragment : Fragment() {
                         _viewModel.togglePurchased(tracker.selection.toList())
                         return true
                     }
+
                     R.id.orderReleases -> {
                         // le multi non vengono passate
                         _viewModel.toggleOrdered(tracker.selection.toList())
                         return true
                     }
+
                     R.id.deleteReleases -> {
                         _viewModel.markAsRemoved(tracker.selection.toList())
                         tracker.clearSelection()
                         return true
                     }
+
                     R.id.shareReleases -> {
                         _viewModel.getShareableComicsReleases(tracker.selection.toList())
                         return true
                     }
+
                     else -> return false
                 }
             }
@@ -195,29 +213,36 @@ class ReleasesFragment : Fragment() {
             )
         },
         onReleaseMenuClick = { release ->
-            BottomSheetDialogHelper.show(
-                requireActivity(), R.layout.bottomsheet_release,
-                release.toSharable(requireContext())
-            ) { id: Int ->
+            showBottomSheetDialog(
+                activity = requireActivity(),
+                layout = R.layout.bottomsheet_release,
+                title = release.toSharable(requireContext())
+            ) { id ->
                 when (id) {
                     R.id.gotoComics -> {
                         openComicsDetail(binding.root, release)
                     }
+
                     R.id.share -> {
                         requireActivity().shareRelease(release)
                     }
+
                     R.id.deleteRelease -> {
                         deleteRelease(release)
                     }
+
                     R.id.search_starshop -> {
                         requireActivity().shareOnStarShop(release)
                     }
+
                     R.id.search_amazon -> {
                         requireActivity().shareOnAmazon(release)
                     }
+
                     R.id.search_popstore -> {
                         requireActivity().shareOnPopStore(release)
                     }
+
                     R.id.search_google -> {
                         requireActivity().shareOnGoogle(release)
                     }

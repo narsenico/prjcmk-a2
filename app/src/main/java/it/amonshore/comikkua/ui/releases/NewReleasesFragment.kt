@@ -194,10 +194,11 @@ class NewReleasesFragment : Fragment() {
             )
         },
         onReleaseMenuClick = { release ->
-            BottomSheetDialogHelper.show(
-                requireActivity(), R.layout.bottomsheet_release,
-                release.toSharable(requireContext())
-            ) { id: Int ->
+            showBottomSheetDialog(
+                activity = requireActivity(),
+                layout = R.layout.bottomsheet_release,
+                title = release.toSharable(requireContext())
+            ) { id ->
                 when (id) {
                     R.id.gotoComics -> {
                         openComicsDetail(binding.root, release)
