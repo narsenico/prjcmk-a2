@@ -19,7 +19,7 @@ import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.IReleaseViewModelItem
 import it.amonshore.comikkua.data.release.ReleaseHeader
 import it.amonshore.comikkua.ui.ImageHelperKt
-import java.util.*
+import java.util.Objects
 
 class ReleaseAdapter private constructor(
     private val useLite: Boolean,
@@ -94,23 +94,15 @@ class ReleaseAdapter private constructor(
             adapter._selectionTracker =
                 createSelectionTracker(recyclerView, adapter, onSelectionChange)
             adapter._releaseViewHolderCallback = createReleaseViewHolderCallback(
-                selectionTracker = adapter.selectionTracker,
-                onReleaseClick = onReleaseClick,
-                onReleaseMenuClick = onReleaseMenuClick
+                adapter.selectionTracker, onReleaseClick, onReleaseMenuClick
             )
 
-            setupSwipe(
-                recyclerView = recyclerView,
+            recyclerView.setupSwipe(
                 releaseAdapter = adapter,
                 onReleaseTogglePurchase = onReleaseTogglePurchase,
                 onReleaseToggleOrder = onReleaseToggleOrder
             )
-
-            if (glide != null) setupImagePreloader(
-                recyclerView,
-                adapter,
-                glide
-            )
+            glide?.applyImagePreloader(recyclerView, adapter)
 
             return adapter
         }
@@ -213,8 +205,7 @@ private fun createReleaseViewHolderCallback(
     }
 }
 
-private fun setupSwipe(
-    recyclerView: RecyclerView,
+private fun RecyclerView.setupSwipe(
     releaseAdapter: ReleaseAdapter,
     onReleaseTogglePurchase: (release: ComicsRelease) -> Unit,
     onReleaseToggleOrder: (release: ComicsRelease) -> Unit,
@@ -249,11 +240,11 @@ private fun setupSwipe(
                 }
             }
         }
-    ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
+    ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(this)
 
-    recyclerView.addItemDecoration(
+    addItemDecoration(
         SwappableItemDecoration(
-            context = recyclerView.context,
+            context = context,
             drawableLeft = R.drawable.ic_purchased,
             drawableRight = R.drawable.ic_ordered,
             drawableColor = R.color.colorPrimary,
@@ -268,16 +259,15 @@ private fun setupSwipe(
     )
 }
 
-private fun setupImagePreloader(
+private fun RequestManager.applyImagePreloader(
     recyclerView: RecyclerView,
-    releaseAdapter: ReleaseAdapter,
-    glide: RequestManager
+    releaseAdapter: ReleaseAdapter
 ) {
     val context = recyclerView.context
     val defaultSize = ImageHelperKt.getInstance(context).defaultSize
     val sizeProvider = FixedPreloadSizeProvider<IReleaseViewModelItem>(defaultSize, defaultSize)
-    val modelProvider = ReleasePreloadModelProvider(context, releaseAdapter, glide)
-    val preloader = RecyclerViewPreloader(glide, modelProvider, sizeProvider, 10)
+    val modelProvider = ReleasePreloadModelProvider(context, releaseAdapter, this)
+    val preloader = RecyclerViewPreloader(this, modelProvider, sizeProvider, 10)
 
     recyclerView.addOnScrollListener(preloader)
 }
