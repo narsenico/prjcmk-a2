@@ -19,8 +19,6 @@ import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
 
 class ReleaseEditFragmentHelper(
     val context: Context,
@@ -250,13 +248,13 @@ class ReleaseEditFragmentHelper(
         outState.putBoolean("ordered", binding.chkOrdered.isChecked)
     }
 
-    fun isValid(callback: ICallback<Boolean?>) {
+    fun isValid(block: (Boolean) -> Unit) {
         val valid = true
         // TODO: verificare che numbers contenga una sequenza valida
         //  es: 4-3 non deve essere valido (modificare comportamento di Utility.parseInterval)
         //  es: 4-5-6 NO
         //  es: 4- NO etc.
         // TODO: controllo se esistono già certe uscite? nel vecchio non lo facevo
-        callback.onCallback(valid)
+        block(valid)
     }
 }

@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 
 class CmkWebRepository(context: Context) {
 
-    private val _cmkWebDao = ComikkuDatabase.getDatabase(context).cmkWebDaoKt()
+    private val _cmkWebDao = ComikkuDatabase.getDatabase(context).cmkWebDao()
     private val _service = CmkWebService.create()
 
     suspend fun deleteAvailableComics() {

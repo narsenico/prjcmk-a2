@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+@Deprecated
 public class LogHelper {
 
     private static String mTag = "CMK";
