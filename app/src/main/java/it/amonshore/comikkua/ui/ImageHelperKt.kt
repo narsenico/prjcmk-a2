@@ -74,7 +74,7 @@ class ImageHelperKt private constructor(
 
         val backgroundColorDrawable = ColorDrawable(backgroundColor)
         val colorFilterTransformation =
-            ColorFilterTransformationEx(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
+            ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
 
         squareOptions = RequestOptions()
             .override(defaultSize)

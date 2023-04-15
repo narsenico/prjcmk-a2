@@ -1,76 +1,64 @@
-package it.amonshore.comikkua.ui;
+package it.amonshore.comikkua.ui
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import androidx.annotation.ColorInt
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import jp.wasabeef.glide.transformations.BitmapTransformation
+import java.security.MessageDigest
 
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+class ColorBitmapTransformation(
+    @param:ColorInt private val color: Int,
+    private val mode: PorterDuff.Mode
+) :
+    BitmapTransformation() {
 
-import java.security.MessageDigest;
-
-import androidx.annotation.NonNull;
-import jp.wasabeef.glide.transformations.BitmapTransformation;
-
-public class ColorFilterTransformationEx extends BitmapTransformation {
-    private static final int VERSION = 1;
-    private static final String ID = ColorFilterTransformationEx.class.getCanonicalName() + VERSION;
-
-    private int mColor;
-    private PorterDuff.Mode mMode;
-
-    public ColorFilterTransformationEx(int color, PorterDuff.Mode mode) {
-        mColor = color;
-        mMode = mode;
+    override fun transform(
+        context: Context,
+        pool: BitmapPool,
+        toTransform: Bitmap,
+        outWidth: Int,
+        outHeight: Int
+    ): Bitmap {
+        val width = toTransform.width
+        val height = toTransform.height
+        val config = toTransform.config ?: Bitmap.Config.ARGB_8888
+        val bitmap = pool[width, height, config].apply {
+            density = toTransform.density
+        }
+        val paint = Paint().apply {
+            isAntiAlias = true
+            colorFilter = PorterDuffColorFilter(this@ColorBitmapTransformation.color, mode)
+        }
+        Canvas(bitmap).drawBitmap(toTransform, 0f, 0f, paint)
+        return bitmap
     }
 
-    @Override
-    protected Bitmap transform(@NonNull Context context, @NonNull BitmapPool pool,
-                               @NonNull Bitmap toTransform, int outWidth, int outHeight) {
-        int width = toTransform.getWidth();
-        int height = toTransform.getHeight();
-
-        Bitmap.Config config =
-                toTransform.getConfig() != null ? toTransform.getConfig() : Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = pool.get(width, height, config);
-
-        bitmap.setDensity(toTransform.getDensity());
-
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColorFilter(new PorterDuffColorFilter(mColor, mMode));
-        canvas.drawBitmap(toTransform, 0, 0, paint);
-
-        return bitmap;
+    override fun toString(): String {
+        return "ColorFilterTransformationEx(color=$color, mode$mode)"
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return "ColorFilterTransformationEx(color=" + mColor + ", mode" + mMode + ")";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj instanceof ColorFilterTransformationEx) {
-            final ColorFilterTransformationEx other = (ColorFilterTransformationEx) obj;
-            return other.mColor == mColor && other.mMode == mMode;
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        return if (other is ColorBitmapTransformation) {
+            other.color == color && other.mode == mode
         } else {
-            return false;
+            false
         }
     }
 
-    @Override
-    public int hashCode() {
-        return ID.hashCode() + mColor * 10 + mMode.ordinal();
+    override fun hashCode(): Int = ID.hashCode() + color * 10 + mode.ordinal
+
+    override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+        messageDigest.update((ID + color + mode.ordinal).toByteArray(CHARSET))
     }
 
-    @Override
-    public void updateDiskCacheKey(@NonNull MessageDigest messageDigest) {
-        messageDigest.update((ID + mColor + mMode.ordinal()).getBytes(CHARSET));
+    companion object {
+        private const val VERSION = 1
+        private val ID = ColorBitmapTransformation::class.java.canonicalName!! + VERSION
     }
 }
