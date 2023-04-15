@@ -26,11 +26,10 @@ class ReleaseAdapter private constructor(
     private val glide: RequestManager?
 ) : ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder>(diffCallback) {
 
-    private var _selectionTracker: SelectionTracker<Long>? = null
-    val selectionTracker: SelectionTracker<Long>
-        get() = _selectionTracker!!
+    lateinit var selectionTracker: SelectionTracker<Long>
 
-    private var _releaseViewHolderCallback: IReleaseViewHolderCallback? = null
+    private lateinit var _onReleaseClick: OnReleaseClick
+    private lateinit var _onReleaseMenuClick: OnReleaseMenuClick
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -53,10 +52,11 @@ class ReleaseAdapter private constructor(
         when (item.itemType) {
             ReleaseHeader.ITEM_TYPE -> holder.bind(item)
             else -> holder.bind(
-                item,
-                selectionTracker.isSelected(item.id),
-                glide,
-                _releaseViewHolderCallback
+                item = item,
+                selected = selectionTracker.isSelected(item.id),
+                glide = glide,
+                onReleaseClick = _onReleaseClick,
+                onReleaseMenuClick = _onReleaseMenuClick
             )
         }
     }
@@ -81,20 +81,21 @@ class ReleaseAdapter private constructor(
             recyclerView: RecyclerView,
             useLite: Boolean = false,
             onSelectionChange: (size: Int) -> Unit = { },
-            onReleaseClick: (release: ComicsRelease) -> Unit = { },
-            onReleaseTogglePurchase: (release: ComicsRelease) -> Unit = { },
-            onReleaseToggleOrder: (release: ComicsRelease) -> Unit = { },
-            onReleaseMenuClick: (release: ComicsRelease) -> Unit = { },
+            onReleaseClick: OnReleaseClick = { },
+            onReleaseTogglePurchase: OnReleaseTogglePurchase = { },
+            onReleaseToggleOrder: OnReleaseToggleOrder = { },
+            onReleaseMenuClick: OnReleaseMenuClick = { },
             glide: RequestManager? = null
         ): ReleaseAdapter {
             val adapter = ReleaseAdapter(useLite, glide)
             recyclerView.adapter = adapter
 
-            adapter._selectionTracker =
-                createSelectionTracker(recyclerView, adapter, onSelectionChange)
-            adapter._releaseViewHolderCallback = createReleaseViewHolderCallback(
-                adapter.selectionTracker, onReleaseClick, onReleaseMenuClick
-            )
+            with(adapter) {
+                selectionTracker =
+                    createSelectionTracker(recyclerView, this, onSelectionChange)
+                _onReleaseClick = onReleaseClick.joinTo(selectionTracker)
+                _onReleaseMenuClick = onReleaseMenuClick
+            }
 
             recyclerView.setupSwipe(
                 releaseAdapter = adapter,
@@ -183,23 +184,12 @@ private fun createSelectionTracker(
     return selectionTracker
 }
 
-private fun createReleaseViewHolderCallback(
-    selectionTracker: SelectionTracker<Long>,
-    onReleaseClick: (release: ComicsRelease) -> Unit,
-    onReleaseMenuClick: (release: ComicsRelease) -> Unit,
-): IReleaseViewHolderCallback {
-    return object : IReleaseViewHolderCallback {
-        override fun onReleaseClick(item: IReleaseViewModelItem, position: Int) {
-            // se ci sono già degli elementi selezionati il click deve essere inibito perché voglio continuare con la selezione
-            if (item.itemType != ReleaseHeader.ITEM_TYPE && !selectionTracker.hasSelection()) {
-                onReleaseClick(item as ComicsRelease)
-            }
-        }
-
-        override fun onReleaseMenuSelected(item: IReleaseViewModelItem, position: Int) {
-            if (item.itemType != ReleaseHeader.ITEM_TYPE) {
-                onReleaseMenuClick(item as ComicsRelease)
-            }
+private fun OnReleaseClick.joinTo(
+    selectionTracker: SelectionTracker<Long>
+): OnReleaseClick {
+    return { item ->
+        if (item.itemType != ReleaseHeader.ITEM_TYPE && !selectionTracker.hasSelection()) {
+            this(item)
         }
     }
 }

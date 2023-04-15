@@ -7,7 +7,12 @@ import androidx.core.net.toUri
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.bumptech.glide.RequestManager
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.release.*
+import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.IReleaseViewModelItem
+import it.amonshore.comikkua.data.release.info
+import it.amonshore.comikkua.data.release.notes
+import it.amonshore.comikkua.data.release.toHumanReadableDate
+import it.amonshore.comikkua.data.release.toNumbersString
 import it.amonshore.comikkua.databinding.ListitemReleaseBinding
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt.Companion.getInstance
@@ -25,30 +30,35 @@ class ReleaseViewHolder private constructor(val binding: ListitemReleaseBinding)
         item: IReleaseViewModelItem,
         selected: Boolean,
         glide: RequestManager?,
-        callback: IReleaseViewHolderCallback?
+        onReleaseClick: OnReleaseClick?,
+        onReleaseMenuClick: OnReleaseMenuClick?
     ) {
         _item = item
         itemView.isActivated = selected
 
-        if (callback != null) {
+        val release = item as ComicsRelease
+        if (onReleaseClick != null) {
             itemView.setOnClickListener {
-                callback.onReleaseClick(item, layoutPosition)
-            }
-            binding.imgReleaseMenu.apply {
-                visibility = View.VISIBLE
-                setOnClickListener {
-                    callback.onReleaseMenuSelected(item, layoutPosition)
-                }
+                onReleaseClick(release)
             }
         } else {
             itemView.setOnClickListener(null)
-            binding.imgReleaseMenu.apply {
+        }
+
+        if (onReleaseMenuClick != null) {
+            with(binding.imgReleaseMenu) {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    onReleaseMenuClick(release)
+                }
+            }
+        } else {
+            with(binding.imgReleaseMenu) {
                 visibility = View.INVISIBLE
                 setOnClickListener(null)
             }
         }
 
-        val release = item as ComicsRelease
         binding.txtReleaseNumbers.text = release.toNumbersString()
         binding.txtReleaseDate.text = release.toHumanReadableDate(itemView.context)
         binding.txtReleaseTitle.text = release.comics.name

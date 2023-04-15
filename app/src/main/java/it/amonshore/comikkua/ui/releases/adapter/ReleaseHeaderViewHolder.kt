@@ -7,7 +7,13 @@ import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.bumptech.glide.RequestManager
 import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.release.*
+import it.amonshore.comikkua.data.release.DatedRelease
+import it.amonshore.comikkua.data.release.IReleaseViewModelItem
+import it.amonshore.comikkua.data.release.LostRelease
+import it.amonshore.comikkua.data.release.MissingRelease
+import it.amonshore.comikkua.data.release.NotPurchasedRelease
+import it.amonshore.comikkua.data.release.PurchasedRelease
+import it.amonshore.comikkua.data.release.ReleaseHeader
 import it.amonshore.comikkua.databinding.ListitemReleaseHeaderBinding
 
 class ReleaseHeaderViewHolder private constructor(val binding: ListitemReleaseHeaderBinding) :
@@ -21,8 +27,9 @@ class ReleaseHeaderViewHolder private constructor(val binding: ListitemReleaseHe
     override fun bind(
         item: IReleaseViewModelItem,
         selected: Boolean,
-        requestManager: RequestManager?,
-        callback: IReleaseViewHolderCallback?
+        glide: RequestManager?,
+        onReleaseClick: OnReleaseClick?,
+        onReleaseMenuClick: OnReleaseMenuClick?
     ) {
         _item = item
 

@@ -27,21 +27,22 @@ class ReleaseLiteViewHolder private constructor(val binding: ListitemReleaseLite
     override fun bind(
         item: IReleaseViewModelItem,
         selected: Boolean,
-        requestManager: RequestManager?,
-        callback: IReleaseViewHolderCallback?
+        glide: RequestManager?,
+        onReleaseClick: OnReleaseClick?,
+        onReleaseMenuClick: OnReleaseMenuClick?
     ) {
         _item = item
         itemView.isActivated = selected
 
-        if (callback != null) {
+        val release = item as ComicsRelease
+        if (onReleaseClick != null) {
             itemView.setOnClickListener {
-                callback.onReleaseClick(item, layoutPosition)
+                onReleaseClick(release)
             }
         } else {
             itemView.setOnClickListener(null)
         }
 
-        val release = item as ComicsRelease
         binding.txtReleaseNumbers.text = release.toNumbersString()
         binding.txtReleaseDate.text = release.toHumanReadableDate(itemView.context)
         binding.txtReleaseNotes.text = release.release.notes
@@ -56,8 +57,8 @@ class ReleaseLiteViewHolder private constructor(val binding: ListitemReleaseLite
             binding.releaseMainCard.elevation = _mainCardElevation
             binding.releaseBackground.setBackgroundColor(itemView.context.getColor(R.color.colorItemNotPurchased))
         }
-        if (requestManager != null && release.comics.hasImage()) {
-            requestManager
+        if (glide != null && release.comics.hasImage()) {
+            glide
                 .load(Uri.parse(release.comics.image))
                 .apply(getInstance(itemView.context).squareOptions)
                 .into(DrawableTextViewTarget(binding.txtReleaseNumbers))

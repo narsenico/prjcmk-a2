@@ -11,8 +11,9 @@ abstract class AReleaseViewModelItemViewHolder(itemView: View) :
     abstract fun bind(
         item: IReleaseViewModelItem,
         selected: Boolean = false,
-        requestManager: RequestManager? = null,
-        callback: IReleaseViewHolderCallback? = null
+        glide: RequestManager? = null,
+        onReleaseClick: OnReleaseClick? = null,
+        onReleaseMenuClick: OnReleaseMenuClick? = null
     )
 
     abstract fun clear()
