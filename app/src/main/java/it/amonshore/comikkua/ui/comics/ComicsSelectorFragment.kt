@@ -2,7 +2,12 @@ package it.amonshore.comikkua.ui.comics
 
 import android.content.Context
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -11,13 +16,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
+import it.amonshore.comikkua.ui.comics.adapter.AvailableComicsAdapter
 
 //private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics_selector.recycler.layout"
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics_selector.last.query"
@@ -39,18 +43,11 @@ class ComicsSelectorFragment : Fragment() {
         _binding = FragmentComicsSelectorBinding.inflate(layoutInflater)
         binding.list.layoutManager = LinearLayoutManager(context)
 
-        val adapter = AvailableComicsAdapter.Builder(binding.list)
-            .withComicsCallback(object : AvailableComicsAdapter.ComicsCallback {
-                override fun onComicsFollowed(comics: AvailableComics) {
-                    _viewModel.followComics(comics)
-                }
-
-                override fun onComicsMenuSelected(comics: AvailableComics) {
-                    TODO("Implementare menu contestuale")
-                }
-            })
-            .withGlide(Glide.with(this))
-            .build()
+        val adapter = AvailableComicsAdapter.create(
+            recyclerView = binding.list,
+            onAvailableComicsFollow = { comics -> _viewModel.followComics(comics) },
+            onAvailableComicsMenuClick = { TODO() }
+        )
 
         _viewModel.filteredNotFollowedComics
             .observe(viewLifecycleOwner) { data ->
@@ -135,10 +132,12 @@ class ComicsSelectorFragment : Fragment() {
                         loadAvailableComics()
                         return true
                     }
+
                     R.id.deleteComics -> {
                         deleteAvailableComics()
                         return true
                     }
+
                     else -> return false
                 }
 

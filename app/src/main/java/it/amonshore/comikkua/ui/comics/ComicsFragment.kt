@@ -3,7 +3,12 @@ package it.amonshore.comikkua.ui.comics
 import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -21,7 +26,16 @@ import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.*
+import it.amonshore.comikkua.ui.ActionModeController
+import it.amonshore.comikkua.ui.OnNavigationFragmentListener
+import it.amonshore.comikkua.ui.comics.adapter.PagedListComicsAdapter
+import it.amonshore.comikkua.ui.share
+import it.amonshore.comikkua.ui.shareOnAmazon
+import it.amonshore.comikkua.ui.shareOnGoogle
+import it.amonshore.comikkua.ui.shareOnPopStore
+import it.amonshore.comikkua.ui.shareOnStarShop
+import it.amonshore.comikkua.ui.showBottomSheetDialog
+import it.amonshore.comikkua.ui.toSharable
 
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics.last.query"
 private val ACTION_MODE_NAME = ComicsFragment::class.java.simpleName + "_actionMode"
@@ -147,8 +161,9 @@ class ComicsFragment : Fragment() {
      */
     private fun createComicsAdapter(
         actionModeController: ActionModeController
-    ) = PagedListComicsAdapter.Builder(binding.list)
-        .withOnItemSelectedListener { _, size ->
+    ) = PagedListComicsAdapter.create(
+        recyclerView = binding.list,
+        onSelectionChange = { size ->
             if (size == 0) {
                 _listener.onFragmentRequestActionMode(ACTION_MODE_NAME)
             } else {
@@ -158,49 +173,56 @@ class ComicsFragment : Fragment() {
                     actionModeController
                 )
             }
-        }
-        .withComicsCallback(object : PagedListComicsAdapter.ComicsCallback {
-            override fun onComicsClick(comics: ComicsWithReleases) {
-                val directions: NavDirections = ComicsFragmentDirections
-                    .actionDestComicsToComicsDetailFragment(comics.comics.id)
-                findNavController(requireView()).navigate(directions)
-            }
+        },
+        onComicsClick = { comics ->
+            openComicsDetail(binding.root, comics)
+        },
+        onComicsMenuClick = { comics ->
+            showBottomSheetDialog(
+                activity = requireActivity(),
+                layout = R.layout.bottomsheet_comics,
+                title = comics.comics.toSharable()
+            ) { id ->
+                when (id) {
+                    R.id.createNewRelease -> {
+                        openNewRelease(binding.root, comics)
+                    }
 
-            override fun onComicsMenuSelected(comics: ComicsWithReleases) {
-                showBottomSheetDialog(
-                    activity = requireActivity(),
-                    layout = R.layout.bottomsheet_comics,
-                    title = comics.comics.toSharable()
-                ) { id ->
-                    when (id) {
-                        R.id.createNewRelease -> {
-                            openNewRelease(binding.root, comics)
-                        }
-                        R.id.share -> {
-                            requireActivity().share(comics.comics)
-                        }
-                        R.id.deleteComics -> {
-                            val ids = listOf(comics.comics.id)
-                            _viewModel.markAsRemoved(ids)
-                        }
-                        R.id.search_starshop -> {
-                            requireActivity().shareOnStarShop(comics.comics)
-                        }
-                        R.id.search_amazon -> {
-                            requireActivity().shareOnAmazon(comics.comics)
-                        }
-                        R.id.search_popstore -> {
-                            requireActivity().shareOnPopStore(comics.comics)
-                        }
-                        R.id.search_google -> {
-                            requireActivity().shareOnGoogle(comics.comics)
-                        }
+                    R.id.share -> {
+                        requireActivity().share(comics.comics)
+                    }
+
+                    R.id.deleteComics -> {
+                        val ids = listOf(comics.comics.id)
+                        _viewModel.markAsRemoved(ids)
+                    }
+
+                    R.id.search_starshop -> {
+                        requireActivity().shareOnStarShop(comics.comics)
+                    }
+
+                    R.id.search_amazon -> {
+                        requireActivity().shareOnAmazon(comics.comics)
+                    }
+
+                    R.id.search_popstore -> {
+                        requireActivity().shareOnPopStore(comics.comics)
+                    }
+
+                    R.id.search_google -> {
+                        requireActivity().shareOnGoogle(comics.comics)
                     }
                 }
             }
-        })
-        .withGlide(Glide.with(this))
-        .build()
+        },
+        glide = Glide.with(this)
+    )
+
+    private fun openComicsDetail(view: View, comics: ComicsWithReleases) {
+        val directions: NavDirections = ComicsFragmentDirections
+            .actionDestComicsToComicsDetailFragment(comics.comics.id)
+        findNavController(view).navigate(directions)
+    }
 
     private fun openNewRelease(view: View, comics: ComicsWithReleases) {
         val directions: NavDirections = ComicsFragmentDirections
@@ -256,12 +278,14 @@ class ComicsFragment : Fragment() {
                         findNavController(requireView()).navigate(directions)
                         return true
                     }
+
                     R.id.openComicsSelector -> {
                         val directions: NavDirections = ComicsFragmentDirections
                             .actionDestComicFragmentToComicsSelectorFragment()
                         findNavController(requireView()).navigate(directions)
                         return true
                     }
+
                     else -> return false
                 }
             }

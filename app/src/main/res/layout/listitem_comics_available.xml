@@ -1,191 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/background_selectable_item">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <FrameLayout
+    <FrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_selectable_item">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/comics_main_card"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="125dp"
-            android:layout_marginStart="@dimen/item_margin_default"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="@dimen/item_margin_default"
-            android:layout_marginBottom="@dimen/item_margin_default"
-            app:cardBackgroundColor="@color/colorItemBackgroundLight"
-            app:cardCornerRadius="@dimen/item_radius_emphatic"
-            app:cardElevation="2dp"
-            app:cardPreventCornerOverlap="false"
-            app:cardUseCompatPadding="true">
+            android:layout_height="wrap_content">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <androidx.cardview.widget.CardView
+                android:id="@+id/comics_main_card"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/txt_comics_name"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="120dp"
-                    android:layout_marginTop="@dimen/item_margin_default"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:ellipsize="end"
-                    android:lines="2"
-                    android:maxLines="2"
-                    android:textAllCaps="true"
-                    android:textColor="@color/colorItemTitle"
-                    android:textSize="@dimen/text_size_medium"
-                    android:textStyle="bold"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="Comics name" />
-
-                <TextView
-                    android:id="@+id/txt_comics_publisher"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    android:textSize="@dimen/text_size_medium"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/txt_comics_name"
-                    app:layout_constraintTop_toBottomOf="@id/txt_comics_name"
-                    tools:text="Publisher" />
-
-                <TextView
-                    android:id="@+id/txt_comics_authors"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="0dp"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    android:textSize="@dimen/text_size_medium"
-                    app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
-                    app:layout_constraintStart_toStartOf="@id/txt_comics_publisher"
-                    app:layout_constraintTop_toBottomOf="@id/txt_comics_publisher"
-                    tools:text="Authors" />
-
-                <TextView
-                    android:id="@+id/txt_comics_notes"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/item_margin_default"
-                    android:layout_marginTop="@dimen/item_margin_default"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:layout_marginBottom="@dimen/item_margin_default"
-                    android:ellipsize="end"
-                    android:lines="1"
-                    android:maxLines="1"
-                    android:textColor="@color/colorItemForeground"
-                    android:textSize="@dimen/text_size_medium"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/txt_comics_authors"
-                    tools:text="Notes notes notes" />
-
-                <ImageButton
-                    android:id="@+id/img_comics_menu"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="60dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/item_margin_default"
-                    android:layout_marginBottom="@dimen/item_margin_default"
-                    android:contentDescription="@string/menu_comics_menu"
-                    android:visibility="invisible"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:srcCompat="@drawable/ic_show_bottom_menu"
-                    app:tint="@color/colorItemForeground"
-                    tools:visibility="visible" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/comics_footer_card"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginStart="@dimen/item_margin_double"
-            android:layout_marginTop="108dp"
-            android:layout_marginEnd="@dimen/item_margin_double"
-            android:layout_marginBottom="@dimen/item_margin_default"
-            app:cardBackgroundColor="@color/colorBackground"
-            app:cardCornerRadius="@dimen/item_radius_emphatic"
-            app:cardElevation="1dp"
-            app:cardPreventCornerOverlap="false"
-            app:cardUseCompatPadding="true"
-            tools:visibility="visible">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="32dp"
-                android:layout_gravity="bottom"
+                android:layout_height="125dp"
                 android:layout_marginStart="@dimen/item_margin_default"
-                android:layout_marginEnd="@dimen/item_margin_default">
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="@dimen/item_margin_default"
+                android:layout_marginBottom="@dimen/item_margin_default"
+                app:cardBackgroundColor="@color/colorItemBackgroundLight"
+                app:cardCornerRadius="@dimen/item_radius_emphatic"
+                app:cardElevation="2dp"
+                app:cardPreventCornerOverlap="false"
+                app:cardUseCompatPadding="true">
 
-                <TextView
-                    android:id="@+id/txt_comics_release_last"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:gravity="center_vertical"
-                    android:textSize="@dimen/text_size_small"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/btn_follow"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="Last: #999" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_follow"
-                    style="@style/Button.Small"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:text="@string/comics_follow"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    <TextView
+                        android:id="@+id/txt_comics_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="120dp"
+                        android:layout_marginTop="@dimen/item_margin_default"
+                        android:layout_marginEnd="@dimen/item_margin_default"
+                        android:ellipsize="end"
+                        android:lines="2"
+                        android:maxLines="2"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorItemTitle"
+                        android:textSize="@dimen/text_size_medium"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Comics name" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/txt_comics_publisher"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/item_margin_default"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:maxLines="1"
+                        android:textColor="@color/colorItemForeground"
+                        android:textSize="@dimen/text_size_medium"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="@id/txt_comics_name"
+                        app:layout_constraintTop_toBottomOf="@id/txt_comics_name"
+                        tools:text="Publisher" />
 
-        </androidx.cardview.widget.CardView>
+                    <TextView
+                        android:id="@+id/txt_comics_authors"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="0dp"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:maxLines="1"
+                        android:textColor="@color/colorItemForeground"
+                        android:textSize="@dimen/text_size_medium"
+                        app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
+                        app:layout_constraintStart_toStartOf="@id/txt_comics_publisher"
+                        app:layout_constraintTop_toBottomOf="@id/txt_comics_publisher"
+                        tools:text="Authors" />
+
+                    <TextView
+                        android:id="@+id/txt_comics_notes"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/item_margin_default"
+                        android:layout_marginTop="@dimen/item_margin_default"
+                        android:layout_marginEnd="@dimen/item_margin_default"
+                        android:layout_marginBottom="@dimen/item_margin_default"
+                        android:ellipsize="end"
+                        android:lines="1"
+                        android:maxLines="1"
+                        android:textColor="@color/colorItemForeground"
+                        android:textSize="@dimen/text_size_medium"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/img_comics_menu"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_comics_authors"
+                        tools:text="Notes notes notes" />
+
+                    <ImageButton
+                        android:id="@+id/img_comics_menu"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/item_margin_default"
+                        android:layout_marginBottom="@dimen/item_margin_default"
+                        android:contentDescription="@string/menu_comics_menu"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:srcCompat="@drawable/ic_show_bottom_menu"
+                        app:tint="@color/colorItemForeground"
+                        tools:visibility="visible" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/comics_footer_card"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginStart="@dimen/item_margin_double"
+                android:layout_marginTop="108dp"
+                android:layout_marginEnd="@dimen/item_margin_double"
+                android:layout_marginBottom="@dimen/item_margin_default"
+                app:cardBackgroundColor="@color/colorBackground"
+                app:cardCornerRadius="@dimen/item_radius_emphatic"
+                app:cardElevation="1dp"
+                app:cardPreventCornerOverlap="false"
+                app:cardUseCompatPadding="true"
+                tools:visibility="visible">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="@dimen/item_margin_default"
+                    android:layout_marginEnd="@dimen/item_margin_default">
+
+                    <TextView
+                        android:id="@+id/txt_comics_release_last"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/text_size_small"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/btn_follow"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Last: #999" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_follow"
+                        style="@style/Button.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:text="@string/comics_follow"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/img_comics_initial"
+            android:layout_width="104dp"
+            android:layout_height="104dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="@dimen/item_margin_default"
+            android:src="@drawable/background_comics_initial_noborder_back" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txt_comics_initial"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
+            android:layout_marginStart="26dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/background_comics_initial_noborder"
+            android:gravity="center"
+            android:paddingBottom="2dp"
+            android:textAllCaps="true"
+            android:textColor="@color/color_comics_initial"
+            android:textSize="65sp"
+            android:textStyle="bold"
+            tools:text="C" />
 
     </FrameLayout>
-
-    <ImageView
-        android:id="@+id/img_comics_initial"
-        android:layout_width="104dp"
-        android:layout_height="104dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="@dimen/item_margin_default"
-        android:src="@drawable/background_comics_initial_noborder_back" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/txt_comics_initial"
-        android:layout_width="92dp"
-        android:layout_height="92dp"
-        android:layout_marginStart="26dp"
-        android:layout_marginTop="14dp"
-        android:background="@drawable/background_comics_initial_noborder"
-        android:gravity="center"
-        android:paddingBottom="2dp"
-        android:textAllCaps="true"
-        android:textColor="@color/color_comics_initial"
-        android:textSize="65sp"
-        android:textStyle="bold"
-        tools:text="C" />
-
-</FrameLayout>
+</layout>

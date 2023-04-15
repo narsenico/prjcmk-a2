@@ -24,7 +24,7 @@ class ReleaseViewHolder private constructor(val binding: ListitemReleaseBinding)
     override fun bind(
         item: IReleaseViewModelItem,
         selected: Boolean,
-        requestManager: RequestManager?,
+        glide: RequestManager?,
         callback: IReleaseViewHolderCallback?
     ) {
         _item = item
@@ -65,8 +65,8 @@ class ReleaseViewHolder private constructor(val binding: ListitemReleaseBinding)
             binding.releaseMainCard.elevation = _initialMainCardElevation
             binding.releaseBackground.setBackgroundColor(itemView.context.getColor(R.color.colorItemNotPurchased))
         }
-        if (requestManager != null && release.comics.hasImage()) {
-            requestManager
+        if (glide != null && release.comics.hasImage()) {
+            glide
                 .load(release.comics.image.toUri())
                 .apply(getInstance(itemView.context).squareOptions)
                 .into(DrawableTextViewTarget(binding.txtReleaseNumbers))

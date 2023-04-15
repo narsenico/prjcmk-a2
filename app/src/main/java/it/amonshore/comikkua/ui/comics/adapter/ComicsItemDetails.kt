@@ -1,26 +1,17 @@
-package it.amonshore.comikkua.ui.comics;
+package it.amonshore.comikkua.ui.comics.adapter
 
-import androidx.annotation.Nullable;
-import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 
-public class ComicsItemDetails<T> extends ItemDetailsLookup.ItemDetails<T> {
-
-    private final int mPosition;
-    private final T mSelectionKey;
-
-    public ComicsItemDetails(int position, T selectionKey) {
-        mPosition = position;
-        mSelectionKey = selectionKey;
+class ComicsItemDetails<T>(
+    private val position: Int,
+    private val selectionKey: T
+) :
+    ItemDetails<T>() {
+    override fun getPosition(): Int {
+        return position
     }
 
-    @Override
-    public int getPosition() {
-        return mPosition;
-    }
-
-    @Nullable
-    @Override
-    public T getSelectionKey() {
-        return mSelectionKey;
+    override fun getSelectionKey(): T {
+        return selectionKey
     }
 }

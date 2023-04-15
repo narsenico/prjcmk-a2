@@ -23,8 +23,7 @@ import java.util.Objects
 
 class ReleaseAdapter private constructor(
     private val useLite: Boolean,
-    private val glide: RequestManager?,
-    diffCallback: DiffUtil.ItemCallback<IReleaseViewModelItem>
+    private val glide: RequestManager?
 ) : ListAdapter<IReleaseViewModelItem, AReleaseViewModelItemViewHolder>(diffCallback) {
 
     private var _selectionTracker: SelectionTracker<Long>? = null
@@ -88,7 +87,7 @@ class ReleaseAdapter private constructor(
             onReleaseMenuClick: (release: ComicsRelease) -> Unit = { },
             glide: RequestManager? = null
         ): ReleaseAdapter {
-            val adapter = ReleaseAdapter(useLite, glide, diffCallback)
+            val adapter = ReleaseAdapter(useLite, glide)
             recyclerView.adapter = adapter
 
             adapter._selectionTracker =
