@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'androidx.navigation.safeargs'
-    id 'com.google.gms.google-services'
 }
 
 android {
@@ -123,13 +122,6 @@ dependencies {
     implementation "com.github.bumptech.glide:recyclerview-integration:$glideVersion"
     annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
     implementation 'com.github.wasabeef:glide-transformations:4.2.0'
-
-    // Firebase
-    def firebaseVersion = '24.4.1'
-    implementation "com.google.firebase:firebase-firestore:$firebaseVersion"
-    implementation "com.google.firebase:firebase-firestore-ktx:$firebaseVersion"
-    implementation 'com.google.firebase:firebase-analytics:21.2.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
 
     // Retrofit
     def retrofitVersion = '2.9.0'

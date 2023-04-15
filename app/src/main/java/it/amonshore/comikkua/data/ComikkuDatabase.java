@@ -41,8 +41,9 @@ public abstract class ComikkuDatabase extends RoomDatabase {
     private static volatile ComikkuDatabase INSTANCE;
 
     public static ComikkuDatabase getDatabase(@NonNull final Context context) {
-        // NB: la vecchia applicazione ha un db chiamato comikkua.db alla versione 3
-        // questo ha un nome diverso quindi non dovrebbe fare casino (ho provato, mantiene i database con nomi diversi)
+        // TODO: la vecchia applicazione ha un db chiamato comikkua.db alla versione 3
+        //  questo ha un nome diverso quindi non dovrebbe fare casino (ho provato, mantiene i database con nomi diversi)
+        //  OCCORRE importare i dati da vecchia version, anche da variante neon
         if (INSTANCE == null) {
             synchronized (ComikkuDatabase.class) {
                 if (INSTANCE == null) {
