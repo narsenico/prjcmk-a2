@@ -20,7 +20,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -64,7 +64,7 @@ class ComicsFragment : Fragment() {
 
         _viewModel.comicsWithReleasesPaged
             .observe(viewLifecycleOwner) { data ->
-                LogHelper.d("comics viewmodel paging data changed")
+                LogHelperKt.d { "comics view model paging data changed" }
                 _adapter.submitData(lifecycle, data)
             }
 

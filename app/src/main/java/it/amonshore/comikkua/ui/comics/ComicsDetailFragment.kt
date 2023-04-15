@@ -22,7 +22,7 @@ import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import it.amonshore.comikkua.DateFormatterHelper
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
@@ -78,7 +78,7 @@ class ComicsDetailFragment : Fragment() {
 
         _viewModel.getReleaseViewModelItems(_comicsId)
             .observe(viewLifecycleOwner) { items ->
-                LogHelper.d("release view model data changed size=${items.size}")
+                LogHelperKt.d { "release view model data changed size=${items.size}" }
                 _adapter.submitList(items)
             }
 
@@ -299,7 +299,7 @@ class ComicsDetailFragment : Fragment() {
     }
 
     private fun onNewReleasesLoaded(count: Int, tag: String) {
-        LogHelper.d("New releases: $count with tag '$tag'")
+        LogHelperKt.d { "New releases: $count with tag '$tag'" }
         binding.swipeRefresh.isRefreshing = false
         if (count > 0) {
             Toast.makeText(

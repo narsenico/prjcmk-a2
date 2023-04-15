@@ -1,17 +1,22 @@
 package it.amonshore.comikkua.data.release
 
 import android.content.Context
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.web.toRelease
 import it.amonshore.comikkua.services.CmkWebService
 import it.amonshore.comikkua.toReleaseDate
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 private const val ONE_DAY: Long = 86_400_000L
 
@@ -29,8 +34,14 @@ class ReleaseRepository(context: Context) {
 
     suspend fun getComicsReleases(ids: List<Long>) = _releaseDao.getComicsReleases(ids)
 
-    suspend fun getNotPurchasedComicsReleases(releaseDateFrom: LocalDate, releaseDateTo: LocalDate) =
-        _releaseDao.getNotPurchasedComicsReleases(releaseDateFrom.toReleaseDate(), releaseDateTo.toReleaseDate())
+    suspend fun getNotPurchasedComicsReleases(
+        releaseDateFrom: LocalDate,
+        releaseDateTo: LocalDate
+    ) =
+        _releaseDao.getNotPurchasedComicsReleases(
+            releaseDateFrom.toReleaseDate(),
+            releaseDateTo.toReleaseDate()
+        )
 
     fun getNotableComicsReleasesFlow(): Flow<List<ComicsRelease>> {
         val today = LocalDate.now()
@@ -43,7 +54,7 @@ class ReleaseRepository(context: Context) {
         //  (quelle successive verrebbero cmq estratte in quanto fanno parte del "periodo corrente")
         val retainStart = System.currentTimeMillis() - ONE_DAY
 
-        LogHelper.d("prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart")
+        LogHelperKt.d { "prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart" }
 
         return _releaseDao.getNotableComicsReleasesFlow(
             refDate = refDate.toReleaseDate(),

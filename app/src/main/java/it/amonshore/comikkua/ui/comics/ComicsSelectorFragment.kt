@@ -16,7 +16,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
@@ -51,7 +50,7 @@ class ComicsSelectorFragment : Fragment() {
 
         _viewModel.filteredNotFollowedComics
             .observe(viewLifecycleOwner) { data ->
-                LogHelper.d("not followed comics count=${data.size}")
+                LogHelperKt.d { "not followed comics count=${data.size}" }
                 adapter.submitList(data)
                 binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }

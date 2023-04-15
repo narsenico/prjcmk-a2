@@ -3,11 +3,21 @@ package it.amonshore.comikkua.ui.comics
 import android.app.Application
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.*
-import it.amonshore.comikkua.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
+import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.ResultEx
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.flatMap
+import it.amonshore.comikkua.onFailure
+import it.amonshore.comikkua.onSuccess
+import it.amonshore.comikkua.orFail
+import it.amonshore.comikkua.toFailure
 import it.amonshore.comikkua.ui.isValidImageFileName
 import it.amonshore.comikkua.ui.newImageFileName
 import kotlinx.coroutines.launch
@@ -93,7 +103,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
                 .orFail { UiComicsEditResultErrorType.ImageError }
                 .map { comics.apply { comics.image = Uri.fromFile(newImageFile).toString() } }
         } catch (ex: Exception) {
-            LogHelper.e("Error saving image", ex)
+            LogHelperKt.e("Error saving image", ex)
             ResultEx.Failure(UiComicsEditResultErrorType.ImageError)
         }
     }
@@ -112,7 +122,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
 
             ResultEx.Success(comics)
         } catch (ex: Exception) {
-            LogHelper.e("Error deleting old images", ex)
+            LogHelperKt.e("Error deleting old images", ex)
             ResultEx.Failure(UiComicsEditResultErrorType.ImageError)
         }
 }

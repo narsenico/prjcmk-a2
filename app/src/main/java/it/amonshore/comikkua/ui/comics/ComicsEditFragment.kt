@@ -2,7 +2,12 @@ package it.amonshore.comikkua.ui.comics
 
 import android.os.Bundle
 import android.transition.TransitionInflater
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -14,7 +19,7 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.LogHelperKt
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 
@@ -125,14 +130,17 @@ class ComicsEditFragment : Fragment() {
                         _viewModel.insertOrUpdateComics(helper.getComics())
                         true
                     }
+
                     R.id.changeImage -> {
                         grabImage()
                         true
                     }
+
                     R.id.removeImage -> {
                         helper.setComicsImagePath(null)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -202,7 +210,7 @@ class ComicsEditFragment : Fragment() {
             val uriFilePath = result.getUriFilePath(requireContext(), true)
             helper.setComicsImagePath(uriFilePath)
         } else {
-            LogHelper.e("Crop error", result.error)
+            LogHelperKt.e("Crop error", result.error)
         }
     }
 }
