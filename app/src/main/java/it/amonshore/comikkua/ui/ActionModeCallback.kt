@@ -1,35 +1,27 @@
-package it.amonshore.comikkua.ui;
+package it.amonshore.comikkua.ui
 
-import android.view.Menu;
+import android.view.Menu
+import android.view.MenuItem
+import androidx.annotation.MenuRes
+import androidx.appcompat.view.ActionMode
 
-import androidx.annotation.MenuRes;
-import androidx.appcompat.view.ActionMode;
-
-public abstract class ActionModeController implements ActionMode.Callback {
-
-    private int mMenuRes;
-
-    public ActionModeController(@MenuRes int menuRes) {
-        mMenuRes = menuRes;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        if (mMenuRes != 0) {
-            mode.getMenuInflater().inflate(mMenuRes, menu);
-            return true;
-        } else {
-            return false;
+fun createActionModeCallback(
+    @MenuRes menuRes: Int,
+    onAction: (actionId: Int) -> Boolean,
+    onDestroy: () -> Unit
+): ActionMode.Callback {
+    return object : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.menuInflater.inflate(menuRes, menu)
+            return true
         }
-    }
 
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean =
+            false
 
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean =
+            onAction(item.itemId)
 
+        override fun onDestroyActionMode(mode: ActionMode) = onDestroy()
     }
 }

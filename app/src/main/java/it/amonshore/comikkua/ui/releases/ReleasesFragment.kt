@@ -26,8 +26,8 @@ import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.databinding.FragmentReleasesBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.ActionModeController
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
+import it.amonshore.comikkua.ui.createActionModeCallback
 import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
 import it.amonshore.comikkua.ui.share
 import it.amonshore.comikkua.ui.shareOnAmazon
@@ -60,8 +60,8 @@ class ReleasesFragment : Fragment() {
         binding.list.layoutManager = LinearLayoutManager(requireContext())
         binding.swipeRefresh.setOnRefreshListener(::loadNewReleases)
 
-        val actionModeController = createActionModeController()
-        _adapter = createReleasesAdapter(actionModeController)
+        val actionModeCallback = createActionModeCallback()
+        _adapter = createReleasesAdapter(actionModeCallback)
 
         _viewModel.notableReleaseItems.observe(viewLifecycleOwner) { items ->
             LogHelper.d("release view model data changed size=${items.size}")
@@ -136,47 +136,48 @@ class ReleasesFragment : Fragment() {
         }
     }
 
-    private fun createActionModeController() =
-        object : ActionModeController(R.menu.menu_releases_selected) {
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                val tracker = _adapter.selectionTracker
-                when (item.itemId) {
-                    R.id.purchaseReleases -> {
-                        // le multi non vengono passate
-                        _viewModel.togglePurchased(tracker.selection.toList())
-                        return true
-                    }
+    private fun createActionModeCallback(): ActionMode.Callback {
+        return createActionModeCallback(
+            menuRes = R.menu.menu_releases_selected,
+            onAction = { actionId: Int ->
+                with(_adapter.selectionTracker) {
+                    when (actionId) {
+                        R.id.purchaseReleases -> {
+                            // le multi non vengono passate
+                            _viewModel.togglePurchased(selection.toList())
+                            true
+                        }
 
-                    R.id.orderReleases -> {
-                        // le multi non vengono passate
-                        _viewModel.toggleOrdered(tracker.selection.toList())
-                        return true
-                    }
+                        R.id.orderReleases -> {
+                            // le multi non vengono passate
+                            _viewModel.toggleOrdered(selection.toList())
+                            true
+                        }
 
-                    R.id.deleteReleases -> {
-                        _viewModel.markAsRemoved(tracker.selection.toList())
-                        tracker.clearSelection()
-                        return true
-                    }
+                        R.id.deleteReleases -> {
+                            _viewModel.markAsRemoved(selection.toList())
+                            clearSelection()
+                            true
+                        }
 
-                    R.id.shareReleases -> {
-                        _viewModel.getShareableComicsReleases(tracker.selection.toList())
-                        return true
-                    }
+                        R.id.shareReleases -> {
+                            _viewModel.getShareableComicsReleases(selection.toList())
+                            true
+                        }
 
-                    else -> return false
+                        else -> false
+                    }
                 }
-            }
-
-            override fun onDestroyActionMode(mode: ActionMode) {
+            },
+            onDestroy = {
                 // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
                 _adapter.selectionTracker.clearSelection()
-                super.onDestroyActionMode(mode)
-            }
-        }
+            })
+    }
+
 
     private fun createReleasesAdapter(
-        actionModeController: ActionModeController
+        actionModeCallback: ActionMode.Callback
     ) = ReleaseAdapter.create(
         recyclerView = binding.list,
         onSelectionChange = { size ->
@@ -186,7 +187,7 @@ class ReleasesFragment : Fragment() {
                 _listener.onFragmentRequestActionMode(
                     ACTION_MODE_NAME,
                     getString(R.string.title_selected, size),
-                    actionModeController
+                    actionModeCallback
                 )
             }
         },

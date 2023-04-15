@@ -3,7 +3,6 @@ package it.amonshore.comikkua.ui.releases
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
@@ -20,8 +19,17 @@ import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
 import it.amonshore.comikkua.databinding.FragmentNewReleasesBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.*
+import it.amonshore.comikkua.ui.OnNavigationFragmentListener
+import it.amonshore.comikkua.ui.createActionModeCallback
 import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
+import it.amonshore.comikkua.ui.share
+import it.amonshore.comikkua.ui.shareOnAmazon
+import it.amonshore.comikkua.ui.shareOnGoogle
+import it.amonshore.comikkua.ui.shareOnPopStore
+import it.amonshore.comikkua.ui.shareOnStarShop
+import it.amonshore.comikkua.ui.shareRelease
+import it.amonshore.comikkua.ui.showBottomSheetDialog
+import it.amonshore.comikkua.ui.toSharable
 
 private const val BUNDLE_RELEASES_RECYCLER_LAYOUT = "bundle.new_releases.recycler.layout"
 private val ACTION_MODE_NAME = NewReleasesFragment::class.java.simpleName + "_actionMode"
@@ -48,8 +56,8 @@ class NewReleasesFragment : Fragment() {
         _binding = FragmentNewReleasesBinding.inflate(layoutInflater, container, false)
         binding.list.layoutManager = LinearLayoutManager(requireContext())
 
-        val actionModeController = createActionModeController()
-        _adapter = createReleasesAdapter(actionModeController)
+        val actionModeCallback = createActionModeCallback()
+        _adapter = createReleasesAdapter(actionModeCallback)
 
         _viewModel.getReleaseViewModelItems(_tag)
             .observe(viewLifecycleOwner) { items ->
@@ -121,43 +129,47 @@ class NewReleasesFragment : Fragment() {
         )
     }
 
-    private fun createActionModeController() =
-        object : ActionModeController(R.menu.menu_releases_selected) {
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                val tracker = _adapter.selectionTracker
-                when (item.itemId) {
-                    R.id.purchaseReleases -> {
-                        // le multi non vengono passate
-                        _viewModel.togglePurchased(tracker.selection.toList())
-                        return true
-                    }
-                    R.id.orderReleases -> {
-                        // le multi non vengono passate
-                        _viewModel.toggleOrdered(tracker.selection.toList())
-                        return true
-                    }
-                    R.id.deleteReleases -> {
-                        _viewModel.markAsRemovedUsingTag(tracker.selection.toList(), _tag)
-                        tracker.clearSelection()
-                        return true
-                    }
-                    R.id.shareReleases -> {
-                        _viewModel.getShareableComicsReleases(tracker.selection.toList())
-                        return true
-                    }
-                    else -> return false
-                }
-            }
+    private fun createActionModeCallback(): ActionMode.Callback {
+        return createActionModeCallback(
+            menuRes = R.menu.menu_releases_selected,
+            onAction = { actionId: Int ->
+                with(_adapter.selectionTracker) {
+                    when (actionId) {
+                        R.id.purchaseReleases -> {
+                            // le multi non vengono passate
+                            _viewModel.togglePurchased(selection.toList())
+                            true
+                        }
 
-            override fun onDestroyActionMode(mode: ActionMode) {
+                        R.id.orderReleases -> {
+                            // le multi non vengono passate
+                            _viewModel.toggleOrdered(selection.toList())
+                            true
+                        }
+
+                        R.id.deleteReleases -> {
+                            _viewModel.markAsRemovedUsingTag(selection.toList(), _tag)
+                            clearSelection()
+                            true
+                        }
+
+                        R.id.shareReleases -> {
+                            _viewModel.getShareableComicsReleases(selection.toList())
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+            },
+            onDestroy = {
                 // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
                 _adapter.selectionTracker.clearSelection()
-                super.onDestroyActionMode(mode)
-            }
-        }
+            })
+    }
 
     private fun createReleasesAdapter(
-        actionModeController: ActionModeController
+        actionModeCallback: ActionMode.Callback
     ) = ReleaseAdapter.create(
         recyclerView = binding.list,
         onSelectionChange = { size ->
@@ -167,7 +179,7 @@ class NewReleasesFragment : Fragment() {
                 _listener.onFragmentRequestActionMode(
                     ACTION_MODE_NAME,
                     getString(R.string.title_selected, size),
-                    actionModeController
+                    actionModeCallback
                 )
             }
         },
@@ -203,21 +215,27 @@ class NewReleasesFragment : Fragment() {
                     R.id.gotoComics -> {
                         openComicsDetail(binding.root, release)
                     }
+
                     R.id.share -> {
                         requireActivity().shareRelease(release)
                     }
+
                     R.id.deleteRelease -> {
                         deleteRelease(release)
                     }
+
                     R.id.search_starshop -> {
                         requireActivity().shareOnStarShop(release)
                     }
+
                     R.id.search_amazon -> {
                         requireActivity().shareOnAmazon(release)
                     }
+
                     R.id.search_popstore -> {
                         requireActivity().shareOnPopStore(release)
                     }
+
                     R.id.search_google -> {
                         requireActivity().shareOnGoogle(release)
                     }

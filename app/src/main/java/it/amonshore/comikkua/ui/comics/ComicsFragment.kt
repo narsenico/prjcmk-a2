@@ -26,9 +26,9 @@ import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.databinding.FragmentComicsBinding
 import it.amonshore.comikkua.parcelable
-import it.amonshore.comikkua.ui.ActionModeController
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.comics.adapter.PagedListComicsAdapter
+import it.amonshore.comikkua.ui.createActionModeCallback
 import it.amonshore.comikkua.ui.share
 import it.amonshore.comikkua.ui.shareOnAmazon
 import it.amonshore.comikkua.ui.shareOnGoogle
@@ -59,8 +59,8 @@ class ComicsFragment : Fragment() {
         _binding = FragmentComicsBinding.inflate(layoutInflater, container, false)
         binding.list.layoutManager = LinearLayoutManager(requireContext())
 
-        val actionModeController = createActionModeController()
-        _adapter = createComicsAdapter(actionModeController)
+        val actionModeCallback = createActionModeCallback()
+        _adapter = createComicsAdapter(actionModeCallback)
 
         _viewModel.comicsWithReleasesPaged
             .observe(viewLifecycleOwner) { data ->
@@ -135,32 +135,32 @@ class ComicsFragment : Fragment() {
         }
     }
 
-    private fun createActionModeController() =
-        object : ActionModeController(R.menu.menu_comics_selected) {
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                if (item.itemId == R.id.deleteComics) {
-                    val tracker = _adapter.selectionTracker
-                    val ids = tracker.selection.toList()
-                    _viewModel.markAsRemoved(ids)
-                    tracker.clearSelection()
-                    return true
+    private fun createActionModeCallback(): ActionMode.Callback {
+        return createActionModeCallback(
+            menuRes = R.menu.menu_comics_selected,
+            onAction = { actionId: Int ->
+                if (actionId == R.id.deleteComics) {
+                    with(_adapter.selectionTracker) {
+                        _viewModel.markAsRemoved(selection.toList())
+                        clearSelection()
+                    }
+                    true
+                } else {
+                    false
                 }
-                return false
-            }
-
-            override fun onDestroyActionMode(mode: ActionMode) {
+            },
+            onDestroy = {
                 // action mode distrutta (anche con BACK, che viene gestito internamente all'ActionMode e non può essere evitato)
                 _adapter.selectionTracker.clearSelection()
-                super.onDestroyActionMode(mode)
-            }
-        }
+            })
+    }
 
     /**
      * TODO: selection changed viene scatenato due volte all'inizio:
      *  questo perché il tracker permette la selezione di più item trascinando la selezione
      */
     private fun createComicsAdapter(
-        actionModeController: ActionModeController
+        actionModeCallback: ActionMode.Callback
     ) = PagedListComicsAdapter.create(
         recyclerView = binding.list,
         onSelectionChange = { size ->
@@ -170,7 +170,7 @@ class ComicsFragment : Fragment() {
                 _listener.onFragmentRequestActionMode(
                     ACTION_MODE_NAME,
                     getString(R.string.title_selected, size),
-                    actionModeController
+                    actionModeCallback
                 )
             }
         },
