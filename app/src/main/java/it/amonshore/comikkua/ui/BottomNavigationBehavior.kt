@@ -1,155 +1,132 @@
-package it.amonshore.comikkua.ui;
+package it.amonshore.comikkua.ui
 
-import android.animation.ValueAnimator;
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.animation.ValueAnimator
+import android.content.Context
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.View
+import android.view.animation.DecelerateInterpolator
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.snackbar.Snackbar.SnackbarLayout
+import kotlin.math.max
+import kotlin.math.min
 
-import com.google.android.material.snackbar.Snackbar;
+/**
+ * Code from [Valentin Hinov converted from Kotlin](https://android.jlelse.eu/scroll-your-bottom-navigation-view-away-with-10-lines-of-code-346f1ed40e9e)
+ */
+class BottomNavigationBehavior<V>(
+    context: Context,
+    attrs: AttributeSet
+) : CoordinatorLayout.Behavior<V>(context, attrs) where V : View {
 
-import androidx.annotation.NonNull;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+    private var _lastStartedType = 0
+    private var _offsetAnimator: ValueAnimator? = null
 
-public class BottomNavigationBehavior<V extends View>  extends CoordinatorLayout.Behavior<V> {
+    override fun onStartNestedScroll(
+        coordinatorLayout: CoordinatorLayout,
+        child: V,
+        directTargetChild: View,
+        target: View,
+        axes: Int,
+        type: Int
+    ): Boolean {
+        if (axes != ViewCompat.SCROLL_AXIS_VERTICAL) return false
 
-    // Code from Valentin Hinov converted from Kotlin
-    // https://android.jlelse.eu/scroll-your-bottom-navigation-view-away-with-10-lines-of-code-346f1ed40e9e
+        _lastStartedType = type
+        _offsetAnimator?.cancel()
 
-    private int lastStartedType;
-    private ValueAnimator offsetAnimator;
-//    private boolean isSnappingEnabled = true; // set to false to disable snap support
-
-    public BottomNavigationBehavior (Context context, AttributeSet attrs) {
-        super(context, attrs);
+        return true
     }
 
-    public BottomNavigationBehavior () {
-        super();
+    override fun onStopNestedScroll(
+        coordinatorLayout: CoordinatorLayout,
+        child: V,
+        target: View,
+        type: Int
+    ) {
+        if (_lastStartedType == ViewCompat.TYPE_TOUCH ||
+            type == ViewCompat.TYPE_NON_TOUCH
+        ) {
+            val currTranslation = child.translationY
+            val childHalfHeight = child.height * 0.5f
+            val visible = currTranslation < childHalfHeight
+            animateBarVisibility(child, visible)
+        }
     }
 
-//    public void setSnappingEnabled(boolean isEnabled) {
-//        isSnappingEnabled = isEnabled;
-//        lastStartedType = 0;
-//        if (offsetAnimator != null) {
-//            offsetAnimator.cancel();
-//            offsetAnimator = null;
-//        }
-//    }
+    override fun onNestedPreScroll(
+        coordinatorLayout: CoordinatorLayout,
+        child: V,
+        target: View,
+        dx: Int,
+        dy: Int,
+        consumed: IntArray,
+        type: Int
+    ) {
+        super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type)
 
-//    public void expand(CoordinatorLayout coordinatorLayout, V child) {
-//
-//        int[] consumed = new int[2];
-//
-//        boolean curIsSnappingEnabled = isSnappingEnabled;
-//        if(curIsSnappingEnabled) {
-//            setSnappingEnabled(false);
-//        }
-//
-//        onNestedPreScroll(coordinatorLayout, child, null, 0, -1000, consumed, ViewCompat.TYPE_TOUCH);
-//
-//        if(curIsSnappingEnabled) {
-//            setSnappingEnabled(true);
-//        }
-//    }
+        child.translationY = max(
+            0f,
+            min(child.height.toFloat(), child.translationY + dy)
+        )
+    }
 
-    @Override
-    public boolean onStartNestedScroll(@NonNull CoordinatorLayout coordinatorLayout,
-                                       @NonNull V child, @NonNull View directTargetChild,
-                                       @NonNull View target, int axes, int type) {
+    override fun onApplyWindowInsets(
+        coordinatorLayout: CoordinatorLayout,
+        child: V,
+        insets: WindowInsetsCompat
+    ): WindowInsetsCompat {
+        val isVisible = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom == 0
+        animateBarVisibility(child, isVisible)
+        return super.onApplyWindowInsets(coordinatorLayout, child, insets)
+    }
 
-        if (axes != ViewCompat.SCROLL_AXIS_VERTICAL)
-            return false;
-
-        lastStartedType = type;
-        if(offsetAnimator!= null) {
-            offsetAnimator.cancel();
+    override fun layoutDependsOn(
+        parent: CoordinatorLayout,
+        child: V,
+        dependency: View
+    ): Boolean {
+        if (dependency is SnackbarLayout) {
+            updateSnackbar(child, dependency)
         }
 
-        return true;
+        return super.layoutDependsOn(parent, child, dependency)
     }
 
-    @Override
-    public void onStopNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull V child,
-                                   @NonNull View target, int type) {
-//        if (!isSnappingEnabled)
-//            return ;
-
-        // add snap behaviour
-        // Logic here borrowed from AppBarLayout onStopNestedScroll code
-
-        if (lastStartedType == ViewCompat.TYPE_TOUCH || type == ViewCompat.TYPE_NON_TOUCH) {
-
-            // find nearest seam
-            float currTranslation = child.getTranslationY();
-            float childHalfHeight = child.getHeight() * 0.5f;
-
-            if (currTranslation >= childHalfHeight) {
-                animateBarVisibility(child, false); // translate down
-            } else {
-                animateBarVisibility(child, true); // translate up
+    private fun updateSnackbar(
+        child: View,
+        snackbarLayout: View
+    ) {
+        val params = snackbarLayout.layoutParams
+        if (params is CoordinatorLayout.LayoutParams) {
+            with(params) {
+                anchorId = child.id
+                anchorGravity = Gravity.CENTER_HORIZONTAL
+                gravity = Gravity.CENTER_HORIZONTAL
             }
-
+            snackbarLayout.layoutParams = params
         }
     }
 
-    @Override
-    public void onNestedPreScroll (@NonNull CoordinatorLayout coordinatorLayout,
-                                   @NonNull V child, @NonNull View target,
-                                   int dx, int dy,
-                                   @NonNull int[] consumed, int type) {
-        super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
-        child.setTranslationY(Math.max(0f, Math.min(child.getHeight(), child.getTranslationY() + dy)));
-    }
-
-    @NonNull
-    @Override
-    public WindowInsetsCompat onApplyWindowInsets(@NonNull CoordinatorLayout coordinatorLayout,
-                                                  @NonNull V child,
-                                                  @NonNull WindowInsetsCompat insets) {
-        // CoordinatorLayout/BottomNavigationView: android:fitsSystemWindows="true"
-        animateBarVisibility(child, insets.getSystemWindowInsetBottom() == 0);
-        return super.onApplyWindowInsets(coordinatorLayout, child, insets);
-    }
-
-    @Override
-    public boolean layoutDependsOn(@NonNull CoordinatorLayout parent,
-                                   @NonNull V child, @NonNull View dependency) {
-        if(dependency instanceof Snackbar.SnackbarLayout) {
-            updateSnackbar(child, (Snackbar.SnackbarLayout)dependency);
-        }
-
-        return super.layoutDependsOn(parent, child, dependency);
-    }
-
-
-    private void updateSnackbar(View child, Snackbar.SnackbarLayout snackbarLayout) {
-        if(snackbarLayout.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
-            CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)snackbarLayout.getLayoutParams();
-
-            params.setAnchorId(child.getId());
-            params.anchorGravity = Gravity.CENTER_HORIZONTAL;
-            params.gravity = Gravity.CENTER_HORIZONTAL;
-            snackbarLayout.setLayoutParams(params);
-        }
-    }
-
-
-    private void animateBarVisibility(final View child, boolean isVisible) {
-        if (offsetAnimator == null) {
-            offsetAnimator = new ValueAnimator();
-            offsetAnimator.setInterpolator(new DecelerateInterpolator());
-            offsetAnimator.setDuration(150L);
-            offsetAnimator.addUpdateListener(animation -> child.setTranslationY((float)animation.getAnimatedValue()));
+    private fun animateBarVisibility(child: View, isVisible: Boolean) {
+        if (_offsetAnimator == null) {
+            _offsetAnimator = ValueAnimator().apply {
+                interpolator = DecelerateInterpolator()
+                duration = 150L
+                addUpdateListener { animation ->
+                    child.translationY = animation.animatedValue as Float
+                }
+            }
         } else {
-            offsetAnimator.cancel();
+            _offsetAnimator?.cancel()
         }
 
-        float targetTranslation = isVisible ? 0f : child.getHeight();
-        offsetAnimator.setFloatValues(child.getTranslationY(), targetTranslation);
-        offsetAnimator.start();
+        _offsetAnimator?.run {
+            val targetTranslation = if (isVisible) 0f else child.height.toFloat()
+            setFloatValues(child.translationY, targetTranslation)
+            start()
+        }
     }
 }
