@@ -1,7 +1,7 @@
 package it.amonshore.comikkua.data.release
 
 import android.content.Context
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -54,7 +54,7 @@ class ReleaseRepository(context: Context) {
         //  (quelle successive verrebbero cmq estratte in quanto fanno parte del "periodo corrente")
         val retainStart = System.currentTimeMillis() - ONE_DAY
 
-        LogHelperKt.d { "prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart" }
+        LogHelper.d { "prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart" }
 
         return _releaseDao.getNotableComicsReleasesFlow(
             refDate = refDate.toReleaseDate(),

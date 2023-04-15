@@ -13,7 +13,7 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import it.amonshore.comikkua.Constants
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.*
 import it.amonshore.comikkua.ui.MainActivity
@@ -34,11 +34,11 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
             val releases = repository.getNotPurchasedComicsReleases(releaseDateFrom, releaseDateTo)
 
             if (releases.isEmpty()) {
-                LogHelperKt.d { "There aren't releases to notify" }
+                LogHelper.d { "There aren't releases to notify" }
                 return@context Result.success()
             }
 
-            LogHelperKt.d { "There are ${releases.size} releases to notify" }
+            LogHelper.d { "There are ${releases.size} releases to notify" }
 
             val intent = createNotificationIntent(context)
             var id = Constants.NOTIFICATION_GROUP_ID
@@ -51,7 +51,7 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
 
             return@context Result.success()
         } catch (ex: Exception) {
-            LogHelperKt.e("Error in release notification", ex)
+            LogHelper.e("Error in release notification", ex)
             return@context Result.failure()
         }
     }

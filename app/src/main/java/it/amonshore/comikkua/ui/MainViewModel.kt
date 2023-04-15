@@ -30,7 +30,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
             if (key == Constants.KEY_AUTO_UPDATE_ENABLED) {
                 val enabled = sharedPreferences.getBoolean(Constants.KEY_AUTO_UPDATE_ENABLED, false)
-                LogHelperKt.d { "${Constants.KEY_AUTO_UPDATE_ENABLED} is changed to $enabled" }
+                LogHelper.d { "${Constants.KEY_AUTO_UPDATE_ENABLED} is changed to $enabled" }
                 if (enabled) {
                     enqueueUpdateReleasesWorker(application)
                 } else {
@@ -59,19 +59,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun undoRemove(tag: String) = viewModelScope.launch {
-        LogHelperKt.d { "Restore elements marked as removed with tag=$tag" }
+        LogHelper.d { "Restore elements marked as removed with tag=$tag" }
         _releaseRepository.undoRemoved(tag)
         _comicsRepository.undoRemoved(tag)
     }
 
     fun finalizeRemove(tag: String) = viewModelScope.launch {
-        LogHelperKt.d { "Deleting all elements marked as removed with tag=$tag" }
+        LogHelper.d { "Deleting all elements marked as removed with tag=$tag" }
         _releaseRepository.deleteRemoved(tag)
         _comicsRepository.deleteRemoved(tag)
     }
 
     fun setupWorkers() {
-        LogHelperKt.d { "Setup workers" }
+        LogHelper.d { "Setup workers" }
         setupUpdateReleasesWorker()
         setupReleaseNotificationWorker()
     }
@@ -97,7 +97,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun enqueueUpdateReleasesWorker(context: Context) {
-        LogHelperKt.d { "Enqueue UpdateReleasesWorker" }
+        LogHelper.d { "Enqueue UpdateReleasesWorker" }
         val workManager = WorkManager.getInstance(context)
 
         val constraints = Constraints.Builder()
@@ -117,7 +117,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun cancelUpdateReleasesWorker(context: Context) {
-        LogHelperKt.d { "Cancel UpdateReleasesWorker" }
+        LogHelper.d { "Cancel UpdateReleasesWorker" }
         val workManager = WorkManager.getInstance(context)
         workManager.cancelUniqueWork(UpdateReleasesWorker.WORK_NAME)
     }
@@ -142,13 +142,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun enqueueReleaseNotificationWorker(context: Context) {
-        LogHelperKt.d { "Enqueue ReleaseNotificationWorker" }
+        LogHelper.d { "Enqueue ReleaseNotificationWorker" }
         val workManager = WorkManager.getInstance(context)
 
         val nextStart = LocalDateTime.now().next(LocalTime.of(8, 0, 0))
         val delay = Duration.ofMillis(LocalDateTime.now().until(nextStart, ChronoUnit.MILLIS))
 
-        LogHelperKt.d { "ReleaseNotificationWorker initial delay=$delay" }
+        LogHelper.d { "ReleaseNotificationWorker initial delay=$delay" }
 
         val request =
             PeriodicWorkRequest.Builder(ReleasesNotificationWorker::class.java, 1, TimeUnit.DAYS)
@@ -163,7 +163,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun cancelReleaseNotificationWorker(context: Context) {
-        LogHelperKt.d { "Cancel ReleaseNotificationWorker" }
+        LogHelper.d { "Cancel ReleaseNotificationWorker" }
         val workManager = WorkManager.getInstance(context)
         workManager.cancelUniqueWork(ReleasesNotificationWorker.WORK_NAME)
     }

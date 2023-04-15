@@ -46,8 +46,6 @@ public class ComikkuDaoTest {
 
     @Before
     public void init() {
-        LogHelper.setTag("CMKTEST");
-
         final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDatabase = Room.inMemoryDatabaseBuilder(appContext, ComikkuDatabase.class).build();
 
@@ -158,7 +156,7 @@ public class ComikkuDaoTest {
             @Override
             public void onChanged(List<ComicsWithReleases> comicsWithReleases) {
                 for (ComicsWithReleases cwr : comicsWithReleases) {
-                    LogHelper.d("%d) %s [id=%d]", latch.getCount(), cwr.comics.name, cwr.comics.id);
+                    LogHelper.d(String.format("%d) %s [id=%d]", latch.getCount(), cwr.comics.name, cwr.comics.id));
                 }
                 latch.countDown();
             }

@@ -20,7 +20,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
@@ -64,7 +64,7 @@ class ReleasesFragment : Fragment() {
         _adapter = createReleasesAdapter(actionModeCallback)
 
         _viewModel.notableReleaseItems.observe(viewLifecycleOwner) { items ->
-            LogHelperKt.d { "release view model data changed size=${items.size}" }
+            LogHelper.d { "release view model data changed size=${items.size}" }
             _adapter.submitList(items)
         }
 
@@ -277,7 +277,7 @@ class ReleasesFragment : Fragment() {
     }
 
     private fun onNewReleasesLoaded(count: Int, tag: String) {
-        LogHelperKt.d { "New releases: $count with tag '$tag'" }
+        LogHelper.d { "New releases: $count with tag '$tag'" }
         binding.swipeRefresh.isRefreshing = false
         if (count == 0) {
             AlertDialog.Builder(requireContext(), R.style.DialogTheme)

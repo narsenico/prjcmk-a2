@@ -3,7 +3,7 @@ package it.amonshore.comikkua.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.release.ReleaseRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,10 +16,10 @@ class UpdateReleasesWorker(appContext: Context, workerParams: WorkerParameters) 
         val result = repository.loadNewReleases()
 
         return@context result.map {
-            LogHelperKt.i("Added ${it.count} new releases with tag='${it.tag}'")
+            LogHelper.i("Added ${it.count} new releases with tag='${it.tag}'")
             Result.success()
         }.recover {
-            LogHelperKt.e("Error updating releases", it)
+            LogHelper.e("Error updating releases", it)
             Result.failure()
         }.getOrThrow()
     }

@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
@@ -50,7 +50,7 @@ class ComicsSelectorFragment : Fragment() {
 
         _viewModel.filteredNotFollowedComics
             .observe(viewLifecycleOwner) { data ->
-                LogHelperKt.d { "not followed comics count=${data.size}" }
+                LogHelper.d { "not followed comics count=${data.size}" }
                 adapter.submitList(data)
                 binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
@@ -161,7 +161,7 @@ class ComicsSelectorFragment : Fragment() {
     }
 
     private fun onAvailableComicsLoaded(count: Int) {
-        LogHelperKt.d { "New available comics: $count" }
+        LogHelper.d { "New available comics: $count" }
         val msgId = if (count > 0)
             R.string.notification_available_comics_loaded
         else

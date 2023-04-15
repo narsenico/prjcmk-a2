@@ -19,7 +19,7 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 
@@ -210,7 +210,7 @@ class ComicsEditFragment : Fragment() {
             val uriFilePath = result.getUriFilePath(requireContext(), true)
             helper.setComicsImagePath(uriFilePath)
         } else {
-            LogHelperKt.e("Crop error", result.error)
+            LogHelper.e("Crop error", result.error)
         }
     }
 }

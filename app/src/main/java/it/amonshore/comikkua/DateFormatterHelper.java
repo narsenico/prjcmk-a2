@@ -43,7 +43,7 @@ public class DateFormatterHelper {
             return toUTCCalendar(parser.parse(date).getTime());
         } catch (ParseException pex) {
             if (BuildConfig.DEBUG) {
-                LogHelper.e(pex, "Error parsing date \"%s\"", date);
+                LogHelper.e(String.format("Error parsing date \"%s\"", date), pex);
             }
             return toUTCCalendar(System.currentTimeMillis());
         }
@@ -95,7 +95,7 @@ public class DateFormatterHelper {
             return parser.format(cdate.getTime());
         } catch (ParseException pex) {
             if (BuildConfig.DEBUG) {
-                LogHelper.e(pex, "Error parsing date \"%s\"", date);
+                LogHelper.e(String.format("Error parsing date \"%s\"", date), pex);
             }
             return null;
         }
@@ -129,7 +129,7 @@ public class DateFormatterHelper {
             }
         } catch (ParseException pex) {
             if (BuildConfig.DEBUG) {
-                LogHelper.e(pex, "Error parsing date \"%s\"", date);
+                LogHelper.e(String.format("Error parsing date \"%s\"", date), pex);
             }
             return date;
         }

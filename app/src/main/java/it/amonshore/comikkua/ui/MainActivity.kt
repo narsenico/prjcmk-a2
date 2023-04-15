@@ -17,7 +17,7 @@ import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import it.amonshore.comikkua.BuildConfig
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.ActivityMainBinding
 import java.time.Duration
@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity(),
         destination: NavDestination,
         arguments: Bundle?
     ) {
-        LogHelperKt.d { "onDestinationChanged ${destination.label} (keyboard is closed here)" }
+        LogHelper.d { "onDestinationChanged ${destination.label} (keyboard is closed here)" }
         supportActionBar?.setSubtitle(extractSubtitle(destination, arguments))
         window.hideKeyboard()
         _actionMode?.finish()
@@ -162,11 +162,11 @@ class MainActivity : AppCompatActivity(),
     private fun prepareUndoSnackbar(message: String, tag: String, timeout: Duration): Snackbar {
         return Snackbar.make(binding.bottomNav, message, timeout.toSnackbarTimeout())
             .setAction(android.R.string.cancel) {
-                LogHelperKt.d { "handleUndo undo with tag=$tag" }
+                LogHelper.d { "handleUndo undo with tag=$tag" }
                 _viewModel.undoRemove(tag)
             }
             .onDismissed {
-                LogHelperKt.d { "handleUndo finalize with tag=$tag" }
+                LogHelper.d { "handleUndo finalize with tag=$tag" }
                 _viewModel.finalizeRemove(tag)
             }
             .also {
@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity(),
     override fun handleUndo(message: String, tag: String, timeout: Duration) {
         resetUndo()
 
-        LogHelperKt.d { "handleUndo with tag=$tag" }
+        LogHelper.d { "handleUndo with tag=$tag" }
         _undoSnackBar = prepareUndoSnackbar(message, tag, timeout).also { it.show() }
     }
 

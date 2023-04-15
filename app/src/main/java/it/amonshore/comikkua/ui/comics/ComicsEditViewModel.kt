@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.ResultEx
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsRepository
@@ -103,7 +103,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
                 .orFail { UiComicsEditResultErrorType.ImageError }
                 .map { comics.apply { comics.image = Uri.fromFile(newImageFile).toString() } }
         } catch (ex: Exception) {
-            LogHelperKt.e("Error saving image", ex)
+            LogHelper.e("Error saving image", ex)
             ResultEx.Failure(UiComicsEditResultErrorType.ImageError)
         }
     }
@@ -122,7 +122,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
 
             ResultEx.Success(comics)
         } catch (ex: Exception) {
-            LogHelperKt.e("Error deleting old images", ex)
+            LogHelper.e("Error deleting old images", ex)
             ResultEx.Failure(UiComicsEditResultErrorType.ImageError)
         }
 }

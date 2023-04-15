@@ -7,7 +7,7 @@ import com.google.gson.ExclusionStrategy
 import com.google.gson.FieldAttributes
 import com.google.gson.GsonBuilder
 import it.amonshore.comikkua.Exclude
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -35,10 +35,10 @@ class BackupWorker(appContext: Context, workerParams: WorkerParameters) :
                 gson.toJson(data, it)
             }
 
-            LogHelperKt.i("Backup complete output=$output")
+            LogHelper.i("Backup complete output=$output")
             return@context Result.success()
         } catch (ex: Exception) {
-            LogHelperKt.e("Error during backup", ex)
+            LogHelper.e("Error during backup", ex)
             return@context Result.failure()
         }
     }

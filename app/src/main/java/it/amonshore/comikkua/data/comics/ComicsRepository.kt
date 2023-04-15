@@ -1,7 +1,7 @@
 package it.amonshore.comikkua.data.comics
 
 import android.content.Context
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.ui.isValidImageFileName
 
@@ -28,7 +28,7 @@ class ComicsRepository(private val context: Context) {
                 .listFiles { _, name -> isValidImageFileName(name, removedIds) }
                 ?.forEach { it.delete() }
         } catch (ex: Exception) {
-            LogHelperKt.e("There was an error deleting image files", ex)
+            LogHelper.e("There was an error deleting image files", ex)
         }
     }
 

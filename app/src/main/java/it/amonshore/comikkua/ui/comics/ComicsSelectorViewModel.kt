@@ -2,7 +2,7 @@ package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
 import androidx.lifecycle.*
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.containsAll
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.toComics
@@ -50,7 +50,7 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
             .debounce(FILTER_DEBOUNCE)
             .map { it.splitToWords() }
             .combine(comicsFlow) { filter, comicsList ->
-                LogHelperKt.d { "Filtering available comics by $filter over ${comicsList.size} comics" }
+                LogHelper.d { "Filtering available comics by $filter over ${comicsList.size} comics" }
                 if (filter.isEmpty()) {
                     comicsList
                 } else {

@@ -11,7 +11,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 
@@ -39,7 +39,7 @@ fun createDrawableRequestListener(): RequestListener<Drawable> = object : Reques
         target: Target<Drawable>?,
         isFirstResource: Boolean
     ): Boolean {
-        LogHelperKt.e("GLIDE LOAD FAILED with url=$model", e)
+        LogHelper.e("GLIDE LOAD FAILED with url=$model", e)
         // important to return false so the error placeholder can be placed
         return false
     }

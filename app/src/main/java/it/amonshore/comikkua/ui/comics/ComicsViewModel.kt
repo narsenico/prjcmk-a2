@@ -4,7 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.lifecycle.*
 import androidx.paging.*
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.ui.SingleLiveEvent
@@ -64,7 +64,7 @@ class ComicsViewModel(application: Application) : AndroidViewModel(application) 
                         enablePlaceholders = true
                     ),
                     pagingSourceFactory = {
-                        LogHelperKt.d { "get paged comics with filter=$filter" }
+                        LogHelper.d { "get paged comics with filter=$filter" }
                         _repository.getComicsWithReleasesPagingSource(filter)
                     }
                 ).liveData

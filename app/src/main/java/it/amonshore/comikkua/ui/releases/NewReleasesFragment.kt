@@ -13,7 +13,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.LogHelperKt
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.MultiRelease
@@ -61,7 +61,7 @@ class NewReleasesFragment : Fragment() {
 
         _viewModel.getReleaseViewModelItems(_tag)
             .observe(viewLifecycleOwner) { items ->
-                LogHelperKt.d { "release view model data changed size:${items.size}" }
+                LogHelper.d { "release view model data changed size:${items.size}" }
                 _adapter.submitList(items)
             }
 
