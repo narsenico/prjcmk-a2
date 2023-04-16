@@ -97,7 +97,7 @@ fun Pair<Comics, Release>.notes(): String? = if (second.hasNotes()) second.notes
 
 fun ComicsRelease.toNumbersString(): String {
     if (this is MultiRelease) {
-        Utility.formatInterval(null, ",", "~", *allNumbers).toString()
+        return Utility.formatInterval(null, ",", "~", *allNumbers).toString()
     }
 
     return release.number.toString()
