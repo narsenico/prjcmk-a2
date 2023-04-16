@@ -165,18 +165,16 @@ class ComicsEditFragmentHelper(
 
     fun getComics(): Comics {
         val comics = _comics!!
-        return Comics.create(binding.tilName.getText()).apply {
-            id = comics.id
-            sourceId = comics.sourceId
-            refJsonId = comics.refJsonId
-            publisher = binding.tilPublisher.getText()
-            series = binding.tilSeries.getText()
-            authors = binding.tilAuthors.getText()
-            notes = binding.tilNotes.getText()
-            periodicity = _periodicityList.getKey(binding.tilPeriodicity.selection)
-            price = parseToDouble(binding.tilPrice.getText())
+        return comics.copy(
+            name = binding.tilName.getText(),
+            publisher = binding.tilPublisher.getText(),
+            series = binding.tilSeries.getText(),
+            authors = binding.tilAuthors.getText(),
+            notes = binding.tilNotes.getText(),
+            periodicity = _periodicityList.getKey(binding.tilPeriodicity.selection),
+            price = parseToDouble(binding.tilPrice.getText()),
             image = _comicsImagePath?.let { Uri.parse(it).toString() }
-        }
+        )
     }
 
     private fun setLayoutWithSavedInstanceState(savedInstanceState: Bundle) {

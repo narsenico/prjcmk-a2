@@ -107,8 +107,8 @@ class ReleaseEditFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.saveReleases) {
-                    helper.isValid { valid ->
-                        // TODO: inserire solo se valido
+                    helper.isValid {
+                        // TODO: la lambda ritorna se valido
                         _viewModel.insertReleases(helper.createReleases().toList())
                     }
                     return true

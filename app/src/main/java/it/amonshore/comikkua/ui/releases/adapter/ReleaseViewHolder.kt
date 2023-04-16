@@ -75,7 +75,7 @@ class ReleaseViewHolder private constructor(val binding: ListitemReleaseBinding)
             binding.releaseMainCard.elevation = _initialMainCardElevation
             binding.releaseBackground.setBackgroundColor(itemView.context.getColor(R.color.colorItemNotPurchased))
         }
-        if (glide != null && release.comics.hasImage()) {
+        if (glide != null && release.comics.image != null) {
             glide
                 .load(release.comics.image.toUri())
                 .apply(getInstance(itemView.context).squareOptions)

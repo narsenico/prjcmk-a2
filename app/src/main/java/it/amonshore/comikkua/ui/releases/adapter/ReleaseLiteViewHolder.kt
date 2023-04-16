@@ -4,6 +4,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.selection.ItemDetailsLookup.ItemDetails
 import com.bumptech.glide.RequestManager
 import it.amonshore.comikkua.R
@@ -57,9 +58,9 @@ class ReleaseLiteViewHolder private constructor(val binding: ListitemReleaseLite
             binding.releaseMainCard.elevation = _mainCardElevation
             binding.releaseBackground.setBackgroundColor(itemView.context.getColor(R.color.colorItemNotPurchased))
         }
-        if (glide != null && release.comics.hasImage()) {
+        if (glide != null && release.comics.image != null) {
             glide
-                .load(Uri.parse(release.comics.image))
+                .load(release.comics.image.toUri())
                 .apply(getInstance(itemView.context).squareOptions)
                 .into(DrawableTextViewTarget(binding.txtReleaseNumbers))
         } else {

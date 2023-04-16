@@ -33,13 +33,11 @@ internal class ReleasePreloadModelProvider(
 
     override fun getPreloadRequestBuilder(item: IReleaseViewModelItem): RequestBuilder<*>? {
         val comicsRelease = item as ComicsRelease
-        return if (comicsRelease.comics.hasImage()) {
+        return comicsRelease.comics.image?.let {
             glide
-                .load(comicsRelease.comics.image.toUri())
+                .load(it.toUri())
                 .listener(createDrawableRequestListener())
                 .apply(_imageHelperKt.squareOptions)
-        } else {
-            null
         }
     }
 }

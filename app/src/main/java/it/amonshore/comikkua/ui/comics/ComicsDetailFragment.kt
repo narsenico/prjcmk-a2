@@ -252,7 +252,7 @@ class ComicsDetailFragment : Fragment() {
             txtPublisher.text = comics.comics.publisher
             txtAuthors.text = comics.comics.authors
             txtNotes.text = comics.comics.notes
-            if (comics.comics.hasImage()) {
+            if (comics.comics.image != null) {
                 txtInitial.text = ""
                 Glide.with(this)
                     .load(Uri.parse(comics.comics.image))

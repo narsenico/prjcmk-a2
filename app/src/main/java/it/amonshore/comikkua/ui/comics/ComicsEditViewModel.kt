@@ -91,7 +91,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun saveNewComicsImage(comics: Comics): ResultEx<Comics, UiComicsEditResultErrorType> {
-        if (!comics.hasImage()) {
+        if (comics.image == null) {
             return ResultEx.Success(comics)
         }
 
@@ -101,7 +101,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
             val newImageFile = File(context.filesDir, comics.newImageFileName())
             tempImageFile.renameTo(newImageFile)
                 .orFail { UiComicsEditResultErrorType.ImageError }
-                .map { comics.apply { comics.image = Uri.fromFile(newImageFile).toString() } }
+                .map { comics.copy(image = Uri.fromFile(newImageFile).toString()) }
         } catch (ex: Exception) {
             LogHelper.e("Error saving image", ex)
             ResultEx.Failure(UiComicsEditResultErrorType.ImageError)

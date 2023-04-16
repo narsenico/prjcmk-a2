@@ -1,6 +1,13 @@
 package it.amonshore.comikkua.data.release
 
-class MultiRelease(private val otherReleases: List<Release>) : ComicsRelease() {
+import it.amonshore.comikkua.data.comics.Comics
+
+class MultiRelease(
+    type: Int,
+    comics: Comics,
+    release: Release,
+    private val otherReleases: List<Release>
+) : ComicsRelease(type, comics, release) {
     override val itemType: Int
         get() = ITEM_TYPE
 
@@ -25,10 +32,7 @@ class MultiRelease(private val otherReleases: List<Release>) : ComicsRelease() {
         }
 
         fun build(): MultiRelease {
-            return MultiRelease(_otherReleases).apply {
-                comics = comicsRelease.comics
-                release = comicsRelease.release
-            }
+            return MultiRelease(0, comicsRelease.comics, comicsRelease.release, _otherReleases)
         }
     }
 

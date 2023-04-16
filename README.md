@@ -5,9 +5,15 @@
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle testate
 - [x] Non si riesce a togliere la data di una release una volta impostata
 - [x] Non vengono cancellati definitivamente gli ementi con removed=1 alla navigazione (vedi nota)
-- [ ] Auto complete degli autori non funziona 
+- [ ] Auto complete degli autori non funziona
+- [ ] Rivedere IReleaseViewModelItem (vedi nota)
 
 ## Note
+
+### IReleaseViewModelItem
+Questa interfaccia riguarda l'UI, non deve stare nel package data
+e quindi anche ReleaseHeader
+Anche ComicsRelease non deve implementare questa interfaccia, proprio perché vengono mischiati UI e data
 
 ### Bug rimozione definitiva elementi
 Come riprodurlo:

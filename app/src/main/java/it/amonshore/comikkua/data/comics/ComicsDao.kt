@@ -5,7 +5,7 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ComicsDaoKt {
+interface ComicsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comics: Comics)
 

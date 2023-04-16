@@ -1,15 +1,16 @@
 package it.amonshore.comikkua.data.release
 
 import androidx.room.DatabaseView
-import it.amonshore.comikkua.Constants
-import it.amonshore.comikkua.Constants.ReleaseTypeDef
+import androidx.room.Embedded
+import androidx.room.Ignore
 import it.amonshore.comikkua.data.comics.Comics
+import java.util.Objects
 
 /**
- * Vista per le uscite senza data non ancora acquistate.
+ * Vista per le uscite.
  */
 @DatabaseView(
-    viewName = "vMissingReleases",
+    viewName = "vComicsReleases",
     value = """
         SELECT
         tComics.id as cid,
@@ -43,16 +44,33 @@ import it.amonshore.comikkua.data.comics.Comics
         FROM tComics INNER JOIN tReleases
         ON tComics.id = tReleases.comicsId
         WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1
-        AND (date is null or date = '')
         """
 )
-class MissingRelease(
-    type: Int,
-    comics: Comics,
-    release: Release,
-) : ComicsRelease(type, comics, release) {
+open class ComicsRelease(
+    /**
+     * Indica la tipologia del dato estratto dalla query per un raggruppamento logico:
+     * release persa, mancante, di questa settimana, etc.
+     */
+    val type: Int,
+    @Embedded(prefix = "c") val comics: Comics,
+    @Embedded(prefix = "r") val release: Release,
+) : IReleaseViewModelItem {
+    @Ignore override val id: Long = release.id
+    @Ignore override val itemType = ITEM_TYPE
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other is ComicsRelease) {
+            return other.comics == comics && other.release == release
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(comics, release)
+    }
+
     companion object {
-        @ReleaseTypeDef
-        const val TYPE = Constants.RELEASE_MISSING
+        const val ITEM_TYPE = 2
     }
 }

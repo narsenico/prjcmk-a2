@@ -31,13 +31,11 @@ internal class ComicsPreloadModelProvider(
     }
 
     override fun getPreloadRequestBuilder(item: ComicsWithReleases): RequestBuilder<*>? {
-        return if (item.comics.hasImage()) {
+        return item.comics.image?.let {
             glide
-                .load(item.comics.image.toUri())
+                .load(it.toUri())
                 .listener(createDrawableRequestListener())
                 .apply(_imageHelperKt.circleOptions)
-        } else {
-            null
         }
     }
 }

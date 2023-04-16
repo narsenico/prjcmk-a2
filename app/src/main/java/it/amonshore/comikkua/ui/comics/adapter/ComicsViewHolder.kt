@@ -103,7 +103,7 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
         }
 
     private fun TextView.setImage(glide: RequestManager?, comics: Comics) {
-        if (glide == null || !comics.hasImage()) {
+        if (glide == null || comics.image == null) {
             text = comics.initial
             setBackgroundResource(R.drawable.background_comics_initial_noborder)
         } else {

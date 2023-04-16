@@ -6,7 +6,7 @@ import it.amonshore.comikkua.Constants
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ReleaseDaoKt {
+interface ReleaseDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(release: Release): Long

@@ -25,8 +25,8 @@ data class NewReleasesCountAndTag(val count: Int, val tag: String)
 class ReleaseRepository(context: Context) {
 
     private val _database = ComikkuDatabase.getDatabase(context)
-    private val _releaseDao = _database.releaseDaoKt()
-    private val _comicsDao by lazy { _database.comicsDaoKt() }
+    private val _releaseDao = _database.releaseDao()
+    private val _comicsDao by lazy { _database.comicsDao() }
     private val _service by lazy { CmkWebService.create() }
 
     fun getComicsReleasesByComicsIdFLow(comicsId: Long) =
@@ -105,18 +105,27 @@ class ReleaseRepository(context: Context) {
         _releaseDao.markedAsRemoved(ids, tag)
 
     suspend fun loadNewReleases(comics: ComicsWithReleases): Result<NewReleasesCountAndTag> =
-        withContext(Dispatchers.IO + SupervisorJob()) {
-            runCatching {
-                val tag = UUID.randomUUID().toString()
-                val releases = loadNewReleasesAsync(comics, tag).await()
+        if (comics.comics.isSourced) {
+            withContext(Dispatchers.IO + SupervisorJob()) {
+                runCatching {
+                    val tag = UUID.randomUUID().toString()
+                    val releases = loadNewReleasesAsync(
+                        sourceId = comics.comics.sourceId!!,
+                        fromNumber = comics.nextReleaseNumber
+                    )
+                        .await()
+                        .map { it.toRelease(comics.comics.id, tag) }
 
-                if (releases.isNotEmpty()) {
-                    _releaseDao.insert(releases)
+                    if (releases.isNotEmpty()) {
+                        _releaseDao.insert(releases)
+                    }
+
+                    val res = NewReleasesCountAndTag(releases.size, tag)
+                    return@withContext Result.success(res)
                 }
-
-                val res = NewReleasesCountAndTag(releases.size, tag)
-                return@withContext Result.success(res)
             }
+        } else {
+            Result.success(NewReleasesCountAndTag(0, ""))
         }
 
     suspend fun loadNewReleases(): Result<NewReleasesCountAndTag> =
@@ -137,17 +146,13 @@ class ReleaseRepository(context: Context) {
             }
         }
 
-    private suspend fun loadNewReleasesAsync(comics: ComicsWithReleases, tag: String) =
+    private suspend fun loadNewReleasesAsync(sourceId: String, fromNumber: Int) =
         coroutineScope {
             return@coroutineScope async {
-                val refId =
-                    comics.comics.sourceId // TODO: convertendo Comics in Kotlin potrà essere null
-                val fromNumber = comics.nextReleaseNumber
-                return@async _service.getReleases(refId, fromNumber)
+                return@async _service.getReleases(sourceId, fromNumber)
                     .filter {
                         it.number >= fromNumber // TODO: cmkweb ancora non supporta il parametro fromNumber, quindi devo filtrare
                     }
-                    .map { it.toRelease(comics.comics.id, tag) }
             }
         }
 

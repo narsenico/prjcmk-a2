@@ -7,7 +7,7 @@ import it.amonshore.comikkua.ui.isValidImageFileName
 
 class ComicsRepository(private val context: Context) {
 
-    private val _comicsDao = ComikkuDatabase.getDatabase(context).comicsDaoKt()
+    private val _comicsDao = ComikkuDatabase.getDatabase(context).comicsDao()
 
     suspend fun insert(comics: Comics) {
         _comicsDao.insert(comics)

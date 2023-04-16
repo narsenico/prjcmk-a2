@@ -93,7 +93,7 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
             .setContentIntent(intent)
             .setGroup(Constants.NOTIFICATION_GROUP)
 
-        if (comics.hasImage()) {
+        if (comics.image != null) {
             val largeIcon = Glide.with(context)
                 .asBitmap()
                 .load(Uri.parse(comics.image))

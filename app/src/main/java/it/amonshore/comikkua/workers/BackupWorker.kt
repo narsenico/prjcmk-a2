@@ -6,7 +6,7 @@ import androidx.work.WorkerParameters
 import com.google.gson.ExclusionStrategy
 import com.google.gson.FieldAttributes
 import com.google.gson.GsonBuilder
-import it.amonshore.comikkua.Exclude
+import it.amonshore.comikkua.BackupExclude
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,7 @@ class BackupWorker(appContext: Context, workerParams: WorkerParameters) :
                 .serializeNulls()
                 .setExclusionStrategies(object : ExclusionStrategy {
                     override fun shouldSkipField(f: FieldAttributes?): Boolean =
-                        f?.getAnnotation(Exclude::class.java) != null
+                        f?.getAnnotation(BackupExclude::class.java) != null
 
                     override fun shouldSkipClass(clazz: Class<*>?): Boolean = false
                 })

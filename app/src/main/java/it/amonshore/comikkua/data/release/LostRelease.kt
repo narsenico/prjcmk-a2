@@ -3,6 +3,7 @@ package it.amonshore.comikkua.data.release
 import androidx.room.DatabaseView
 import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.Constants.ReleaseTypeDef
+import it.amonshore.comikkua.data.comics.Comics
 
 /**
  * Vista per le uscite con data non ancora acquistate.
@@ -26,6 +27,8 @@ import it.amonshore.comikkua.Constants.ReleaseTypeDef
         tComics.sourceId as csourceId,
         tComics.selected as cselected,
         tComics.version as cversion,
+        tComics.removed as cremoved,
+        tComics.tag as ctag,
         tReleases.id as rid,
         tReleases.comicsId as rcomicsId,
         tReleases.number as rnumber,
@@ -35,14 +38,19 @@ import it.amonshore.comikkua.Constants.ReleaseTypeDef
         tReleases.ordered as rordered,
         tReleases.notes as rnotes,
         tReleases.lastUpdate as rlastUpdate,
-        tReleases.tag as rtag
+        tReleases.tag as rtag,
+        tReleases.removed as rremoved
         FROM tComics INNER JOIN tReleases
         ON tComics.id = tReleases.comicsId
         WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1
         AND (date is not null and date <> '')
         """
 )
-class LostRelease : ComicsRelease() {
+class LostRelease(
+    type: Int,
+    comics: Comics,
+    release: Release,
+) : ComicsRelease(type, comics, release) {
     companion object {
         @ReleaseTypeDef
         const val TYPE = Constants.RELEASE_LOST

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.RequestManager
@@ -103,9 +104,9 @@ class ReleaseEditFragmentHelper(
         binding.release.imgReleaseOrdered.visibility = View.INVISIBLE
         binding.release.imgReleaseMenu.visibility = View.INVISIBLE
         updatePurchased(false)
-        if (comics.comics.hasImage()) {
+        comics.comics.image?.run {
             glideRequestManager
-                .load(Uri.parse(comics.comics.image))
+                .load(this.toUri())
                 .apply(ImageHelperKt.getInstance(context).squareOptions)
                 .into(DrawableTextViewTarget(binding.release.txtReleaseNumbers))
         }
