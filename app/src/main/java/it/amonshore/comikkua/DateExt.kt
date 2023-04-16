@@ -1,12 +1,16 @@
 package it.amonshore.comikkua
 
 import android.content.Context
+import androidx.annotation.IntRange
+import java.text.ParseException
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-
 
 private val yearMonthDayFormatter by lazy {
     DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -55,3 +59,64 @@ fun LocalDate.toHumanReadable(
 
 fun LocalDate.toHumanReadableLong(context: Context): String =
     toHumanReadable(context, longFormatter)
+
+fun LocalDate.asUtc(): ZonedDateTime {
+    return LocalDateTime
+        .of(this, LocalTime.MIDNIGHT)
+        .atZone(ZoneId.of("UTC")) // viene applicata la zona UTC senza variare data/ora
+}
+
+fun LocalDate.asUtcMilliseconds(): Long {
+    return asUtc().toEpochSecond() * 1000L
+}
+
+fun Long.asLocalDate(): LocalDate {
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.of("UTC"))
+        .toLocalDate()
+}
+
+sealed class Period(@IntRange(from = 0) val count: Long) {
+    class Weekly(count: Long) : Period(count)
+    class Monthly(count: Long) : Period(count)
+    class Yearly(count: Long) : Period(count)
+    object None : Period(0)
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        return (other != null &&
+                other is Period &&
+                other::class == this::class &&
+                other.count == count)
+    }
+
+    override fun toString(): String {
+        return "${this::class.simpleName}($count)"
+    }
+
+    override fun hashCode(): Int {
+        return toString().hashCode()
+    }
+
+    companion object {
+        fun from(str: String): Period {
+            if (str.length < 2) throw ParseException("Cannot parse period", 0)
+
+            val count = str.substring(1).toLong()
+            if (count == 0L) return None
+
+            return when (str[0]) {
+                'W' -> Weekly(count)
+                'M' -> Monthly(count)
+                'Y' -> Yearly(count)
+                else -> None
+            }
+        }
+    }
+}
+
+operator fun LocalDate.plus(period: Period): LocalDate = when (period) {
+    is Period.None -> this
+    is Period.Weekly -> plusWeeks(period.count)
+    is Period.Monthly -> plusMonths(period.count)
+    is Period.Yearly -> plusYears(period.count)
+}

@@ -16,46 +16,6 @@ public class DateFormatterHelper {
     private static final DateFormat parser = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
 
     /**
-     * @param time tempo in millisecondi
-     * @return ritorna la rappresentazione della data nel format yyyyMMdd
-     */
-    public static String timeToString8(long time) {
-        return parser.format(time);
-    }
-
-    @NonNull
-    public static Calendar toUTCCalendar(@NonNull @Size(8) String date) {
-        try {
-            return toUTCCalendar(parser.parse(date).getTime());
-        } catch (ParseException pex) {
-            if (BuildConfig.DEBUG) {
-                LogHelper.e(String.format("Error parsing date \"%s\"", date), pex);
-            }
-            return toUTCCalendar(System.currentTimeMillis());
-        }
-    }
-
-    @NonNull
-    public static Calendar toUTCCalendar(long date) {
-        final Calendar calendar = Calendar.getInstance(Locale.getDefault());
-        calendar.setTimeInMillis(date);
-
-        final Calendar utccal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        utccal.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        return utccal;
-    }
-
-    @NonNull
-    public static Calendar fromUTCCalendar(long date) {
-        final Calendar utccal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        utccal.setTimeInMillis(date);
-
-        final Calendar calendar = Calendar.getInstance(Locale.getDefault());
-        calendar.set(utccal.get(Calendar.YEAR), utccal.get(Calendar.MONTH), utccal.get(Calendar.DAY_OF_MONTH));
-        return calendar;
-    }
-
-    /**
      * Crea una nuova data (yyyyMMdd) sommando il periodo di tempo specificato da periodicity.
      * Periodicity è una stringa composta da un carattere che esprime l'unità di tempo che può essere
      * W (settimane), M (mesi) e Y (anni).

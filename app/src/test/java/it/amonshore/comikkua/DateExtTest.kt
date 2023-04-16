@@ -5,6 +5,10 @@ import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Month
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import kotlin.random.Random
 
 class DateExtTest {
 
@@ -100,5 +104,100 @@ class DateExtTest {
 
         // Assert
         Assert.assertEquals(end, calc)
+    }
+
+    @Test
+    fun weekly_period_from_string() {
+        // Arrange
+        val count = Random.nextLong(1, 100)
+        val str = "W$count"
+        val expected = Period.Weekly(count)
+
+        // Act
+        val period = Period.from(str)
+
+        // Assert
+        Assert.assertEquals(expected, period)
+    }
+
+    @Test
+    fun monthly_period_from_string() {
+        // Arrange
+        val count = Random.nextLong(1, 100)
+        val str = "M$count"
+        val expected = Period.Monthly(count)
+
+        // Act
+        val period = Period.from(str)
+
+        // Assert
+        Assert.assertEquals(expected, period)
+    }
+
+    @Test
+    fun yearly_period_from_string() {
+        // Arrange
+        val count = Random.nextLong(1, 100)
+        val str = "Y$count"
+        val expected = Period.Yearly(count)
+
+        // Act
+        val period = Period.from(str)
+
+        // Assert
+        Assert.assertEquals(expected, period)
+    }
+
+    @Test
+    fun none_period_from_string() {
+        // Arrange
+        val count = 0
+        val str = "Y$count"
+        val expected = Period.None
+
+        // Act
+        val period = Period.from(str)
+
+        // Assert
+        Assert.assertEquals(expected, period)
+    }
+
+    @Test
+    fun local_date_as_utc() {
+        // Arrange
+        val localDate = LocalDate.of(2023, Month.APRIL, 16)
+        val expected = ZonedDateTime.of(2023, 4, 16, 0, 0, 0, 0, ZoneId.of("UTC"))
+
+        // Act
+        val utcDate = localDate.asUtc()
+
+        // Assert
+        Assert.assertEquals(expected, utcDate)
+    }
+
+    @Test
+    fun local_date_as_utc_milliseconds() {
+        // Arrange
+        val localDate = LocalDate.of(2023, Month.APRIL, 16)
+        val expected = 1681603200000L
+
+        // Act
+        val utcDate = localDate.asUtcMilliseconds()
+
+        // Assert
+        Assert.assertEquals(expected, utcDate)
+    }
+
+    @Test
+    fun utc_milliseconds_as_local_date() {
+        // Arrange
+        val millis = 1681603200000L
+        val expected = LocalDate.of(2023, Month.APRIL, 16)
+
+        // Act
+        val date = millis.asLocalDate()
+
+        // Assert
+        Assert.assertEquals(expected, date)
     }
 }

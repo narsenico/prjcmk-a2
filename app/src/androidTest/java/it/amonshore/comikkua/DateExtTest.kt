@@ -66,7 +66,7 @@ class DateExtTest {
 
         // Act
         val str = tomorrow.toHumanReadable(_context)
-val strLong = tomorrow.toHumanReadableLong(_context)
+        val strLong = tomorrow.toHumanReadableLong(_context)
 
         // Assert
         assertThat(str, `is`(expected))
