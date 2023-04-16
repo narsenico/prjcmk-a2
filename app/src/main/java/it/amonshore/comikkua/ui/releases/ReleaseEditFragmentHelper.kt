@@ -15,7 +15,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.ReleaseDate
-import it.amonshore.comikkua.Utility
+import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.asLocalDate
 import it.amonshore.comikkua.asUtcMilliseconds
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -98,12 +98,7 @@ class ReleaseEditFragmentHelper(
     fun setComics(comics: ComicsWithReleases) {
         binding.release.txtReleaseTitle.text = comics.comics.name
         binding.release.txtReleaseNotes.text = comics.comics.notes
-        binding.release.txtReleaseInfo.text = Utility.join(
-            ", ",
-            true,
-            comics.comics.publisher,
-            comics.comics.authors
-        )
+        binding.release.txtReleaseInfo.text = arrayOf(comics.comics.publisher, comics.comics.authors).joinToString(", ")
         binding.release.imgReleasePurchased.visibility = View.INVISIBLE
         binding.release.imgReleaseOrdered.visibility = View.INVISIBLE
         binding.release.imgReleaseMenu.visibility = View.INVISIBLE
