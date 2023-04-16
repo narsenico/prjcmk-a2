@@ -21,12 +21,13 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.databinding.FragmentComicsDetailBinding
+import it.amonshore.comikkua.toHumanReadable
+import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
@@ -272,11 +273,7 @@ class ComicsDetailFragment : Fragment() {
                     // TODO: non mi piace, dovrei mostrare la data solo se futura e nel formato ddd dd MMM
                     txtNext.text = context.getString(
                         R.string.release_next_dated, nextRelease.number,
-                        DateFormatterHelper.toHumanReadable(
-                            context,
-                            nextRelease.date,
-                            DateFormatterHelper.STYLE_SHORT
-                        )
+                        nextRelease.date.toLocalDate().toHumanReadable(context)
                     )
                 } else {
                     txtNext.text = context.getString(

@@ -4,11 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
-import it.amonshore.comikkua.data.release.*
+import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.MultiRelease
+import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.data.release.notes
+import it.amonshore.comikkua.data.release.toPair
 import it.amonshore.comikkua.joinToString
+import it.amonshore.comikkua.toHumanReadable
+import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.uriEncode
 
 fun Comics.toSharable(): String =
@@ -23,11 +28,7 @@ fun Pair<Comics, Release>.toSharable(context: Context): String {
             R.string.share_release,
             first.name,
             second.number,
-            DateFormatterHelper.toHumanReadable(
-                context,
-                second.date,
-                DateFormatterHelper.STYLE_SHORT
-            ),
+            second.date.toLocalDate().toHumanReadable(context),
             notes()
         )
     }
@@ -37,7 +38,8 @@ fun Pair<Comics, Release>.toSharable(context: Context): String {
         first.name,
         second.number,
         notes()
-    )}
+    )
+}
 
 fun Activity.share(comics: Comics) {
     shareText(this, comics.toSharable())

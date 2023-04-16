@@ -1,10 +1,11 @@
 package it.amonshore.comikkua.data.release
 
 import android.content.Context
-import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.Utility
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.joinToString
+import it.amonshore.comikkua.toHumanReadableLong
+import it.amonshore.comikkua.toLocalDate
 
 enum class ComicsReleaseJoinType(val value: Int) {
     None(0),
@@ -106,11 +107,7 @@ fun ComicsRelease.toHumanReadableDate(context: Context) =
     if (release.date.isNullOrEmpty()) {
         null
     } else {
-        DateFormatterHelper.toHumanReadable(
-            context,
-            release.date,
-            DateFormatterHelper.STYLE_FULL
-        )
+        release.date.toLocalDate().toHumanReadableLong(context)
     }
 
 fun ComicsRelease.info() = arrayOf(comics.publisher, comics.authors).joinToString(", ")

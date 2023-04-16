@@ -13,10 +13,17 @@ import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.RequestManager
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
-import it.amonshore.comikkua.*
+import it.amonshore.comikkua.DateFormatterHelper
+import it.amonshore.comikkua.R
+import it.amonshore.comikkua.Utility
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
+import it.amonshore.comikkua.parseInterval
+import it.amonshore.comikkua.parseToDouble
+import it.amonshore.comikkua.parseToString
+import it.amonshore.comikkua.toHumanReadableLong
+import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
 
@@ -182,15 +189,11 @@ class ReleaseEditFragmentHelper(
             startSelection =
                 DateFormatterHelper.toUTCCalendar(System.currentTimeMillis()).timeInMillis
         } else {
-            val humanized = DateFormatterHelper.toHumanReadable(
-                binding.tilDate.context,
-                DateFormatterHelper.timeToString8(
-                    DateFormatterHelper.fromUTCCalendar(
-                        _selectedDateInUtc
-                    ).timeInMillis
-                ),
-                DateFormatterHelper.STYLE_FULL
-            )
+            val humanized = DateFormatterHelper.timeToString8(
+                DateFormatterHelper.fromUTCCalendar(
+                    _selectedDateInUtc
+                ).timeInMillis
+            ).toLocalDate().toHumanReadableLong(binding.tilDate.context)
             binding.release.txtReleaseDate.text = humanized
             binding.tilDate.editText!!.setText(humanized)
             startSelection = _selectedDateInUtc
@@ -203,15 +206,11 @@ class ReleaseEditFragmentHelper(
             .apply {
                 addOnPositiveButtonClickListener { selection: Long ->
                     _selectedDateInUtc = selection
-                    val humanized = DateFormatterHelper.toHumanReadable(
-                        binding.tilDate.context,
-                        DateFormatterHelper.timeToString8(
-                            DateFormatterHelper.fromUTCCalendar(
-                                selection
-                            ).timeInMillis
-                        ),
-                        DateFormatterHelper.STYLE_FULL
-                    )
+                    val humanized = DateFormatterHelper.timeToString8(
+                        DateFormatterHelper.fromUTCCalendar(
+                            selection
+                        ).timeInMillis
+                    ).toLocalDate().toHumanReadableLong(binding.tilDate.context)
                     binding.release.txtReleaseDate.text = humanized
                     binding.tilDate.editText!!.setText(humanized)
                 }

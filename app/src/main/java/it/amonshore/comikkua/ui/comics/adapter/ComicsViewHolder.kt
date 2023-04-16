@@ -8,12 +8,13 @@ import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.recyclerview.selection.ItemDetailsLookup
 import com.bumptech.glide.RequestManager
-import it.amonshore.comikkua.DateFormatterHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.ListitemComicsBinding
+import it.amonshore.comikkua.toHumanReadable
+import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.IViewHolderWithDetails
 import it.amonshore.comikkua.ui.ImageHelperKt
@@ -97,7 +98,7 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
             context.getString(
                 R.string.release_next_dated,
                 number,
-                DateFormatterHelper.toHumanReadable(context, date, DateFormatterHelper.STYLE_SHORT)
+                date.toLocalDate().toHumanReadable(context)
             )
         }
 

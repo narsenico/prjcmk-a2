@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-class LocalDateExtTest {
+class DateExtTest {
 
     @Test
     fun get_first_day_of_week() {
@@ -70,7 +70,7 @@ class LocalDateExtTest {
         // Act
         val calc = start.next(time)
 
-        //
+        // Assert
         Assert.assertEquals(end, calc)
     }
 
@@ -84,7 +84,7 @@ class LocalDateExtTest {
         // Act
         val calc = start.next(time)
 
-        //
+        // Assert
         Assert.assertEquals(end, calc)
     }
 
@@ -98,7 +98,7 @@ class LocalDateExtTest {
         // Act
         val calc = start.next(time)
 
-        //
+        // Assert
         Assert.assertEquals(end, calc)
     }
 }

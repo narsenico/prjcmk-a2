@@ -1,9 +1,5 @@
 package it.amonshore.comikkua;
 
-import android.content.Context;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,24 +7,13 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
 public class DateFormatterHelper {
 
-    private static DateFormat parser = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-    private static DateFormat fullFormatter = SimpleDateFormat.getDateInstance(DateFormat.FULL, Locale.getDefault());
-    private static DateFormat shortFormatter = new SimpleDateFormat("EEE dd MMM", Locale.getDefault());
-
-    @IntDef({STYLE_FULL, STYLE_SHORT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Style {
-    }
-
-    public final static int STYLE_FULL = DateFormat.FULL;
-    public final static int STYLE_SHORT = DateFormat.SHORT;
+    private static final DateFormat parser = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
 
     /**
      * @param time tempo in millisecondi
@@ -38,6 +23,7 @@ public class DateFormatterHelper {
         return parser.format(time);
     }
 
+    @NonNull
     public static Calendar toUTCCalendar(@NonNull @Size(8) String date) {
         try {
             return toUTCCalendar(parser.parse(date).getTime());
@@ -49,6 +35,7 @@ public class DateFormatterHelper {
         }
     }
 
+    @NonNull
     public static Calendar toUTCCalendar(long date) {
         final Calendar calendar = Calendar.getInstance(Locale.getDefault());
         calendar.setTimeInMillis(date);
@@ -58,6 +45,7 @@ public class DateFormatterHelper {
         return utccal;
     }
 
+    @NonNull
     public static Calendar fromUTCCalendar(long date) {
         final Calendar utccal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         utccal.setTimeInMillis(date);
@@ -99,45 +87,5 @@ public class DateFormatterHelper {
             }
             return null;
         }
-    }
-
-    /**
-     * Ritorna "oggi", "domani" oppure la data formattata.
-     *
-     * @param context contesto
-     * @param date    data nel formato yyyyMMdd
-     * @return data formattata
-     */
-    public static String toHumanReadable(@NonNull Context context, @NonNull @Size(8) String date, @Style int style) {
-        try {
-            final Calendar check = Calendar.getInstance(Locale.getDefault());
-            check.setTime(parser.parse(date));
-            final Calendar ref = Calendar.getInstance(Locale.getDefault());
-            if (isSameDay(check, ref)) {
-                return context.getString(R.string.today);
-            } else {
-                ref.add(Calendar.DAY_OF_MONTH, 1);
-                if (isSameDay(check, ref)) {
-                    return context.getString(R.string.tomorrow);
-                } else {
-                    if (style == STYLE_FULL) {
-                        return fullFormatter.format(check.getTime());
-                    } else {
-                        return shortFormatter.format(check.getTime());
-                    }
-                }
-            }
-        } catch (ParseException pex) {
-            if (BuildConfig.DEBUG) {
-                LogHelper.e(String.format("Error parsing date \"%s\"", date), pex);
-            }
-            return date;
-        }
-    }
-
-    private static boolean isSameDay(Calendar c1, Calendar c2) {
-        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
-                c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH) &&
-                c1.get(Calendar.DAY_OF_MONTH) == c2.get(Calendar.DAY_OF_MONTH);
     }
 }
