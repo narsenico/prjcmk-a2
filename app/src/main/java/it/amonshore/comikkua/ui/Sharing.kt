@@ -23,12 +23,12 @@ fun Comics.toSharable(): String =
 fun ComicsRelease.toSharable(context: Context): String = toPair().toSharable(context)
 
 fun Pair<Comics, Release>.toSharable(context: Context): String {
-    if (second.hasDate()) {
+    if (second.date != null) {
         return context.getString(
             R.string.share_release,
             first.name,
             second.number,
-            second.date.toLocalDate().toHumanReadable(context),
+            second.date!!.toLocalDate().toHumanReadable(context),
             notes()
         )
     }

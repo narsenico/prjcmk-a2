@@ -5,7 +5,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.atFirstDayOfWeek
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
-import it.amonshore.comikkua.data.web.toRelease
+import it.amonshore.comikkua.data.toRelease
 import it.amonshore.comikkua.services.CmkWebService
 import it.amonshore.comikkua.toReleaseDate
 import kotlinx.coroutines.Dispatchers

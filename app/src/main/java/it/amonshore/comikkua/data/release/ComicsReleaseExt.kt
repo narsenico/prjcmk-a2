@@ -89,11 +89,11 @@ private fun canBeGrouped(
 ): Boolean =
     cr1.type == joinType.value && cr2.type == joinType.value && cr1.comics.id == cr2.comics.id
 
-fun ComicsRelease.notes(): String? = if (release.hasNotes()) release.notes else comics.notes
+fun ComicsRelease.notes(): String? = if (release.hasNotes) release.notes else comics.notes
 
 fun ComicsRelease.toPair(): Pair<Comics, Release> = Pair(comics, release)
 
-fun Pair<Comics, Release>.notes(): String? = if (second.hasNotes()) second.notes else first.notes
+fun Pair<Comics, Release>.notes(): String? = if (second.hasNotes) second.notes else first.notes
 
 fun ComicsRelease.toNumbersString(): String = if (this is MultiRelease) {
     getAllNumbers().toList().formatInterval(sequenceSeparator = "~")

@@ -1,7 +1,6 @@
 package it.amonshore.comikkua.ui.releases
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.text.method.DigitsKeyListener
 import android.view.View
@@ -16,12 +15,12 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.ReleaseDate
-import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.asLocalDate
 import it.amonshore.comikkua.asUtcMilliseconds
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
+import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.parseInterval
 import it.amonshore.comikkua.parseToDouble
 import it.amonshore.comikkua.parseToString
@@ -99,7 +98,8 @@ class ReleaseEditFragmentHelper(
     fun setComics(comics: ComicsWithReleases) {
         binding.release.txtReleaseTitle.text = comics.comics.name
         binding.release.txtReleaseNotes.text = comics.comics.notes
-        binding.release.txtReleaseInfo.text = arrayOf(comics.comics.publisher, comics.comics.authors).joinToString(", ")
+        binding.release.txtReleaseInfo.text =
+            arrayOf(comics.comics.publisher, comics.comics.authors).joinToString(", ")
         binding.release.imgReleasePurchased.visibility = View.INVISIBLE
         binding.release.imgReleaseOrdered.visibility = View.INVISIBLE
         binding.release.imgReleaseMenu.visibility = View.INVISIBLE
@@ -194,21 +194,25 @@ class ReleaseEditFragmentHelper(
     }
 
     fun createReleases(): List<Release> {
-        _release.date = _selectedDate
-        _release.notes = binding.tilNotes.editText!!.text.toString().trim()
-        _release.purchased = binding.chkPurchased.isChecked
-        _release.ordered = binding.chkOrdered.isChecked
-        _release.price = parseToDouble(binding.tilPrice.editText!!.text.toString())
+        val release = _release.copy(
+            date = _selectedDate,
+            notes = binding.tilNotes.editText!!.text.toString().trim(),
+            purchased = binding.chkPurchased.isChecked,
+            ordered = binding.chkOrdered.isChecked,
+            price = parseToDouble(binding.tilPrice.editText!!.text.toString())
+        )
 
         val numbers = parseInterval(
-            binding.tilNumbers.editText!!.text.toString().trim { it <= ' ' }
+            binding.tilNumbers.editText!!.text.toString().trim()
         )
         return numbers.map {
             // in questo caso imposto subito lastUpdate perché queste release potrebbero sovrascrivere quelle già esistenti
             // così facendo risultano ancora visibili nell'elenco release anche se già acquistate per tutto il periodo di retain (vedi ReleaeDao.getAllReleases)
-            Release.create(_release, System.currentTimeMillis()).apply {
+            release.copy(
+                id = Release.NEW_RELEASE_ID,
+                lastUpdate = System.currentTimeMillis(),
                 number = it
-            }
+            )
         }
     }
 

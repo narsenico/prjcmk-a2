@@ -15,7 +15,11 @@ import com.bumptech.glide.request.RequestOptions
 import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.data.release.*
+import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.data.release.ReleaseRepository
+import it.amonshore.comikkua.data.release.component1
+import it.amonshore.comikkua.data.release.component2
 import it.amonshore.comikkua.ui.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -133,7 +137,7 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
     }
 
     private fun Release.getContentText(context: Context) =
-        if (hasNotes()) context.getString(
+        if (hasNotes) context.getString(
             R.string.notification_new_release_detail_notes,
             number,
             notes

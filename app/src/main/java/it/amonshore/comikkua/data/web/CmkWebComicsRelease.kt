@@ -11,12 +11,3 @@ data class CmkWebComicsRelease(
     val last: Boolean,
     val refId: String,
 )
-
-fun CmkWebComicsRelease.toRelease(comicsId: Long, tag: String? = null): Release {
-    val release = Release()
-    release.comicsId = comicsId;
-    release.number = number;
-    release.date = releaseDate;
-    release.tag = tag;
-    return release;
-}
