@@ -1,7 +1,7 @@
 package it.amonshore.comikkua
 
 import java.text.NumberFormat
-import java.util.*
+import java.util.Locale
 
 private var numberFormat: NumberFormat = NumberFormat.getNumberInstance(Locale.US)
 
@@ -27,9 +27,40 @@ fun parseInterval(
         1 -> {
             acc.add(range[0])
         }
+
         2 -> {
             acc.addAll((range[0]..range[1]))
         }
     }
     acc
 }.toList()
+
+fun List<Int>.formatInterval(
+    separator: String = ",",
+    sequenceSeparator: String = "-"
+): String {
+    if (isEmpty()) return ""
+
+    val buff = StringBuilder()
+    var last = get(0)
+    var count = 0
+    buff.append(last)
+    for (ii in 1 until size) {
+        if (get(ii) == last + 1) {
+            last = get(ii)
+            ++count
+        } else {
+            if (count > 0) {
+                buff.append(sequenceSeparator).append(last)
+            }
+            last = get(ii)
+            count = 0
+            buff.append(separator).append(last)
+        }
+    }
+    if (count > 0) {
+        buff.append(sequenceSeparator).append(last)
+    }
+
+    return buff.toString()
+}

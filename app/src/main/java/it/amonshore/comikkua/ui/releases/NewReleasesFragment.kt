@@ -266,9 +266,9 @@ class NewReleasesFragment : Fragment() {
         if (release is MultiRelease) {
             AlertDialog.Builder(requireContext(), R.style.DialogTheme)
                 .setTitle(release.comics.name)
-                .setMessage(getString(R.string.confirm_delete_multi_release, release.size()))
+                .setMessage(getString(R.string.confirm_delete_multi_release, release.size))
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    _viewModel.markAsRemovedUsingTag(release.allReleaseId.toList(), _tag)
+                    _viewModel.markAsRemovedUsingTag(release.getAllIds().toList(), _tag)
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()

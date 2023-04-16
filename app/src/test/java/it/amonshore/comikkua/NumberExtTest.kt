@@ -90,4 +90,17 @@ class NumberExtTest {
         // Assert
         Assert.assertEquals(expected, interval)
     }
+
+    @Test
+    fun format_interval() {
+        // Arrange
+        val list = listOf(1,2,5,6,7)
+        val expected = "1-2,5-7"
+
+        // Act
+        val interval = list.formatInterval()
+
+        // Assert
+        Assert.assertEquals(expected, interval)
+    }
 }

@@ -46,11 +46,9 @@ fun Activity.share(comics: Comics) {
 }
 
 fun Activity.share(release: MultiRelease) {
-    val rows = mutableListOf<String>()
-    rows.add(release.toSharable(this))
-    for (other in release.otherReleases) {
-        rows.add((release.comics to other).toSharable(this))
-    }
+    val rows = release.getAllReleases()
+        .map { (release.comics to it).toSharable(this) }
+        .toList()
     shareText(this, rows)
 }
 

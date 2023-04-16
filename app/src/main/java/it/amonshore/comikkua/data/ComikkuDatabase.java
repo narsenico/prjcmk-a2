@@ -25,7 +25,7 @@ import it.amonshore.comikkua.data.web.CmkWebDao;
         views = {ComicsRelease.class,
                 MissingRelease.class, LostRelease.class, DatedRelease.class,
                 PurchasedRelease.class, NotPurchasedRelease.class},
-        version = 11)
+        version = 13)
 public abstract class ComikkuDatabase extends RoomDatabase {
 
     public abstract ComicsDao comicsDao();

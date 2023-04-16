@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "f6dcfd72ed287c0478bb0748e5f36965",
+    "identityHash": "714fd6527a71e4a96409520b3cb2ccaa",
     "entities": [
       {
         "tableName": "tComics",
@@ -327,7 +327,7 @@
       },
       {
         "viewName": "vPurchasedReleases",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tComics.id as cid, tComics.name as cname, tComics.series as cseries, tComics.publisher as cpublisher, tComics.authors as cauthors, tComics.price as cprice, tComics.periodicity as cperiodicity, tComics.reserved as creserved, tComics.notes as cnotes, tComics.image as cimage, tComics.lastUpdate as clastUpdate, tComics.refJsonId as crefJsonId, tComics.sourceId as csourceId, tComics.selected as cselected, tComics.version as cversion, tReleases.id as rid, tReleases.comicsId as rcomicsId, tReleases.number as rnumber, tReleases.date as rdate, tReleases.price as rprice, tReleases.purchased as rpurchased, tReleases.ordered as rordered, tReleases.notes as rnotes, tReleases.lastUpdate as rlastUpdate, tReleases.tag as rtag FROM tComics INNER JOIN tReleases ON tComics.id = tReleases.comicsId WHERE tComics.removed = 0 AND tReleases.removed = 0 AND tComics.selected = 1 AND purchased = 1"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT \n        tComics.id as cid, \n        tComics.name as cname, \n        tComics.series as cseries, \n        tComics.publisher as cpublisher, \n        tComics.authors as cauthors, \n        tComics.price as cprice, \n        tComics.periodicity as cperiodicity, \n        tComics.reserved as creserved, \n        tComics.notes as cnotes, \n        tComics.image as cimage, \n        tComics.lastUpdate as clastUpdate, \n        tComics.refJsonId as crefJsonId, \n        tComics.sourceId as csourceId, \n        tComics.selected as cselected, \n        tComics.version as cversion, \n        tReleases.id as rid, \n        tReleases.comicsId as rcomicsId, \n        tReleases.number as rnumber, \n        tReleases.date as rdate, \n        tReleases.price as rprice, \n        tReleases.purchased as rpurchased, \n        tReleases.ordered as rordered, \n        tReleases.notes as rnotes, \n        tReleases.lastUpdate as rlastUpdate, \n        tReleases.tag as rtag \n        FROM tComics INNER JOIN tReleases \n        ON tComics.id = tReleases.comicsId \n        WHERE \n        tComics.removed = 0 \n        AND tReleases.removed = 0 \n        AND tComics.selected = 1 \n        AND purchased = 1"
       },
       {
         "viewName": "vNotPurchasedReleases",
@@ -336,7 +336,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f6dcfd72ed287c0478bb0748e5f36965')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '714fd6527a71e4a96409520b3cb2ccaa')"
     ]
   }
 }
