@@ -3,7 +3,7 @@
 ## TODO
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle release
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle testate
-- [ ] Non si riesce a togliere la data di una release una volta impostata
+- [x] Non si riesce a togliere la data di una release una volta impostata
 - [x] Non vengono cancellati definitivamente gli ementi con removed=1 alla navigazione (vedi nota)
 
 ## Note
