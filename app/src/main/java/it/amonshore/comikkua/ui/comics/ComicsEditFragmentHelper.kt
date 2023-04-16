@@ -13,9 +13,11 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Periodicity
+import it.amonshore.comikkua.data.release.getPeriodicityList
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 import it.amonshore.comikkua.parseToDouble
 import it.amonshore.comikkua.parseToString
+import it.amonshore.comikkua.toKey
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
 
@@ -34,7 +36,7 @@ class ComicsEditFragmentHelper(
     private val glideRequestManager: RequestManager
 ) {
 
-    private val _periodicityList = Periodicity.createList(context)
+    private val _periodicityList = getPeriodicityList(context)
     private val _comicsImageViewTarget = DrawableTextViewTarget(binding.comics.txtComicsInitial)
 
     private var _comics: Comics? = null
@@ -135,18 +137,22 @@ class ComicsEditFragmentHelper(
             UiComicsEditResultErrorType.None -> {
                 binding.tilName.isErrorEnabled = false
             }
+
             UiComicsEditResultErrorType.EmptyName -> {
                 binding.tilName.error = context.getText(R.string.comics_name_empty_error)
                 binding.tilName.isErrorEnabled = true
             }
+
             UiComicsEditResultErrorType.InvalidId -> {
                 binding.tilName.error = context.getText(R.string.comics_saving_error)
                 binding.tilName.isErrorEnabled = true
             }
+
             UiComicsEditResultErrorType.NameAlreadyUsed -> {
                 binding.tilName.error = context.getText(R.string.comics_name_notunique_error)
                 binding.tilName.isErrorEnabled = true
             }
+
             UiComicsEditResultErrorType.ImageError -> {
                 Toast.makeText(
                     binding.root.context,
@@ -231,10 +237,10 @@ class ComicsEditFragmentHelper(
         editText!!.text.toString().trim()
 
     private fun List<Periodicity>.indexByKey(key: String?) =
-        if (key == null) -1 else withIndex().find { it.value.key == key }?.index ?: 0
+        if (key == null) -1 else withIndex().find { it.value.period.toKey() == key }?.index ?: 0
 
     private fun List<Periodicity>.getKey(position: Int) =
-        if (position > 0) get(position).key else get(0).key
+        if (position > 0) get(position).period.toKey() else null
 
     private fun String?.getInitial() = if (isNullOrBlank()) "" else substring(0, 1)
 }
