@@ -98,7 +98,8 @@ sealed class Period(@IntRange(from = 0) val count: Long) {
     }
 
     companion object {
-        fun from(str: String): Period {
+        fun from(str: String?): Period {
+            if (str.isNullOrEmpty()) return None
             if (str.length < 2) throw ParseException("Cannot parse period", 0)
 
             val count = str.substring(1).toLong()
@@ -114,7 +115,7 @@ sealed class Period(@IntRange(from = 0) val count: Long) {
     }
 }
 
-operator fun LocalDate.plus(period: Period): LocalDate = when (period) {
+fun LocalDate.plusPeriod(period: Period): LocalDate = when (period) {
     is Period.None -> this
     is Period.Weekly -> plusWeeks(period.count)
     is Period.Monthly -> plusMonths(period.count)
