@@ -2,7 +2,7 @@ package it.amonshore.comikkua.data.release
 
 import androidx.annotation.Size
 import androidx.room.*
-import it.amonshore.comikkua.Constants
+import it.amonshore.comikkua.RELEASE_NEW
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -41,7 +41,10 @@ interface ReleaseDao {
     suspend fun getComicsReleases(ids: List<Long>): List<ComicsRelease>
 
     @Query("SELECT ${DatedRelease.TYPE} as type, * FROM vDatedReleases WHERE rpurchased = 0 AND rdate BETWEEN :startDate AND :endDate")
-    suspend fun getNotPurchasedComicsReleases(@Size(8) startDate: String, @Size(8) endDate: String): List<ComicsRelease>
+    suspend fun getNotPurchasedComicsReleases(
+        @Size(8) startDate: String,
+        @Size(8) endDate: String
+    ): List<ComicsRelease>
 
     @Query(
         """SELECT ${LostRelease.TYPE} as type, * 
@@ -129,7 +132,7 @@ interface ReleaseDao {
     ): Flow<List<ComicsRelease>>
 
     @Query(
-        """SELECT ${Constants.RELEASE_NEW} as type, * 
+        """SELECT $RELEASE_NEW as type, * 
               FROM vComicsReleases 
               WHERE rtag = :tag 
               ORDER BY rdate, cname COLLATE NOCASE ASC, rnumber

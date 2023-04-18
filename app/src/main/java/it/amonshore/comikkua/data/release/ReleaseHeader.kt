@@ -1,10 +1,10 @@
 package it.amonshore.comikkua.data.release
 
-import it.amonshore.comikkua.Constants
+import it.amonshore.comikkua.ReleaseTypeDef
 
 data class ReleaseHeader(
     private val relativeId: Long,
-    @Constants.ReleaseTypeDef val type: Int,
+    @ReleaseTypeDef val type: Int,
     var totalCount: Int = 0,
     var purchasedCount: Int = 0
 ) : IReleaseViewModelItem {

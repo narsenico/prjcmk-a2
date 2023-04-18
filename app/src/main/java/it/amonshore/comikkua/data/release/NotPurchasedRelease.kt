@@ -1,8 +1,8 @@
 package it.amonshore.comikkua.data.release
 
 import androidx.room.DatabaseView
-import it.amonshore.comikkua.Constants
-import it.amonshore.comikkua.Constants.ReleaseTypeDef
+import it.amonshore.comikkua.RELEASE_NOT_PURCHASED
+import it.amonshore.comikkua.ReleaseTypeDef
 import it.amonshore.comikkua.data.comics.Comics
 
 /**
@@ -51,6 +51,6 @@ class NotPurchasedRelease(
 ) : ComicsRelease(type, comics, release) {
     companion object {
         @ReleaseTypeDef
-        const val TYPE = Constants.RELEASE_NOT_PURCHASED
+        const val TYPE = RELEASE_NOT_PURCHASED
     }
 }

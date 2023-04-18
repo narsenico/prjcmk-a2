@@ -12,8 +12,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import it.amonshore.comikkua.Constants
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.NOTIFICATION_GROUP
+import it.amonshore.comikkua.NOTIFICATION_GROUP_ID
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.data.release.Release
@@ -45,13 +46,13 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
             LogHelper.d { "There are ${releases.size} releases to notify" }
 
             val intent = createNotificationIntent(context)
-            var id = Constants.NOTIFICATION_GROUP_ID
+            var id = NOTIFICATION_GROUP_ID
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             produceNotificationFromReleases(context, releases, intent) {
                 notificationManager.notify(++id, it)
             }
             val summaryNotification = createSummaryNotification(context, releases, intent)
-            notificationManager.notify(Constants.NOTIFICATION_GROUP_ID, summaryNotification)
+            notificationManager.notify(NOTIFICATION_GROUP_ID, summaryNotification)
 
             return@context Result.success()
         } catch (ex: Exception) {
@@ -95,7 +96,7 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
             .setNumber(release.number) // TODO: non appare da nessuna parte!
             .setAutoCancel(true)
             .setContentIntent(intent)
-            .setGroup(Constants.NOTIFICATION_GROUP)
+            .setGroup(NOTIFICATION_GROUP)
 
         if (comics.image != null) {
             val largeIcon = Glide.with(context)
@@ -131,7 +132,7 @@ class ReleasesNotificationWorker(appContext: Context, params: WorkerParameters) 
             .setStyle(inboxStyle)
             .setAutoCancel(true)
             .setContentIntent(intent)
-            .setGroup(Constants.NOTIFICATION_GROUP)
+            .setGroup(NOTIFICATION_GROUP)
             .setGroupSummary(true)
             .build()
     }

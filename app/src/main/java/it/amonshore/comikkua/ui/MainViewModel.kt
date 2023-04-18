@@ -28,9 +28,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _onAutoUpdateEnabledChanged =
         SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == Constants.KEY_AUTO_UPDATE_ENABLED) {
-                val enabled = sharedPreferences.getBoolean(Constants.KEY_AUTO_UPDATE_ENABLED, false)
-                LogHelper.d { "${Constants.KEY_AUTO_UPDATE_ENABLED} is changed to $enabled" }
+            if (key == KEY_AUTO_UPDATE_ENABLED) {
+                val enabled = sharedPreferences.getBoolean(KEY_AUTO_UPDATE_ENABLED, false)
+                LogHelper.d { "$KEY_AUTO_UPDATE_ENABLED is changed to $enabled" }
                 if (enabled) {
                     enqueueUpdateReleasesWorker(application)
                 } else {
@@ -88,7 +88,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(notificationChannel)
 
-        val enabled = _sharedPreferences.getBoolean(Constants.KEY_AUTO_UPDATE_ENABLED, false)
+        val enabled = _sharedPreferences.getBoolean(KEY_AUTO_UPDATE_ENABLED, false)
         if (enabled) {
             enqueueUpdateReleasesWorker(context)
         } else {

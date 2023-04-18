@@ -1,8 +1,10 @@
 package it.amonshore.comikkua.data.release
 
 import androidx.room.DatabaseView
-import it.amonshore.comikkua.Constants
-import it.amonshore.comikkua.Constants.ReleaseTypeDef
+import it.amonshore.comikkua.RELEASE_DATED
+import it.amonshore.comikkua.RELEASE_DATED_NEXT
+import it.amonshore.comikkua.RELEASE_OTHER
+import it.amonshore.comikkua.ReleaseTypeDef
 import it.amonshore.comikkua.data.comics.Comics
 
 /**
@@ -53,12 +55,12 @@ class DatedRelease(
 ) : ComicsRelease(type, comics, release) {
     companion object {
         @ReleaseTypeDef
-        const val TYPE = Constants.RELEASE_DATED
+        const val TYPE = RELEASE_DATED
 
         @ReleaseTypeDef
-        const val TYPE_NEXT = Constants.RELEASE_DATED_NEXT
+        const val TYPE_NEXT = RELEASE_DATED_NEXT
 
         @ReleaseTypeDef
-        const val TYPE_OTHER = Constants.RELEASE_OTHER
+        const val TYPE_OTHER = RELEASE_OTHER
     }
 }
