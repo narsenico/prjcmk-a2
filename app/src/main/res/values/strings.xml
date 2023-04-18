@@ -178,4 +178,5 @@
     <string name="search_comics_hint">Search comics</string>
     <string name="load_available_comics">Load available comics</string>
     <string name="loading_available_comics">Loading available comics</string>
+    <string name="comics_image">Comics image</string>
 </resources>

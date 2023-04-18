@@ -37,7 +37,6 @@ data class Release(
     val hasNotes = !notes.isNullOrBlank()
 
     companion object {
-        const val NO_RELEASE_ID = -1L
         const val NEW_RELEASE_ID = 0L
 
         fun create(comicsId: Long, number: Int, date: LocalDate? = null) = Release(

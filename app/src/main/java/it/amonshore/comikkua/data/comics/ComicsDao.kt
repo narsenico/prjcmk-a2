@@ -24,9 +24,6 @@ interface ComicsDao {
     @Transaction
     suspend fun markedAsRemoved(ids: List<Long>, tag: String): Int
 
-    @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
-    suspend fun getComics(): List<Comics>
-
     @Query("SELECT * FROM tComics WHERE name = :name COLLATE NOCASE AND removed = 0 AND selected = 1")
     suspend fun getComicsByName(name: String): Comics?
 

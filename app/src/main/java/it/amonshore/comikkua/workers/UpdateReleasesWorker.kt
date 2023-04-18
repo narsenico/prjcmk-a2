@@ -25,7 +25,7 @@ class UpdateReleasesWorker(appContext: Context, workerParams: WorkerParameters) 
     }
 
     companion object {
-        const val CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_AUTO_UPDATE";
+        const val CHANNEL_ID = "it.amonshore.comikkua.CHANNEL_AUTO_UPDATE"
         val WORK_NAME: String = UpdateReleasesWorker::class.java.name
     }
 }

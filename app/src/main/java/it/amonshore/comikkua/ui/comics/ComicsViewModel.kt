@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 
-private const val FILTER_DEBOUNCE = 300L;
+private const val FILTER_DEBOUNCE = 300L
 private val SPACE_REGEX = "\\s+".toRegex()
 
 sealed class UiComicsEvent {

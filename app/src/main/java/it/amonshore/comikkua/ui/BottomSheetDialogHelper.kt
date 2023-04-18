@@ -3,7 +3,6 @@ package it.amonshore.comikkua.ui
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.core.view.children
 import androidx.fragment.app.FragmentActivity

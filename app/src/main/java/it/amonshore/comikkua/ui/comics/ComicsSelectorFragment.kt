@@ -126,18 +126,18 @@ class ComicsSelectorFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                when (menuItem.itemId) {
+                return when (menuItem.itemId) {
                     R.id.refresh -> {
                         loadAvailableComics()
-                        return true
+                        true
                     }
 
                     R.id.deleteComics -> {
                         deleteAvailableComics()
-                        return true
+                        true
                     }
 
-                    else -> return false
+                    else -> false
                 }
 
             }

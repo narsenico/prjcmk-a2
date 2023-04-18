@@ -181,7 +181,8 @@
             android:layout_height="104dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="@dimen/item_margin_default"
-            android:src="@drawable/background_comics_initial_noborder_back" />
+            android:src="@drawable/background_comics_initial_noborder_back"
+            android:contentDescription="@string/comics_image" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/txt_comics_initial"

@@ -50,8 +50,4 @@ data class AvailableComics(
     override fun hashCode(): Int {
         return sourceId.hashCode()
     }
-
-    companion object {
-        const val NO_COMICS_ID: Long = -1
-    }
 }

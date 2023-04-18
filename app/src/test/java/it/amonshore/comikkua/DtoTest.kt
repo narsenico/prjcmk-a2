@@ -16,9 +16,9 @@ class DtoTest {
     @Test
     fun available_comics_equals_by_source_id() {
         // Arrange
-        val a1 = createAvailableComics("A", "aaa");
-        val a2 = createAvailableComics("A", "AAAA");
-        val b1 = createAvailableComics("B", "aaa");
+        val a1 = createAvailableComics("A", "aaa")
+        val a2 = createAvailableComics("A", "AAAA")
+        val b1 = createAvailableComics("B", "aaa")
 
         // Act
         // Assert

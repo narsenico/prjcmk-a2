@@ -30,8 +30,6 @@ fun isValidImageFileName(fileName: String, comicsIds: List<Long>): Boolean {
     } ?: false
 }
 
-fun isValidImageFileName(fileName: String): Boolean = rgImageFileName.matches(fileName)
-
 fun createDrawableRequestListener(): RequestListener<Drawable> = object : RequestListener<Drawable> {
     override fun onLoadFailed(
         e: GlideException?,
@@ -65,9 +63,6 @@ class ImageHelperKt private constructor(
     val defaultSize: Int
     val squareOptions: RequestOptions
     val circleOptions: RequestOptions
-
-    @Deprecated("Spostare fuori dalla classe appena possibile")
-    val drawableRequestListener: RequestListener<Drawable> = createDrawableRequestListener()
 
     init {
         defaultSize = _defaultSize

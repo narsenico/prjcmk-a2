@@ -7,7 +7,6 @@
 .externalNativeBuild
 .idea/*
 !.idea/copyright
-.DS_Store
 ktlint
 todo.txt
 /tmp/**/*
