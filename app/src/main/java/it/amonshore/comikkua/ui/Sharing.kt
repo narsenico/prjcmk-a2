@@ -13,7 +13,6 @@ import it.amonshore.comikkua.data.release.notes
 import it.amonshore.comikkua.data.release.toPair
 import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.toHumanReadable
-import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.uriEncode
 
 fun Comics.toSharable(): String =
@@ -28,7 +27,7 @@ fun Pair<Comics, Release>.toSharable(context: Context): String {
             R.string.share_release,
             first.name,
             second.number,
-            second.date!!.toLocalDate().toHumanReadable(context),
+            second.date!!.toHumanReadable(context),
             notes()
         )
     }

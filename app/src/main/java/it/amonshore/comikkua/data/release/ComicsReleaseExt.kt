@@ -5,7 +5,6 @@ import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.formatInterval
 import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.toHumanReadableLong
-import it.amonshore.comikkua.toLocalDate
 
 enum class ComicsReleaseJoinType(val value: Int) {
     None(0),
@@ -101,12 +100,7 @@ fun ComicsRelease.toNumbersString(): String = if (this is MultiRelease) {
     release.number.toString()
 }
 
-fun ComicsRelease.toHumanReadableDate(context: Context) =
-    if (release.date.isNullOrEmpty()) {
-        null
-    } else {
-        release.date.toLocalDate().toHumanReadableLong(context)
-    }
+fun ComicsRelease.toHumanReadableDate(context: Context) = release.date?.toHumanReadableLong(context)
 
 fun ComicsRelease.info() = arrayOf(comics.publisher, comics.authors).joinToString(", ")
 

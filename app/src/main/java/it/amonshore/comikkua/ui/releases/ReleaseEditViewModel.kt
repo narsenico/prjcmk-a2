@@ -12,8 +12,6 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.data.release.ReleaseRepository
 import it.amonshore.comikkua.plusPeriod
-import it.amonshore.comikkua.toLocalDate
-import it.amonshore.comikkua.toReleaseDate
 import kotlinx.coroutines.launch
 
 data class ComicsAndRelease(val comics: ComicsWithReleases, val release: Release)
@@ -48,7 +46,7 @@ class ReleaseEditViewModel(application: Application) : AndroidViewModel(applicat
     private fun ComicsWithReleases.getNextRelease(): Release {
         return lastRelease?.let {
             val period = Period.from(comics.periodicity)
-            val nextDate = it.date?.toLocalDate()?.plusPeriod(period)?.toReleaseDate()
+            val nextDate = it.date?.plusPeriod(period)
             Release.create(comics.id, it.number + 1, nextDate)
         } ?: Release.create(comics.id, 1)
     }

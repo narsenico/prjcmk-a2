@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsDao
 import it.amonshore.comikkua.data.release.ComicsRelease
@@ -20,8 +21,9 @@ import it.amonshore.comikkua.data.web.CmkWebDao
 @Database(
     entities = [Comics::class, Release::class, AvailableComics::class],
     views = [ComicsRelease::class, MissingRelease::class, LostRelease::class, DatedRelease::class, PurchasedRelease::class, NotPurchasedRelease::class],
-    version = 16
+    version = 17
 )
+@TypeConverters(Converters::class)
 abstract class ComikkuDatabase : RoomDatabase() {
     abstract fun comicsDao(): ComicsDao
     abstract fun releaseDao(): ReleaseDao

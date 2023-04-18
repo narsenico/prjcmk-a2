@@ -14,7 +14,6 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.ListitemComicsBinding
 import it.amonshore.comikkua.toHumanReadable
-import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.IViewHolderWithDetails
 import it.amonshore.comikkua.ui.ImageHelperKt
@@ -98,7 +97,7 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
             context.getString(
                 R.string.release_next_dated,
                 number,
-                date.toLocalDate().toHumanReadable(context)
+                date.toHumanReadable(context)
             )
         }
 

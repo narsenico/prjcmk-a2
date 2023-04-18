@@ -1,9 +1,9 @@
 package it.amonshore.comikkua.data.release
 
-import androidx.annotation.Size
 import androidx.room.*
 import it.amonshore.comikkua.RELEASE_NEW
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface ReleaseDao {
@@ -42,8 +42,8 @@ interface ReleaseDao {
 
     @Query("SELECT ${DatedRelease.TYPE} as type, * FROM vDatedReleases WHERE rpurchased = 0 AND rdate BETWEEN :startDate AND :endDate")
     suspend fun getNotPurchasedComicsReleases(
-        @Size(8) startDate: String,
-        @Size(8) endDate: String
+        startDate: LocalDate,
+        endDate: LocalDate
     ): List<ComicsRelease>
 
     @Query(
@@ -77,9 +77,9 @@ interface ReleaseDao {
     )
     @Transaction
     suspend fun getNotableComicsReleases(
-        @Size(8) refDate: String,
-        @Size(8) refNextDate: String,
-        @Size(8) refOtherDate: String,
+        refDate: LocalDate,
+        refNextDate: LocalDate,
+        refOtherDate: LocalDate,
         retainStart: Long
     ): List<ComicsRelease>
 
@@ -125,9 +125,9 @@ interface ReleaseDao {
     )
     @Transaction
     fun getNotableComicsReleasesFlow(
-        @Size(8) refDate: String,
-        @Size(8) refNextDate: String,
-        @Size(8) refOtherDate: String,
+        refDate: LocalDate,
+        refNextDate: LocalDate,
+        refOtherDate: LocalDate,
         retainStart: Long
     ): Flow<List<ComicsRelease>>
 

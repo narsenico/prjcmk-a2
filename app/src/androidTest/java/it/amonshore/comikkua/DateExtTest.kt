@@ -33,7 +33,7 @@ class DateExtTest {
     @Test
     fun release_date_to_local_date() {
         // Arrange
-        val releaseDate = "20230415" as ReleaseDate
+        val releaseDate = "20230415"
         val expected = LocalDate.of(2023, Month.APRIL, 15)
 
         // Act

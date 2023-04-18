@@ -27,7 +27,6 @@ import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
 import it.amonshore.comikkua.databinding.FragmentComicsDetailBinding
 import it.amonshore.comikkua.toHumanReadable
-import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
@@ -273,7 +272,7 @@ class ComicsDetailFragment : Fragment() {
                     // TODO: non mi piace, dovrei mostrare la data solo se futura e nel formato ddd dd MMM
                     txtNext.text = context.getString(
                         R.string.release_next_dated, nextRelease.number,
-                        nextRelease.date.toLocalDate().toHumanReadable(context)
+                        nextRelease.date.toHumanReadable(context)
                     )
                 } else {
                     txtNext.text = context.getString(

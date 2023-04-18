@@ -7,6 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import it.amonshore.comikkua.BackupExclude
 import it.amonshore.comikkua.data.comics.Comics
+import java.time.LocalDate
 
 @Entity(
     tableName = "tReleases",
@@ -22,7 +23,7 @@ data class Release(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val comicsId: Long,
     val number: Int,
-    val date: String? = null,
+    val date: LocalDate? = null,
     val price: Double = 0.0,
     val purchased: Boolean = false,
     val ordered: Boolean = false,
@@ -39,7 +40,7 @@ data class Release(
         const val NO_RELEASE_ID = -1L
         const val NEW_RELEASE_ID = 0L
 
-        fun create(comicsId: Long, number: Int, date: String? = null) = Release(
+        fun create(comicsId: Long, number: Int, date: LocalDate? = null) = Release(
             id = NEW_RELEASE_ID,
             comicsId = comicsId,
             number = number,

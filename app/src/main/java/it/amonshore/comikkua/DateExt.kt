@@ -24,8 +24,6 @@ private val longFormatter by lazy {
     DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
 }
 
-typealias ReleaseDate = String
-
 fun LocalDate.atFirstDayOfWeek(): LocalDate {
     val delta = dayOfWeek.value - 1
     return if (delta > 0) {
@@ -35,9 +33,9 @@ fun LocalDate.atFirstDayOfWeek(): LocalDate {
     }
 }
 
-fun LocalDate.toReleaseDate(): ReleaseDate = format(yearMonthDayFormatter)
+fun LocalDate.toReleaseDate(): String = format(yearMonthDayFormatter)
 
-fun ReleaseDate.toLocalDate(): LocalDate = LocalDate.parse(this, yearMonthDayFormatter)
+fun String.toLocalDate(): LocalDate = LocalDate.parse(this, yearMonthDayFormatter)
 
 fun LocalDateTime.next(time: LocalTime): LocalDateTime {
     val thisTime = toLocalTime()

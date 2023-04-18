@@ -14,7 +14,6 @@ import com.bumptech.glide.RequestManager
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.ReleaseDate
 import it.amonshore.comikkua.asLocalDate
 import it.amonshore.comikkua.asUtcMilliseconds
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -29,6 +28,7 @@ import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.toReleaseDate
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
+import java.time.LocalDate
 
 class ReleaseEditFragmentHelper(
     val context: Context,
@@ -38,7 +38,7 @@ class ReleaseEditFragmentHelper(
 ) {
 
     private var _datePicker: MaterialDatePicker<Long>? = null
-    private var _selectedDate: ReleaseDate? = null
+    private var _selectedDate: LocalDate? = null
     private var _mainCardElevationPx = binding.release.releaseMainCard.elevation
     private lateinit var _release: Release
 
@@ -125,7 +125,7 @@ class ReleaseEditFragmentHelper(
             binding.chkPurchased.isChecked = savedInstanceState.getBoolean("purchased")
             binding.chkOrdered.isChecked = savedInstanceState.getBoolean("ordered")
             binding.tilNotes.editText!!.setText(savedInstanceState.getString("notes"))
-            prepareDatePicker(savedInstanceState.getString("date"))
+            prepareDatePicker(savedInstanceState.getString("date")?.toLocalDate())
         } else {
             binding.release.txtReleaseNumbers.text = release.number.toString()
             binding.release.imgReleasePurchased.visibility =
@@ -164,17 +164,16 @@ class ReleaseEditFragmentHelper(
         }
     }
 
-    private fun prepareDatePicker(releaseDate: ReleaseDate?) {
+    private fun prepareDatePicker(releaseDate: LocalDate?) {
         val startSelection = if (releaseDate == null) {
             binding.release.txtReleaseDate.text = ""
             binding.tilDate.editText!!.setText("")
             MaterialDatePicker.todayInUtcMilliseconds()
         } else {
-            val date = releaseDate.toLocalDate()
-            val humanized = date.toHumanReadableLong(context)
+            val humanized = releaseDate.toHumanReadableLong(context)
             binding.release.txtReleaseDate.text = humanized
             binding.tilDate.editText!!.setText(humanized)
-            date.asUtcMilliseconds()
+            releaseDate.asUtcMilliseconds()
         }
 
         _datePicker = MaterialDatePicker.Builder.datePicker()
@@ -185,7 +184,7 @@ class ReleaseEditFragmentHelper(
             .also {
                 it.addOnPositiveButtonClickListener { selection ->
                     val localDate = if (selection == 0L) null else selection.asLocalDate()
-                    _selectedDate = localDate?.toReleaseDate()
+                    _selectedDate = localDate
                     val humanized = localDate?.toHumanReadableLong(context)
                     binding.release.txtReleaseDate.text = humanized
                     binding.tilDate.editText!!.setText(humanized)
@@ -218,7 +217,7 @@ class ReleaseEditFragmentHelper(
 
     fun saveInstanceState(outState: Bundle) {
         outState.putString("numbers", binding.tilNumbers.editText!!.text.toString())
-        outState.putString("date", _selectedDate)
+        outState.putString("date", _selectedDate?.toReleaseDate())
         outState.putString("price", binding.tilPrice.editText!!.text.toString())
         outState.putString("notes", binding.tilNotes.editText!!.text.toString())
         outState.putBoolean("purchased", binding.chkPurchased.isChecked)

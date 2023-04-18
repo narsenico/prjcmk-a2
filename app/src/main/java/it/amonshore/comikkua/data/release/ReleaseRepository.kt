@@ -7,7 +7,6 @@ import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.toRelease
 import it.amonshore.comikkua.services.CmkWebService
-import it.amonshore.comikkua.toReleaseDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
@@ -39,8 +38,8 @@ class ReleaseRepository(context: Context) {
         releaseDateTo: LocalDate
     ) =
         _releaseDao.getNotPurchasedComicsReleases(
-            releaseDateFrom.toReleaseDate(),
-            releaseDateTo.toReleaseDate()
+            releaseDateFrom,
+            releaseDateTo
         )
 
     fun getNotableComicsReleasesFlow(): Flow<List<ComicsRelease>> {
@@ -57,9 +56,9 @@ class ReleaseRepository(context: Context) {
         LogHelper.d { "prepare notable releases refDate=$refDate, refNextDate=$refNextDate, refOtherDate=$refOtherDate retainStart=$retainStart" }
 
         return _releaseDao.getNotableComicsReleasesFlow(
-            refDate = refDate.toReleaseDate(),
-            refNextDate = refNextDate.toReleaseDate(),
-            refOtherDate = refOtherDate.toReleaseDate(),
+            refDate = refDate,
+            refNextDate = refNextDate,
+            refOtherDate = refOtherDate,
             retainStart
         )
     }
