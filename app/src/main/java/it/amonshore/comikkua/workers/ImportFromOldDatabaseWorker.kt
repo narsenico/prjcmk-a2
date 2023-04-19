@@ -60,34 +60,39 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
     }
 
     private suspend fun import(oldDatabasePath: String): Result {
-        val comicsRepository = ComicsRepository(applicationContext)
+        val cmkWebRepository = CmkWebRepository(applicationContext)
+        val availableCount = cmkWebRepository.refreshAvailableComics().getOrThrow()
+        if (availableCount == 0) {
+            LogHelper.w("import failed: available comics not found")
+            return Result.failure(workDataOf("reason" to "Available comics not found"))
+        }
 
+        val comicsRepository = ComicsRepository(applicationContext)
         if (comicsRepository.count() > 0) {
-            LogHelper.w("import failed current db not empty")
+            LogHelper.w("import failed: current db not empty")
             return Result.failure(workDataOf("reason" to "Current database is not empty"))
-        } else {
+        }
+
+        LogHelper.d { "starting import from old database..." }
+        return openOldDatabase(oldDatabasePath).use { db ->
             val releaseRepository = ReleaseRepository(applicationContext)
-            val cmkWebRepository = CmkWebRepository(applicationContext)
             val availableComicsList = cmkWebRepository.getAvailableComicsList()
 
-            return openOldDatabase(oldDatabasePath).use { db ->
-                LogHelper.d { "starting import from old database..." }
-                val count = readAsFlow(db)
-                    .dropWhile {
-                        _cancellationSignal.isCanceled
-                    }
-                    .map { cr ->
-                        availableComicsList.findClosestAndAssignTo(cr).ensureImage()
-                    }
-                    .onEach { cr ->
-                        comicsRepository.insert(cr.comics)
-                        releaseRepository.insertReleases(cr.releases)
-                    }
-                    .count()
+            val count = readAsFlow(db)
+                .dropWhile {
+                    _cancellationSignal.isCanceled
+                }
+                .map { cr ->
+                    availableComicsList.findClosestAndAssignTo(cr).ensureImage()
+                }
+                .onEach { cr ->
+                    comicsRepository.insert(cr.comics)
+                    releaseRepository.insertReleases(cr.releases)
+                }
+                .count()
 
-                LogHelper.i("import complete count=$count")
-                Result.success(workDataOf("count" to count))
-            }
+            LogHelper.i("import complete count=$count")
+            Result.success(workDataOf("count" to count))
         }
     }
 
