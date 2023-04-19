@@ -27,7 +27,7 @@ data class Comics(
     val version: Int = 0
 ) {
 
-    @Ignore val initial = name.substring(0, 1)
+    @Ignore val initial = if (name.isEmpty()) "" else name.substring(0, 1)
     @Ignore val isSourced = !sourceId.isNullOrEmpty()
 
     companion object {
