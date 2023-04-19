@@ -21,7 +21,7 @@ import it.amonshore.comikkua.data.web.CmkWebDao
 @Database(
     entities = [Comics::class, Release::class, AvailableComics::class],
     views = [ComicsRelease::class, MissingRelease::class, LostRelease::class, DatedRelease::class, PurchasedRelease::class, NotPurchasedRelease::class],
-    version = 17
+    version = 1
 )
 @TypeConverters(Converters::class)
 abstract class ComikkuDatabase : RoomDatabase() {
@@ -41,7 +41,7 @@ abstract class ComikkuDatabase : RoomDatabase() {
                     if (INSTANCE == null) {
                         INSTANCE = databaseBuilder(
                             context.applicationContext,
-                            ComikkuDatabase::class.java, "comikku_database"
+                            ComikkuDatabase::class.java, "comikku_database.db"
                         )
                             .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
                             .build()
