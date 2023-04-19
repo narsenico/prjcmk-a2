@@ -83,7 +83,7 @@ class ComicsEditFragmentHelper(
     }
 
     fun setAuthors(authors: List<String>) {
-        binding.tilPublisher.autocomplete().setAdapter(
+        binding.tilAuthors.autocomplete().setAdapter(
             ArrayAdapter(
                 context,
                 android.R.layout.simple_dropdown_item_1line,

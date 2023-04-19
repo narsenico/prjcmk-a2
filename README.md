@@ -5,9 +5,9 @@
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle testate
 - [x] Non si riesce a togliere la data di una release una volta impostata
 - [x] Non vengono cancellati definitivamente gli ementi con removed=1 alla navigazione (vedi nota)
-- [ ] Auto complete degli autori non funziona
+- [x] Auto complete degli autori non funziona
 - [ ] Rivedere IReleaseViewModelItem (vedi nota)
-- [ ] Opzione per linkare comics già censito con uno esistente in CmkWeb
+- [ ] Comics con sourceId non modificabili (almeno i campi che arrivano da CmkWeb)
 
 - [ ] CmkWeb: sourceId meglio che derivi dal comics stesso (hash del nome?) e non creato random (uuid) perché ricreando il DB verrebbero persi i collegamti con i dati salvati nell'app
 
