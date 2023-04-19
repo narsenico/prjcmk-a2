@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ComicsDao {
+    @Query("SELECT COUNT(*) FROM tComics")
+    suspend fun count(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comics: Comics)
 
@@ -82,4 +85,6 @@ interface ComicsDao {
     )
     suspend fun getAuthors(): List<String>
 
+    @Query("DELETE FROM tComics")
+    suspend fun deleteAll()
 }

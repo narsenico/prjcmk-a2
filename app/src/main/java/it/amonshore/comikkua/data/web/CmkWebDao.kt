@@ -14,6 +14,14 @@ interface CmkWebDao {
 
     @Query(
         """
+        SELECT * FROM tAvailableComics
+        ORDER BY name COLLATE NOCASE ASC, publisher COLLATE NOCASE ASC, version
+    """
+    )
+    suspend fun getAvailableComicsList(): List<AvailableComics>
+
+    @Query(
+        """
         SELECT a.* 
         FROM tAvailableComics a LEFT OUTER JOIN tComics t ON a.sourceId = t.sourceId
         WHERE 
@@ -21,5 +29,5 @@ interface CmkWebDao {
         ORDER BY a.name COLLATE NOCASE ASC, a.publisher COLLATE NOCASE ASC, a.version
     """
     )
-    fun getNotFollowedComics(): Flow<List<AvailableComics>>
+    fun getNotFollowedComicsFLow(): Flow<List<AvailableComics>>
 }

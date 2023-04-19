@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/importOldDatabase"
+        android:icon="@drawable/ic_import"
+        android:orderInCategory="100"
+        android:title="@string/menu_import_old_database"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/importBackup"
         android:icon="@drawable/ic_import"
         android:orderInCategory="100"
@@ -14,6 +21,13 @@
         android:icon="@drawable/ic_export"
         android:orderInCategory="200"
         android:title="@string/menu_export_backup"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/clearDatabase"
+        android:icon="@drawable/ic_clear"
+        android:orderInCategory="200"
+        android:title="@string/menu_clear_database"
         app:showAsAction="never" />
 
 </menu>

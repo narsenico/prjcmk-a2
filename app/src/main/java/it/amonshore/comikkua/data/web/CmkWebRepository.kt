@@ -37,5 +37,7 @@ class CmkWebRepository(context: Context) {
             }
         }
 
-    fun getNotFollowedComics() = _cmkWebDao.getNotFollowedComics()
+    fun getNotFollowedComics() = _cmkWebDao.getNotFollowedComicsFLow()
+
+    suspend fun getAvailableComicsList() = _cmkWebDao.getAvailableComicsList()
 }

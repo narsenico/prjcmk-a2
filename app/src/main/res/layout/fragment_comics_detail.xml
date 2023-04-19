@@ -41,5 +41,17 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+        <TextView
+            android:id="@+id/txt_comics_source_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="xxx-xxxx-xxxx-xxxx"
+            tools:visibility="visible" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

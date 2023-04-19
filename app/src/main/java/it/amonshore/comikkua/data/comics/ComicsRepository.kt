@@ -9,6 +9,8 @@ class ComicsRepository(private val context: Context) {
 
     private val _comicsDao = ComikkuDatabase.getDatabase(context).comicsDao()
 
+    suspend fun count() = _comicsDao.count()
+
     suspend fun insert(comics: Comics) {
         _comicsDao.insert(comics)
     }
@@ -60,4 +62,6 @@ class ComicsRepository(private val context: Context) {
         } else {
             _comicsDao.getComicsWithReleasesPagingSource(like)
         }
+
+    suspend fun deleteAll() = _comicsDao.deleteAll()
 }

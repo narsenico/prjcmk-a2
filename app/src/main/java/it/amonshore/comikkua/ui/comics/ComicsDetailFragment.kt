@@ -21,6 +21,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -244,6 +245,7 @@ class ComicsDetailFragment : Fragment() {
         val txtLast = binding.comics.txtComicsReleaseLast
         val txtNext = binding.comics.txtComicsReleaseNext
         val txtMissing = binding.comics.txtComicsReleaseMissing
+        val txtComicsSourceId = binding.txtComicsSourceId
 
         return Observer { comics ->
             _comics = comics
@@ -285,6 +287,11 @@ class ComicsDetailFragment : Fragment() {
             }
             val missingCount = comics.notPurchasedReleaseCount
             txtMissing.text = context.getString(R.string.release_missing, missingCount)
+
+            if (BuildConfig.DEBUG) {
+                txtComicsSourceId.visibility = View.VISIBLE
+                txtComicsSourceId.text = comics.comics.sourceId ?: "unsourced"
+            }
         }
     }
 

@@ -10,13 +10,18 @@ import android.view.View
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.workers.BackupWorker
+import it.amonshore.comikkua.workers.ImportFromOldDatabaseWorker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -52,6 +57,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
+                    R.id.importOldDatabase -> {
+                        importOldDatabase()
+                        true
+                    }
                     R.id.importBackup -> {
                         importBackup()
                         true
@@ -60,11 +69,31 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         exportBackup()
                         true
                     }
+                    R.id.clearDatabase -> {
+                        clearDatabase()
+                        true
+                    }
                     else -> false
                 }
             }
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    fun importOldDatabase() {
+        val workManager = WorkManager.getInstance(requireContext())
+        val request = OneTimeWorkRequest.Builder(ImportFromOldDatabaseWorker::class.java)
+            .build()
+        workManager.enqueueUniqueWork(
+            ImportFromOldDatabaseWorker.WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+
+        // TODO: mostrare risultato export (ci mette poco, non c'è bisogno di progress bar)
+//        workManager.getWorkInfoByIdLiveData(request.id).observe(viewLifecycleOwner) {
+//
+//        }
     }
 
     fun importBackup() {
@@ -85,6 +114,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
 //        workManager.getWorkInfoByIdLiveData(request.id).observe(viewLifecycleOwner) {
 //
 //        }
+    }
+
+    fun clearDatabase() {
+        // TODO: usare ViewModel, chiedere conferma prima
+        // TODO: cancellare anche le immagini
+        lifecycleScope.launch(Dispatchers.IO) {
+            val comicsRepository = ComicsRepository(requireContext())
+            comicsRepository.deleteAll()
+        }
     }
 //
 //    override fun onRequestPermissionsResult(
