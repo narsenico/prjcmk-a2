@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.services
 
 import it.amonshore.comikkua.BuildConfig
+import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebComicsRelease
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,13 +16,6 @@ interface CmkWebService {
     @GET("v1/api/comics/{ref_id}/releases")
     suspend fun getReleases(
         @Path("ref_id") refId: String,
-        @Query("numberFrom") numberFrom: Int = 0
-    ): List<CmkWebComicsRelease>
-
-    @Deprecated("Usare getReleases passando ref_id")
-    @GET("v1/api/title/{title}/releases")
-    suspend fun getReleasesByTitle(
-        @Path("title") title: String,
         @Query("numberFrom") numberFrom: Int = 0
     ): List<CmkWebComicsRelease>
 
@@ -48,3 +42,9 @@ interface CmkWebService {
         }
     }
 }
+
+data class GetAvailableComicsResult(
+    val page: Int,
+    val pageLength: Int,
+    val data: List<AvailableComics>,
+)

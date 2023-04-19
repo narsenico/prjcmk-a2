@@ -27,7 +27,6 @@ fun parseInterval(
         1 -> {
             acc.add(range[0])
         }
-
         2 -> {
             acc.addAll((range[0]..range[1]))
         }

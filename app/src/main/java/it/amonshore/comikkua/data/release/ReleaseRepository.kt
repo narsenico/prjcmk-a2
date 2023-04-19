@@ -25,7 +25,7 @@ class ReleaseRepository(context: Context) {
 
     private val _database = ComikkuDatabase.getDatabase(context)
     private val _releaseDao = _database.releaseDao()
-    private val _comicsDao by lazy { _database.comicsDao() }
+    private val _comicsDao = _database.comicsDao()
     private val _service by lazy { CmkWebService.create() }
 
     fun getComicsReleasesByComicsIdFLow(comicsId: Long) =
@@ -108,12 +108,7 @@ class ReleaseRepository(context: Context) {
             withContext(Dispatchers.IO + SupervisorJob()) {
                 runCatching {
                     val tag = UUID.randomUUID().toString()
-                    val releases = loadNewReleasesAsync(
-                        sourceId = comics.comics.sourceId!!,
-                        fromNumber = comics.nextReleaseNumber
-                    )
-                        .await()
-                        .map { it.toRelease(comics.comics.id, tag) }
+                    val releases = comics.loadNewReleasesAsync(tag).await()
 
                     if (releases.isNotEmpty()) {
                         _releaseDao.insert(releases)
@@ -130,10 +125,11 @@ class ReleaseRepository(context: Context) {
     suspend fun loadNewReleases(): Result<NewReleasesCountAndTag> =
         withContext(Dispatchers.IO + SupervisorJob()) {
             runCatching {
-                // TODO: leggere release per i comics con sourceid
                 val comicsList = _comicsDao.getAllComicsWithReleases()
                 val tag = UUID.randomUUID().toString()
-                val releases = loadNewReleasesAsync(comicsList, tag).awaitAll()
+                val releases = comicsList.filter { it.comics.isSourced }
+                    .loadNewReleasesAsync(tag)
+                    .awaitAll()
                     .filter { it.isNotEmpty() }
                     .flatten()
 
@@ -146,25 +142,27 @@ class ReleaseRepository(context: Context) {
             }
         }
 
-    private suspend fun loadNewReleasesAsync(sourceId: String, fromNumber: Int) =
+    private suspend fun ComicsWithReleases.loadNewReleasesAsync(tag: String) =
         coroutineScope {
             return@coroutineScope async {
-                return@async _service.getReleases(sourceId, fromNumber)
+                val comicsId = comics.id
+                return@async _service.getReleases(
+                    refId = comics.sourceId!!,
+                    numberFrom = nextReleaseNumber
+                ).map { it.toRelease(comicsId, tag) }
             }
         }
 
-    private suspend fun loadNewReleasesAsync(comicsList: List<ComicsWithReleases>, tag: String) =
+    private suspend fun List<ComicsWithReleases>.loadNewReleasesAsync(tag: String) =
         coroutineScope {
-            val calls = comicsList.map {
+            return@coroutineScope map {
                 async {
                     val comicsId = it.comics.id
-                    val comicsName = it.comics.name
-                    val releaseFrom = it.nextReleaseNumber
-                    val releases = _service.getReleasesByTitle(comicsName, releaseFrom)
-                    releases.map { it.toRelease(comicsId, tag) }
+                    _service.getReleases(
+                        refId = it.comics.sourceId!!,
+                        numberFrom = it.nextReleaseNumber
+                    ).map { it.toRelease(comicsId, tag) }
                 }
             }
-
-            return@coroutineScope calls
         }
 }
