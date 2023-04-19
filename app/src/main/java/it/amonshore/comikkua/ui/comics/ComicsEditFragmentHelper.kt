@@ -3,6 +3,7 @@ package it.amonshore.comikkua.ui.comics
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
@@ -97,6 +98,8 @@ class ComicsEditFragmentHelper(
         _comics = comics.comics
         binding.tilName.editText!!.isEnabled = !comics.comics.isSourced
         binding.tilPublisher.editText!!.isEnabled = !comics.comics.isSourced
+
+        binding.comics.imgSourced.visibility = if (comics.comics.isSourced) View.VISIBLE else View.GONE
 
         if (savedInstanceState != null) {
             setLayoutWithSavedInstanceState(savedInstanceState)

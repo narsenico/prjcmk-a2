@@ -8,7 +8,7 @@
 - [x] Auto complete degli autori non funziona
 - [ ] Rivedere IReleaseViewModelItem (vedi nota)
 - [x] Comics con sourceId non modificabili (almeno i campi che arrivano da CmkWeb)
-- [ ] Evienziare in edit comics se sono sourced o meno 
+- [x] Evienziare in edit comics se sono sourced o meno 
 
 - [ ] CmkWeb: sourceId meglio che derivi dal comics stesso (hash del nome?) e non creato random (uuid) perché ricreando il DB verrebbero persi i collegamti con i dati salvati nell'app
 

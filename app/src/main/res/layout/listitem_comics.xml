@@ -29,6 +29,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+                    <ImageView
+                        android:id="@+id/img_sourced"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="comices sourced flag"
+                        android:src="@drawable/ic_sourced"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/color_clip"
+                        tools:visibility="visible" />
+
                     <TextView
                         android:id="@+id/txt_comics_name"
                         android:layout_width="0dp"
@@ -181,8 +193,8 @@
             android:layout_height="104dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="@dimen/item_margin_default"
-            android:src="@drawable/background_comics_initial_noborder_back"
-            android:contentDescription="@string/comics_image" />
+            android:contentDescription="@string/comics_image"
+            android:src="@drawable/background_comics_initial_noborder_back" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/txt_comics_initial"

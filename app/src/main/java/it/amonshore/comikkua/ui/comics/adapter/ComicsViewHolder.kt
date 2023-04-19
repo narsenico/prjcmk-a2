@@ -48,6 +48,8 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
                 onComicsMenuClick(comics)
             }
 
+            imgSourced.visibility = if (comics.comics.isSourced) View.VISIBLE else View.GONE 
+
             with(comics.comics) {
                 txtComicsName.text = name
                 txtComicsPublisher.text = publisher

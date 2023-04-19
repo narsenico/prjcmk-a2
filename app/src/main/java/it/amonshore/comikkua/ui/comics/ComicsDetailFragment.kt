@@ -288,6 +288,8 @@ class ComicsDetailFragment : Fragment() {
             val missingCount = comics.notPurchasedReleaseCount
             txtMissing.text = context.getString(R.string.release_missing, missingCount)
 
+            binding.comics.imgSourced.visibility = if (comics.comics.isSourced) View.VISIBLE else View.GONE
+
             if (BuildConfig.DEBUG) {
                 txtComicsSourceId.visibility = View.VISIBLE
                 txtComicsSourceId.text = comics.comics.sourceId ?: "unsourced"
