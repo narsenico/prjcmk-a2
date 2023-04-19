@@ -33,9 +33,6 @@ abstract class ComikkuDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: ComikkuDatabase? = null
         fun getDatabase(context: Context): ComikkuDatabase {
-            // TODO: la vecchia applicazione ha un db chiamato comikkua.db alla versione 3
-            //  questo ha un nome diverso quindi non dovrebbe fare casino (ho provato, mantiene i database con nomi diversi)
-            //  OCCORRE importare i dati da vecchia version, anche da variante neon
             if (INSTANCE == null) {
                 synchronized(ComikkuDatabase::class.java) {
                     if (INSTANCE == null) {
@@ -43,7 +40,7 @@ abstract class ComikkuDatabase : RoomDatabase() {
                             context.applicationContext,
                             ComikkuDatabase::class.java, "comikku_database.db"
                         )
-                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
+//                            .fallbackToDestructiveMigration() // in questo modo al cambio di vesione il vecchio DB viene semplicemente distrutto (con conseguente perdita di dati)
                             .build()
                     }
                 }
