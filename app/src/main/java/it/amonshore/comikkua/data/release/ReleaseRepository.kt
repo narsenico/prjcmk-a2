@@ -130,6 +130,7 @@ class ReleaseRepository(context: Context) {
     suspend fun loadNewReleases(): Result<NewReleasesCountAndTag> =
         withContext(Dispatchers.IO + SupervisorJob()) {
             runCatching {
+                // TODO: leggere release per i comics con sourceid
                 val comicsList = _comicsDao.getAllComicsWithReleases()
                 val tag = UUID.randomUUID().toString()
                 val releases = loadNewReleasesAsync(comicsList, tag).awaitAll()
@@ -149,9 +150,6 @@ class ReleaseRepository(context: Context) {
         coroutineScope {
             return@coroutineScope async {
                 return@async _service.getReleases(sourceId, fromNumber)
-                    .filter {
-                        it.number >= fromNumber // TODO: cmkweb ancora non supporta il parametro fromNumber, quindi devo filtrare
-                    }
             }
         }
 
@@ -163,10 +161,6 @@ class ReleaseRepository(context: Context) {
                     val comicsName = it.comics.name
                     val releaseFrom = it.nextReleaseNumber
                     val releases = _service.getReleasesByTitle(comicsName, releaseFrom)
-                    // TODO: Come chiave del comics dovrebbe essere usato [CmkWebComicsRelease.refId]
-                    //  ma non esiste in [Release].
-                    //  La chiave attuale è l'id del comics
-                    //  (infatti anche [it.amonshore.comikkua.data.comics.Comics.refJsonId] nessuno lo valorizza).
                     releases.map { it.toRelease(comicsId, tag) }
                 }
             }
