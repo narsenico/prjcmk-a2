@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.bumptech.glide.RequestManager
 import com.google.android.material.textfield.TextInputLayout
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -95,6 +96,7 @@ class ComicsEditFragmentHelper(
     fun setComics(comics: ComicsWithReleases, savedInstanceState: Bundle?) {
         _comics = comics.comics
         binding.tilName.editText!!.isEnabled = !comics.comics.isSourced
+        binding.tilPublisher.editText!!.isEnabled = !comics.comics.isSourced
 
         if (savedInstanceState != null) {
             setLayoutWithSavedInstanceState(savedInstanceState)

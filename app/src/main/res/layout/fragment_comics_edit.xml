@@ -55,6 +55,7 @@
                     <androidx.appcompat.widget.AppCompatAutoCompleteTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:enabled="false"
                         android:hint="@string/comics_name"
                         android:imeOptions="actionNext"
                         android:inputType="text"
@@ -80,6 +81,7 @@
                     <androidx.appcompat.widget.AppCompatAutoCompleteTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:enabled="false"
                         android:hint="@string/comics_publisher"
                         android:imeOptions="actionNext"
                         android:inputType="text"
