@@ -1,11 +1,14 @@
 package it.amonshore.comikkua.data.web
 
 import android.content.Context
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.services.CmkWebService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 class CmkWebRepository(context: Context) {
 
@@ -16,26 +19,52 @@ class CmkWebRepository(context: Context) {
         _cmkWebDao.deleteAll()
     }
 
-    suspend fun refreshAvailableComics(): Result<Int> =
-        withContext(Dispatchers.IO + SupervisorJob()) {
-            runCatching {
-                _cmkWebDao.deleteAll()
+    suspend fun refreshAvailableComics(): Result<Int> {
+        return runCatching {
+            _cmkWebDao.deleteAll()
 
-                var count = 0
-                var page = 0
-                while (true) {
-                    val result = _service.getAvailableComics(++page)
-                    if (result.data.isEmpty()) {
-                        break
-                    }
-
-                    _cmkWebDao.insert(result.data)
-                    count += result.data.size
+            var count = 0
+            var page = 0
+            while (true) {
+                val result = _service.getAvailableComics(++page)
+                if (result.data.isEmpty()) {
+                    break
                 }
 
-                return@withContext Result.success(count)
+                yield()
+
+                _cmkWebDao.insert(result.data)
+                count += result.data.size
             }
+
+            return Result.success(count)
         }
+    }
+
+//    suspend fun refreshAvailableComics(): Result<Int> =
+//        withContext(Dispatchers.IO + SupervisorJob()) {
+//            runCatching {
+//                _cmkWebDao.deleteAll()
+//
+//                var count = 0
+//                var page = 0
+//                while (isActive) {
+//                    val result = _service.getAvailableComics(++page)
+//                    if (result.data.isEmpty()) {
+//                        break
+//                    }
+//                    if (!isActive) {
+//                        LogHelper.w("Refresh available comics canceled")
+//                        break
+//                    }
+//
+//                    _cmkWebDao.insert(result.data)
+//                    count += result.data.size
+//                }
+//
+//                return@withContext Result.success(count)
+//            }
+//        }
 
     fun getNotFollowedComics() = _cmkWebDao.getNotFollowedComicsFLow()
 

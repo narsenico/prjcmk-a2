@@ -10,6 +10,7 @@ import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.splitToWords
 import it.amonshore.comikkua.ui.SingleLiveEvent
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -67,7 +68,7 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
         _cmkWebRepository.deleteAvailableComics()
     }
 
-    fun loadAvailableComics() = viewModelScope.launch {
+    fun loadAvailableComics() = viewModelScope.launch(Dispatchers.IO) {
         _events.postValue(UiComicsSelectorEvent.AvailableComicsLoading)
 
         val result = _cmkWebRepository.refreshAvailableComics()

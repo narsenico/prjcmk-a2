@@ -146,6 +146,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
     }
 
+
     private fun onBackupStatusChanged(workInfo: WorkInfo) {
         when (workInfo.state) {
             WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> _dialog?.dismiss()

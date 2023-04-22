@@ -22,7 +22,6 @@ import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.toLocalDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.cancellable
@@ -30,6 +29,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDate
@@ -38,51 +38,56 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
     CoroutineWorker(appContext, workerParams) {
 
     private val _cancellationSignal = CancellationSignal()
-    private val _job = Job().also {
-        it.invokeOnCompletion { cause ->
+    private val _cmkWebRepository = CmkWebRepository(applicationContext)
+    private val _comicsRepository = ComicsRepository(applicationContext)
+
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) context@{
+
+        coroutineContext.job.invokeOnCompletion { cause ->
             when (cause) {
                 null -> {}
                 is CancellationException -> {
                     LogHelper.w("Import form old database canceled!")
                     _cancellationSignal.cancel()
                 }
+
                 else -> LogHelper.e("Job failed", cause)
             }
         }
-    }
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO + _job) context@{
-        getOldDatabasePath()?.let {
-            try {
-                import(it)
-            } catch (ex: java.net.ConnectException) {
-                LogHelper.e("Error importing old database data", ex)
-                Result.failure(workDataOf("reason" to "connection-error"))
-            } catch (ex: Exception) {
-                LogHelper.e("Error importing old database data", ex)
-                Result.failure(workDataOf("reason" to "error"))
-            }
-        } ?: Result.failure(workDataOf("reason" to "old database not found"))
+        val oldDatabasePath = getOldDatabasePath()
+            ?: return@context Result.failure(workDataOf("reason" to "source-not-found"))
+
+        if (_comicsRepository.count() > 0) {
+            LogHelper.w("import failed: current db not empty")
+            return@context Result.failure(workDataOf("reason" to "not-empty"))
+        }
+
+        try {
+            _cmkWebRepository.refreshAvailableComics()
+                .getOrThrow()
+                .run {
+                    if (this == 0) {
+                        LogHelper.w("import failed: available comics not found")
+                        return@context Result.failure(workDataOf("reason" to "available-comics-empty"))
+                    }
+                }
+
+            return@context import(oldDatabasePath)
+        } catch (ex: java.net.ConnectException) {
+            LogHelper.e("Error importing old database data", ex)
+            return@context Result.failure(workDataOf("reason" to "connection-error"))
+        } catch (ex: Exception) {
+            LogHelper.e("Error importing old database data", ex)
+            return@context Result.failure(workDataOf("reason" to "error"))
+        }
     }
 
     private suspend fun import(oldDatabasePath: String): Result {
-        val cmkWebRepository = CmkWebRepository(applicationContext)
-        val availableCount = cmkWebRepository.refreshAvailableComics().getOrThrow()
-        if (availableCount == 0) {
-            LogHelper.w("import failed: available comics not found")
-            return Result.failure(workDataOf("reason" to "Available comics not found"))
-        }
-
-        val comicsRepository = ComicsRepository(applicationContext)
-        if (comicsRepository.count() > 0) {
-            LogHelper.w("import failed: current db not empty")
-            return Result.failure(workDataOf("reason" to "Current database is not empty"))
-        }
-
         LogHelper.d { "starting import from old database..." }
         return openOldDatabase(oldDatabasePath).use { db ->
             val releaseRepository = ReleaseRepository(applicationContext)
-            val availableComicsList = cmkWebRepository.getAvailableComicsList()
+            val availableComicsList = _cmkWebRepository.getAvailableComicsList()
 
             val count = readAsFlow(db)
                 .dropWhile {
@@ -92,7 +97,7 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                     availableComicsList.findClosestAndAssignTo(cr).ensureImage()
                 }
                 .onEach { cr ->
-                    comicsRepository.insert(cr.comics)
+                    _comicsRepository.insert(cr.comics)
                     releaseRepository.insertReleases(cr.releases)
                 }
                 .count()
