@@ -13,6 +13,8 @@
 - [x] Non funziona l'annullo di ImportFromOldDatabaseWorker
 - [ ] Preferibilmente scaricare i comics all'apertura di ComicsSelectorFragment (altrimenti perde l'utilità di mostrare l'ultima release) 
 
+- [ ] L'import da vecchio db deve indicare quanti comics sono importati come sourced (così da caricare su cmkweb tutti i comics mancanti in modo da avere su app alla fine tutti sourced)
+
 - [x] POSSIBILE BACO CON LE DATE: importando il DB da neon non corrispondono le release 
 
 - [ ] CmkWeb: sourceId meglio che derivi dal comics stesso (hash del nome?) e non creato random (uuid) perché ricreando il DB verrebbero persi i collegamti con i dati salvati nell'app
