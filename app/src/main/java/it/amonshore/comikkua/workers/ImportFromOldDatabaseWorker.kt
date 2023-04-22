@@ -42,7 +42,10 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
         it.invokeOnCompletion { cause ->
             when (cause) {
                 null -> {}
-                is CancellationException -> _cancellationSignal.cancel()
+                is CancellationException -> {
+                    LogHelper.w("Import form old database canceled!")
+                    _cancellationSignal.cancel()
+                }
                 else -> LogHelper.e("Job failed", cause)
             }
         }

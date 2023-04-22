@@ -159,7 +159,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="it.amonshore.comikkua.ui.SettingsFragment"
+        android:name="it.amonshore.comikkua.ui.settings.SettingsFragment"
         android:label="@string/app_name">
         <argument
             android:name="subtitle"

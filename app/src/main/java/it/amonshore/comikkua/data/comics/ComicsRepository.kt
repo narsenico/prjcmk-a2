@@ -63,5 +63,13 @@ class ComicsRepository(private val context: Context) {
             _comicsDao.getComicsWithReleasesPagingSource(like)
         }
 
-    suspend fun deleteAll() = _comicsDao.deleteAll()
+    suspend fun deleteAll(deleteImages: Boolean) {
+        _comicsDao.deleteAll()
+
+        if (deleteImages) {
+            context.filesDir
+                .listFiles { _, name -> isValidImageFileName(name) }
+                ?.forEach { file -> file.delete() }
+        }
+    }
 }
