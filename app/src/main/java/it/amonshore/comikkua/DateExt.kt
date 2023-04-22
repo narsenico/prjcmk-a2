@@ -10,6 +10,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
 
 private val yearMonthDayFormatter by lazy {
@@ -36,6 +37,14 @@ fun LocalDate.atFirstDayOfWeek(): LocalDate {
 fun LocalDate.toReleaseDate(): String = format(yearMonthDayFormatter)
 
 fun String.toLocalDate(): LocalDate = LocalDate.parse(this, yearMonthDayFormatter)
+
+fun String.fromISO8601Date(): ZonedDateTime? {
+    return try {
+        ZonedDateTime.parse(this)
+    } catch (ex: DateTimeParseException) {
+        null
+    }
+}
 
 fun LocalDateTime.next(time: LocalTime): LocalDateTime {
     val thisTime = toLocalTime()

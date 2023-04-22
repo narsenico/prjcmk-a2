@@ -21,6 +21,8 @@ data class AvailableComics(
     @SerializedName("title") val name: String,
     @SerializedName("editor") val publisher: String,
     @SerializedName("reissue") val version: Int,
+    @SerializedName("last_number") val lastNumber: Int? = null,
+    @SerializedName("last_release_date") val lastReleaseDate: String? = null,
 ) {
     /**
      * Id comics interno.

@@ -11,6 +11,7 @@
 - [x] Evienziare in edit comics se sono sourced o meno
 - [ ] Creare backup in cartella esterna all'app (download?)
 - [x] Non funziona l'annullo di ImportFromOldDatabaseWorker
+- [ ] Preferibilmente scaricare i comics all'apertura di ComicsSelectorFragment (altrimenti perde l'utilità di mostrare l'ultima release) 
 
 - [x] POSSIBILE BACO CON LE DATE: importando il DB da neon non corrispondono le release 
 

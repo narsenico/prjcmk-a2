@@ -95,6 +95,7 @@
 
     <string name="release_last_none">Last: none</string>
     <string name="release_last">Last: #%d</string>
+    <string name="release_last_dated">Last: #%d (%s)</string>
     <string name="release_next_none">Next: none</string>
     <string name="release_next">Next: #%d</string>
     <string name="release_next_dated">Next: #%d (%s)</string>

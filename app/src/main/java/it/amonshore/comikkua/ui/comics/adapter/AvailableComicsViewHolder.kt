@@ -7,6 +7,8 @@ import androidx.recyclerview.selection.ItemDetailsLookup
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.ListitemComicsAvailableBinding
+import it.amonshore.comikkua.fromISO8601Date
+import it.amonshore.comikkua.toHumanReadable
 import it.amonshore.comikkua.ui.IViewHolderWithDetails
 
 class AvailableComicsViewHolder private constructor(val binding: ListitemComicsAvailableBinding) :
@@ -36,6 +38,7 @@ class AvailableComicsViewHolder private constructor(val binding: ListitemComicsA
             txtComicsPublisher.text = comics.publisher
             txtComicsInitial.text = comics.initial
             txtComicsInitial.setBackgroundResource(R.drawable.background_comics_initial_noborder)
+            txtComicsReleaseLast.text = comics.formatLastRelease()
         }
     }
 
@@ -48,6 +51,22 @@ class AvailableComicsViewHolder private constructor(val binding: ListitemComicsA
             txtComicsAuthors.text = ""
             txtComicsNotes.text = ""
             txtComicsReleaseLast.text = ""
+        }
+    }
+
+    private fun AvailableComics.formatLastRelease(): String {
+        val context = binding.root.context
+        val lastReleaseDateHumanReadable =
+            lastReleaseDate?.fromISO8601Date()?.toLocalDate()?.toHumanReadable(context)
+
+        return when {
+            lastReleaseDateHumanReadable != null && lastNumber != null ->
+                context.getString(R.string.release_last_dated, lastNumber, lastReleaseDateHumanReadable)
+
+            lastNumber != null ->
+                context.getString(R.string.release_last, lastNumber)
+
+            else -> ""
         }
     }
 

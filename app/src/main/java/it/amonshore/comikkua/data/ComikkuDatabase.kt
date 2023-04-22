@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
@@ -21,7 +22,10 @@ import it.amonshore.comikkua.data.web.CmkWebDao
 @Database(
     entities = [Comics::class, Release::class, AvailableComics::class],
     views = [ComicsRelease::class, MissingRelease::class, LostRelease::class, DatedRelease::class, PurchasedRelease::class, NotPurchasedRelease::class],
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(Converters::class)
 abstract class ComikkuDatabase : RoomDatabase() {

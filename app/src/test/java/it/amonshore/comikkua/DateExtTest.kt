@@ -200,4 +200,17 @@ class DateExtTest {
         // Assert
         Assert.assertEquals(expected, date)
     }
+
+    @Test
+    fun available_comics_date_to_local_date() {
+        // Arrange
+        val source = "2023-02-28T23:00:00.000Z"
+        val expected = LocalDate.of(2023, 2,28)
+
+        // Act
+        val date = source.fromISO8601Date()?.toLocalDate()
+
+        // Assert
+        Assert.assertEquals(expected, date)
+    }
 }
