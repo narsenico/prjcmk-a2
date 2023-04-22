@@ -52,7 +52,7 @@ class ComicsSelectorFragment : Fragment() {
             .observe(viewLifecycleOwner) { data ->
                 LogHelper.d { "not followed comics count=${data.size}" }
                 adapter.submitList(data)
-                binding.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
+                binding.btnEmpty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
             }
 
         _viewModel.events.observe(viewLifecycleOwner) { result ->
@@ -61,6 +61,10 @@ class ComicsSelectorFragment : Fragment() {
                 is UiComicsSelectorEvent.AvailableComicsLoaded -> onAvailableComicsLoaded(result.count)
                 is UiComicsSelectorEvent.AvailableComicsError -> onAvailableComicsError()
             }
+        }
+
+        binding.btnEmpty.setOnClickListener {
+            loadAvailableComics()
         }
 
         binding.txtSearch.doAfterTextChanged {

@@ -56,18 +56,18 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:listitem="@layout/listitem_comics"
-                tools:visibility="gone" />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/empty"
-                style="@style/TextAppearance.AppCompat.Large"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="Se non trovi un fumetto puoi sempre aggiungerlo a mano"
-                android:visibility="gone"
+                tools:listitem="@layout/listitem_comics_available"
                 tools:visibility="visible" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="@string/load_available_comics"
+                android:visibility="gone"
+                tools:visibility="gone" />
 
         </FrameLayout>
 
