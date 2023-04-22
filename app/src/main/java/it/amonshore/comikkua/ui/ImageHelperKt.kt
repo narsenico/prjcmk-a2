@@ -30,6 +30,10 @@ fun isValidImageFileName(fileName: String, comicsIds: List<Long>): Boolean {
     } ?: false
 }
 
+fun isValidImageFileName(fileName: String): Boolean {
+    return rgImageFileName.matches(fileName)
+}
+
 fun createDrawableRequestListener(): RequestListener<Drawable> = object : RequestListener<Drawable> {
     override fun onLoadFailed(
         e: GlideException?,
@@ -55,18 +59,15 @@ fun createDrawableRequestListener(): RequestListener<Drawable> = object : Reques
 }
 
 class ImageHelperKt private constructor(
-    _defaultSize: Int,
+    val defaultSize: Int,
     @ColorInt backgroundColor: Int,
     @ColorInt releaseImageTintColor: Int
 ) {
 
-    val defaultSize: Int
     val squareOptions: RequestOptions
     val circleOptions: RequestOptions
 
     init {
-        defaultSize = _defaultSize
-
         val backgroundColorDrawable = ColorDrawable(backgroundColor)
         val colorFilterTransformation =
             ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
