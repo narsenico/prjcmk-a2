@@ -17,10 +17,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.work.Data
 import androidx.work.WorkInfo
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.ui.showCancellableDialog
 import it.amonshore.comikkua.ui.showConfirmDialog
+import it.amonshore.comikkua.ui.showErrorDialog
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -137,7 +139,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun onComicsDeletingError() {
-        Toast.makeText(context, R.string.comics_delete_error, Toast.LENGTH_LONG).show()
+        showErrorDialog(
+            activity = activity ?: throw IllegalStateException("Cannot create dialog"),
+            title = getString(R.string.error),
+            message = getString(R.string.comics_delete_error)
+        )
     }
 
     private fun onBackupStatusChanged(workInfo: WorkInfo) {
@@ -145,7 +151,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> _dialog?.dismiss()
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
-                Toast.makeText(context, R.string.backup_error, Toast.LENGTH_LONG).show()
+                showErrorDialog(
+                    activity = activity ?: throw IllegalStateException("Cannot create dialog"),
+                    title = getString(R.string.error),
+                    message = getString(R.string.backup_error)
+                )
             }
 
             else -> {}
@@ -157,11 +167,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> _dialog?.dismiss()
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
-                Toast.makeText(context, R.string.import_old_database_error, Toast.LENGTH_LONG)
-                    .show()
+                showErrorDialog(
+                    activity = activity ?: throw IllegalStateException("Cannot create dialog"),
+                    title = getString(R.string.error),
+                    message = getString(workInfo.outputData.getImportOldDatabaseErrorStringRes())
+                )
             }
 
             else -> {}
         }
+    }
+
+    private fun Data.getImportOldDatabaseErrorStringRes() = when (getString("reason")) {
+        "connection-error" -> R.string.import_old_database_connection_error
+        else -> R.string.import_old_database_error
     }
 }

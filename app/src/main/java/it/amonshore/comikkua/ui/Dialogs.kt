@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import androidx.core.widget.doAfterTextChanged
+import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.DialogConfirmBinding
 
 fun showCancellableDialog(
@@ -20,6 +21,20 @@ fun showCancellableDialog(
         dialog.dismiss()
         onCancel()
     }
+    .create()
+    .also {
+        it.show()
+    }
+
+fun showErrorDialog(
+    activity: Activity,
+    title: String,
+    message: String
+): Dialog = AlertDialog.Builder(activity)
+    .setTitle(title)
+    .setMessage(message)
+    .setIcon(R.drawable.ic_warning)
+    .setPositiveButton(android.R.string.ok, null)
     .create()
     .also {
         it.show()

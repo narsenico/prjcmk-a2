@@ -55,6 +55,9 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
         getOldDatabasePath()?.let {
             try {
                 import(it)
+            } catch (ex: java.net.ConnectException) {
+                LogHelper.e("Error importing old database data", ex)
+                Result.failure(workDataOf("reason" to "connection-error"))
             } catch (ex: Exception) {
                 LogHelper.e("Error importing old database data", ex)
                 Result.failure(workDataOf("reason" to "error"))

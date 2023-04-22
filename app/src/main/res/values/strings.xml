@@ -191,4 +191,6 @@
     <string name="backup_title">Backup</string>
     <string name="exporting_backup">Exporting backup...</string>
     <string name="importing_old_database">Importing data from previous version...</string>
+    <string name="import_old_database_connection_error">Import failed: cannot connect to the server</string>
+    <string name="error">Error</string>
 </resources>
