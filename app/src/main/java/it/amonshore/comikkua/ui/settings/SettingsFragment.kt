@@ -107,7 +107,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun exportBackup() {
         _viewModel.startBackupExport()
         _dialog = showCancellableDialog(
-            activity = activity ?: throw IllegalStateException("Cannot create dialog"),
             title = getString(R.string.backup_title),
             message = getString(R.string.exporting_backup),
             onCancel = _viewModel::cancelBackupExport
@@ -117,7 +116,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun importOldDatabase() {
         _viewModel.startOldDatabaseImport()
         _dialog = showCancellableDialog(
-            activity = activity ?: throw IllegalStateException("Cannot create dialog"),
             title = getString(R.string.backup_title),
             message = getString(R.string.importing_old_database),
             onCancel = _viewModel::cancelOldDatabaseImport
@@ -126,7 +124,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun clearDatabase() {
         showConfirmDialog(
-            activity = activity ?: throw IllegalStateException("Cannot create dialog"),
             title = getString(R.string.confirm_title),
             message = getString(R.string.confirm_delete_comics_with_confirm_phrase, "DELETE"),
             confirmPhrase = "DELETE",
@@ -140,7 +137,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun onComicsDeletingError() {
         showErrorDialog(
-            activity = activity ?: throw IllegalStateException("Cannot create dialog"),
             title = getString(R.string.error),
             message = getString(R.string.comics_delete_error)
         )
@@ -153,7 +149,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
                 showErrorDialog(
-                    activity = activity ?: throw IllegalStateException("Cannot create dialog"),
                     title = getString(R.string.error),
                     message = getString(R.string.backup_error)
                 )
@@ -169,7 +164,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
                 showErrorDialog(
-                    activity = activity ?: throw IllegalStateException("Cannot create dialog"),
                     title = getString(R.string.error),
                     message = getString(workInfo.outputData.getImportOldDatabaseErrorStringRes())
                 )

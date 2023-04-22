@@ -1,15 +1,15 @@
 package it.amonshore.comikkua.ui
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.Fragment
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.DialogConfirmBinding
 
+context (Fragment)
 fun showCancellableDialog(
-    activity: Activity,
     title: String,
     message: String,
     onCancel: () -> Unit
@@ -17,8 +17,7 @@ fun showCancellableDialog(
     .setTitle(title)
     .setMessage(message)
     .setCancelable(false)
-    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-        dialog.dismiss()
+    .setNegativeButton(android.R.string.cancel) { _, _ ->
         onCancel()
     }
     .create()
@@ -26,8 +25,8 @@ fun showCancellableDialog(
         it.show()
     }
 
+context (Fragment)
 fun showErrorDialog(
-    activity: Activity,
     title: String,
     message: String
 ): Dialog = AlertDialog.Builder(activity)
@@ -40,21 +39,19 @@ fun showErrorDialog(
         it.show()
     }
 
+context (Fragment)
 fun showConfirmDialog(
-    activity: Activity,
     title: String,
     message: String,
     confirmPhrase: String,
     onAccept: () -> Unit,
 ): Dialog {
-    val inflater = activity.layoutInflater;
-    val binding = DialogConfirmBinding.inflate(inflater)
+    val binding = DialogConfirmBinding.inflate(layoutInflater)
     binding.message.text = message
 
     val dialog = AlertDialog.Builder(activity)
         .setTitle(title)
         .setView(binding.root)
-        .setCancelable(false)
         .setPositiveButton(android.R.string.ok) { _, _ ->
             onAccept()
         }
