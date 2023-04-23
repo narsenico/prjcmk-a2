@@ -202,13 +202,13 @@
     <string name="need_refresh_available_comics_message">Download new available comics?</string>
     <string name="import_old_database_not_empty_error">Import failed: current database must be empty</string>
     <string name="import_old_database_source_not_found_error">Import failed: old database not found</string>
-    <string name="name_with_first_reissue">%s - 1st reissue</string>
-    <string name="name_with_second_reissue">%s - 2nd reissue</string>
-    <string name="name_with_third_reissue">%s - 3rd reissue</string>
-    <string name="name_with_nth_reissue">%s - %dth reissue</string>
+    <string name="name_with_first_reprint">%s - 1st reprint</string>
+    <string name="name_with_second_reprint">%s - 2nd reprint</string>
+    <string name="name_with_third_reprint">%s - 3rd reprint</string>
+    <string name="name_with_nth_reprint">%s - %dth reprint</string>
     <string name="comics_sourced_flag">comics sourced flag</string>
-    <string name="first_reissue">1st reissue</string>
-    <string name="second_reissue">2nd reissue</string>
-    <string name="third_reissue">3rd reissue</string>
-    <string name="nth_reissue">%dth reissue</string>
+    <string name="first_reprint">1st reprint</string>
+    <string name="second_reprint">2nd reprint</string>
+    <string name="third_reprint">3rd reprint</string>
+    <string name="nth_reprint">%dth reprint</string>
 </resources>

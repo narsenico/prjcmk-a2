@@ -187,7 +187,7 @@ class ComicsEditFragmentHelper(
 
     private fun setLayoutWithSavedInstanceState(savedInstanceState: Bundle) {
         binding.comics.txtComicsName.text = savedInstanceState.getString(NAME)
-        binding.comics.txtReissue.apply {
+        binding.comics.txtReprint.apply {
             val version = savedInstanceState.getInt(VERSION, 0)
             visibility = if (version > 0) View.VISIBLE else View.GONE
             text = version.formatVersion(context)
@@ -211,7 +211,7 @@ class ComicsEditFragmentHelper(
 
     private fun setLayoutWithSavedInstanceStateWithComics(comics: Comics) {
         binding.comics.txtComicsName.text = comics.name
-        binding.comics.txtReissue.apply {
+        binding.comics.txtReprint.apply {
             visibility = if (comics.version > 0) View.VISIBLE else View.GONE
             text = comics.formatVersion(context)
         }

@@ -240,7 +240,7 @@ class ComicsDetailFragment : Fragment() {
         val context = requireContext()
         val txtInitial = binding.comics.txtComicsInitial
         val txtName = binding.comics.txtComicsName
-        val txtReissue = binding.comics.txtReissue
+        val txtReprint = binding.comics.txtReprint
         val txtPublisher = binding.comics.txtComicsPublisher
         val txtAuthors = binding.comics.txtComicsAuthors
         val txtNotes = binding.comics.txtComicsNotes
@@ -252,7 +252,7 @@ class ComicsDetailFragment : Fragment() {
         return Observer { comics ->
             _comics = comics
             txtName.text = comics.comics.name
-            txtReissue.apply {
+            txtReprint.apply {
                 visibility = if (comics.comics.version > 0) View.VISIBLE else View.GONE
                 text = comics.comics.formatVersion(context)
             }

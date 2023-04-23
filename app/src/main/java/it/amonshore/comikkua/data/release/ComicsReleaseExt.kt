@@ -116,9 +116,9 @@ fun AvailableComics.formatVersion(context: Context): String = version.formatVers
 fun Int.formatVersion(context: Context): String {
     return when (this) {
         0 -> ""
-        1 -> context.getString(R.string.first_reissue)
-        2 -> context.getString(R.string.second_reissue)
-        3 -> context.getString(R.string.third_reissue)
-        else -> context.getString(R.string.nth_reissue, this)
+        1 -> context.getString(R.string.first_reprint)
+        2 -> context.getString(R.string.second_reprint)
+        3 -> context.getString(R.string.third_reprint)
+        else -> context.getString(R.string.nth_reprint, this)
     }
 }

@@ -40,8 +40,8 @@ class AvailableComicsViewHolder private constructor(val binding: ListitemComicsA
             txtComicsInitial.text = comics.initial
             txtComicsInitial.setBackgroundResource(R.drawable.background_comics_initial_noborder)
             txtComicsReleaseLast.text = comics.formatLastRelease()
-            txtReissue.visibility = if (comics.version > 0) View.VISIBLE else View.GONE
-            txtReissue.text = comics.formatVersion(binding.root.context)
+            txtReprint.visibility = if (comics.version > 0) View.VISIBLE else View.GONE
+            txtReprint.text = comics.formatVersion(binding.root.context)
         }
     }
 

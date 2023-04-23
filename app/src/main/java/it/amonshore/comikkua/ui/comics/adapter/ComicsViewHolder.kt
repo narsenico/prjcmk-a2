@@ -56,8 +56,8 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
                 txtComicsPublisher.text = publisher
                 txtComicsAuthors.text = authors
                 txtComicsNotes.text = notes
-                txtReissue.visibility = if (version > 0) View.VISIBLE else View.GONE
-                txtReissue.text = formatVersion(binding.root.context)
+                txtReprint.visibility = if (version > 0) View.VISIBLE else View.GONE
+                txtReprint.text = formatVersion(binding.root.context)
             }
 
             val context = itemView.context
