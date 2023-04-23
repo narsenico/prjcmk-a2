@@ -200,6 +200,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun Data.getImportOldDatabaseErrorMessage() = when (getString("reason")) {
         "connection-error" -> R.string.import_old_database_connection_error
+        "not-empty" -> R.string.import_old_database_not_empty_error
+        "source-not-found" -> R.string.import_old_database_source_not_found_error
         else -> R.string.import_old_database_error
     }.let { getString(it) }
 }

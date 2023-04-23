@@ -200,4 +200,6 @@
     <string name="yes">Yes</string>
     <string name="no">No\n</string>
     <string name="need_refresh_available_comics_message">Download new available comics?</string>
+    <string name="import_old_database_not_empty_error">Import failed: current database must be empty</string>
+    <string name="import_old_database_source_not_found_error">Import failed: old database not found</string>
 </resources>
