@@ -8,4 +8,11 @@
         android:orderInCategory="100"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/openComicsSelector"
+        android:icon="@drawable/ic_add"
+        android:orderInCategory="100"
+        android:title="@string/menu_open_comics_selector"
+        app:showAsAction="never" />
+
 </menu>

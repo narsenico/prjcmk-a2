@@ -269,24 +269,17 @@ class ComicsFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                when (menuItem.itemId) {
+                return when (menuItem.itemId) {
                     R.id.createNewComics -> {
                         val directions: NavDirections = ComicsFragmentDirections
                             .actionDestComicsFragmentToComicsEditFragment()
                             .setComicsId(Comics.NEW_COMICS_ID)
                             .setSubtitle(R.string.title_comics_create)
                         findNavController(requireView()).navigate(directions)
-                        return true
+                        true
                     }
 
-                    R.id.openComicsSelector -> {
-                        val directions: NavDirections = ComicsFragmentDirections
-                            .actionDestComicFragmentToComicsSelectorFragment()
-                        findNavController(requireView()).navigate(directions)
-                        return true
-                    }
-
-                    else -> return false
+                    else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)

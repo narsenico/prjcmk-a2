@@ -80,11 +80,19 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.settings) {
-            _navController.navigate(R.id.action_global_settingsFragment)
-            return true
+        return when (item.itemId) {
+            R.id.settings -> {
+                _navController.navigate(R.id.action_global_settingsFragment)
+                true
+            }
+
+            R.id.openComicsSelector -> {
+                _navController.navigate(R.id.action_global_comicsSelectorFragment)
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onFragmentRequestActionMode(

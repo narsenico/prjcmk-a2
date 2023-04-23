@@ -17,11 +17,4 @@
         android:title="@string/menu_create"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/openComicsSelector"
-        android:icon="@drawable/ic_add"
-        android:orderInCategory="30"
-        android:title="Comics selector"
-        app:showAsAction="ifRoom" />
-
 </menu>
