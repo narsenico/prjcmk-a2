@@ -20,9 +20,11 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.work.Data
 import androidx.work.WorkInfo
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.showCancellableDialog
 import it.amonshore.comikkua.ui.showConfirmDialog
 import it.amonshore.comikkua.ui.showErrorDialog
+import it.amonshore.comikkua.ui.showMessageDialog
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -160,12 +162,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun onImportOldDatabaseStatus(workInfo: WorkInfo) {
         when (workInfo.state) {
-            WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> _dialog?.dismiss()
+            WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> {
+                _dialog?.dismiss()
+                showMessageDialog(
+                    title = getString(R.string.backup_title),
+                    message = workInfo.outputData.getImportOldDatabaseSuccessMessage()
+                )
+            }
+
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
                 showErrorDialog(
                     title = getString(R.string.error),
-                    message = getString(workInfo.outputData.getImportOldDatabaseErrorStringRes())
+                    message = workInfo.outputData.getImportOldDatabaseErrorMessage()
                 )
             }
 
@@ -173,8 +182,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun Data.getImportOldDatabaseErrorStringRes() = when (getString("reason")) {
+    private fun Data.getImportOldDatabaseSuccessMessage(): String {
+        val total = getInt("total", 0)
+        val notSourced = total - getInt("sourced", 0)
+        val oldestLastReleaseDate = getString("oldest_last_release")?.toLocalDate()
+        return if (oldestLastReleaseDate == null) {
+            getString(R.string.import_old_database_success, total, notSourced)
+        } else {
+            getString(
+                R.string.import_old_database_success_with_date,
+                total,
+                notSourced,
+                oldestLastReleaseDate
+            )
+        }
+    }
+
+    private fun Data.getImportOldDatabaseErrorMessage() = when (getString("reason")) {
         "connection-error" -> R.string.import_old_database_connection_error
         else -> R.string.import_old_database_error
-    }
+    }.let { getString(it) }
 }

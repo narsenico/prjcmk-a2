@@ -26,6 +26,19 @@ fun showCancellableDialog(
     }
 
 context (Fragment)
+fun showMessageDialog(
+    title: String,
+    message: String
+): Dialog = AlertDialog.Builder(activity)
+    .setTitle(title)
+    .setMessage(message)
+    .setPositiveButton(android.R.string.ok, null)
+    .create()
+    .also {
+        it.show()
+    }
+
+context (Fragment)
 fun showErrorDialog(
     title: String,
     message: String

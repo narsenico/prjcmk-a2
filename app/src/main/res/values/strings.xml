@@ -194,4 +194,6 @@
     <string name="importing_old_database">Importing data from previous version...</string>
     <string name="import_old_database_connection_error">Import failed: cannot connect to the server</string>
     <string name="error">Error</string>
+    <string name="import_old_database_success">%1$d comics imported from previous version, %2$d of which not linked.</string>
+    <string name="import_old_database_success_with_date">%1$d comics imported from previous version, %2$d of which not linked.\n\nConsider updating CmkWeb with releases from %3$tB %3$tY and import again.</string>
 </resources>

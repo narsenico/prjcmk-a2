@@ -20,13 +20,14 @@ import it.amonshore.comikkua.data.release.ReleaseRepository
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.toLocalDate
+import it.amonshore.comikkua.toReleaseDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
@@ -89,7 +90,7 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
             val releaseRepository = ReleaseRepository(applicationContext)
             val availableComicsList = _cmkWebRepository.getAvailableComicsList()
 
-            val count = readAsFlow(db)
+            val counter = readAsFlow(db)
                 .dropWhile {
                     _cancellationSignal.isCanceled
                 }
@@ -100,10 +101,18 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                     _comicsRepository.insert(cr.comics)
                     releaseRepository.insertReleases(cr.releases)
                 }
-                .count()
+                .fold(ImportFromOldDatabaseCounter()) { acc, cr ->
+                    acc.count(cr)
+                }
 
-            LogHelper.i("import complete count=$count")
-            Result.success(workDataOf("count" to count))
+            LogHelper.i("import complete total=${counter.total} (sourced=${counter.sourced} oldest=${counter.oldestLastReleaseDate})")
+            Result.success(
+                workDataOf(
+                    "total" to counter.total,
+                    "sourced" to counter.sourced,
+                    "oldest_last_release" to counter.oldestLastReleaseDate?.toReleaseDate()
+                )
+            )
         }
     }
 

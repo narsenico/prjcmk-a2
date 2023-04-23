@@ -96,4 +96,6 @@
     <string name="menu_comics_menu">Menu fumetti</string>
     <string name="auto_update_zero">Nessuna nuova uscita</string>
     <string name="auto_update_zero_message">Non ci sono nuove uscite disponibili, provare più avanti.</string>
+    <string name="import_old_database_success">%1$d fumetti importati dalla versione precedente, di cui %2$d non trovati in CmkWeb.</string>
+    <string name="import_old_database_success_with_date">%1$d fumetti importati dalla versione precedente, di cui %2$d non trovati in CmkWeb.\n\nConsidera di aggiornare CmkWeb con le uscite a partire da %3$tB %3$tY e riprovare.</string>
 </resources>
