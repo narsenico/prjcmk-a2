@@ -1,7 +1,9 @@
 package it.amonshore.comikkua.data.release
 
 import android.content.Context
+import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
+import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.formatInterval
 import it.amonshore.comikkua.joinToString
 import it.amonshore.comikkua.toHumanReadableLong
@@ -106,3 +108,17 @@ fun ComicsRelease.info() = arrayOf(comics.publisher, comics.authors).joinToStrin
 
 operator fun ComicsRelease.component1(): Comics = comics
 operator fun ComicsRelease.component2(): Release = release
+
+fun Comics.formatVersion(context: Context): String  = version.formatVersion(context)
+
+fun AvailableComics.formatVersion(context: Context): String = version.formatVersion(context)
+
+fun Int.formatVersion(context: Context): String {
+    return when (this) {
+        0 -> ""
+        1 -> context.getString(R.string.first_reissue)
+        2 -> context.getString(R.string.second_reissue)
+        3 -> context.getString(R.string.third_reissue)
+        else -> context.getString(R.string.nth_reissue, this)
+    }
+}

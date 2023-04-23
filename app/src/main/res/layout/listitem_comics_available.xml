@@ -29,6 +29,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+                    <ImageView
+                        android:id="@+id/img_sourced"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/comics_sourced_flag"
+                        android:src="@drawable/ic_sourced"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/color_clip" />
+
                     <TextView
                         android:id="@+id/txt_comics_name"
                         android:layout_width="0dp"
@@ -46,7 +56,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        tools:text="Comics name" />
+                        tools:text="Comics name long long long" />
 
                     <TextView
                         android:id="@+id/txt_comics_publisher"
@@ -171,8 +181,8 @@
             android:layout_height="104dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="@dimen/item_margin_default"
-            android:src="@drawable/background_comics_initial_noborder_back"
-            android:contentDescription="@string/comics_image" />
+            android:contentDescription="@string/comics_image"
+            android:src="@drawable/background_comics_initial_noborder_back" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/txt_comics_initial"
@@ -188,6 +198,21 @@
             android:textSize="65sp"
             android:textStyle="bold"
             tools:text="C" />
+
+        <TextView
+            android:id="@+id/txt_reissue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="10sp"
+            android:layout_marginEnd="24sp"
+            android:background="@drawable/background_reissue"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="2dp"
+            android:textSize="@dimen/text_size_small"
+            android:visibility="gone"
+            tools:text="2nd reissue"
+            tools:visibility="visible" />
 
     </FrameLayout>
 </layout>

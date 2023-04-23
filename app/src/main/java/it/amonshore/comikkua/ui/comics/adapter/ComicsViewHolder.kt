@@ -12,6 +12,7 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
+import it.amonshore.comikkua.data.release.formatVersion
 import it.amonshore.comikkua.databinding.ListitemComicsBinding
 import it.amonshore.comikkua.toHumanReadable
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
@@ -55,6 +56,8 @@ class ComicsViewHolder private constructor(val binding: ListitemComicsBinding) :
                 txtComicsPublisher.text = publisher
                 txtComicsAuthors.text = authors
                 txtComicsNotes.text = notes
+                txtReissue.visibility = if (version > 0) View.VISIBLE else View.GONE
+                txtReissue.text = formatVersion(binding.root.context)
             }
 
             val context = itemView.context

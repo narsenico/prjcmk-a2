@@ -26,6 +26,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.ComicsRelease
+import it.amonshore.comikkua.data.release.formatVersion
 import it.amonshore.comikkua.databinding.FragmentComicsDetailBinding
 import it.amonshore.comikkua.toHumanReadable
 import it.amonshore.comikkua.ui.DrawableTextViewTarget
@@ -239,6 +240,7 @@ class ComicsDetailFragment : Fragment() {
         val context = requireContext()
         val txtInitial = binding.comics.txtComicsInitial
         val txtName = binding.comics.txtComicsName
+        val txtReissue = binding.comics.txtReissue
         val txtPublisher = binding.comics.txtComicsPublisher
         val txtAuthors = binding.comics.txtComicsAuthors
         val txtNotes = binding.comics.txtComicsNotes
@@ -250,6 +252,10 @@ class ComicsDetailFragment : Fragment() {
         return Observer { comics ->
             _comics = comics
             txtName.text = comics.comics.name
+            txtReissue.apply {
+                visibility = if (comics.comics.version > 0) View.VISIBLE else View.GONE
+                text = comics.comics.formatVersion(context)
+            }
             txtPublisher.text = comics.comics.publisher
             txtAuthors.text = comics.comics.authors
             txtNotes.text = comics.comics.notes

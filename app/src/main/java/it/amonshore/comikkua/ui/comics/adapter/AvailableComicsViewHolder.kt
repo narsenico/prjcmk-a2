@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.selection.ItemDetailsLookup
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.release.formatVersion
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.ListitemComicsAvailableBinding
 import it.amonshore.comikkua.fromISO8601Date
@@ -39,6 +40,8 @@ class AvailableComicsViewHolder private constructor(val binding: ListitemComicsA
             txtComicsInitial.text = comics.initial
             txtComicsInitial.setBackgroundResource(R.drawable.background_comics_initial_noborder)
             txtComicsReleaseLast.text = comics.formatLastRelease()
+            txtReissue.visibility = if (comics.version > 0) View.VISIBLE else View.GONE
+            txtReissue.text = comics.formatVersion(binding.root.context)
         }
     }
 
@@ -61,7 +64,11 @@ class AvailableComicsViewHolder private constructor(val binding: ListitemComicsA
 
         return when {
             lastReleaseDateHumanReadable != null && lastNumber != null ->
-                context.getString(R.string.release_last_dated, lastNumber, lastReleaseDateHumanReadable)
+                context.getString(
+                    R.string.release_last_dated,
+                    lastNumber,
+                    lastReleaseDateHumanReadable
+                )
 
             lastNumber != null ->
                 context.getString(R.string.release_last, lastNumber)

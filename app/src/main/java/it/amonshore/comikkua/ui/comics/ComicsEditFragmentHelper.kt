@@ -15,6 +15,7 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Periodicity
+import it.amonshore.comikkua.data.release.formatVersion
 import it.amonshore.comikkua.data.release.getPeriodicityList
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 import it.amonshore.comikkua.parseToDouble
@@ -24,6 +25,7 @@ import it.amonshore.comikkua.ui.DrawableTextViewTarget
 import it.amonshore.comikkua.ui.ImageHelperKt
 
 private const val NAME = "name"
+private const val VERSION = "version"
 private const val PUBLISHER = "publisher"
 private const val AUTHORS = "authors"
 private const val NOTES = "notes"
@@ -178,12 +180,18 @@ class ComicsEditFragmentHelper(
             notes = binding.tilNotes.getText(),
             periodicity = _periodicityList.getKey(binding.tilPeriodicity.selection),
             price = parseToDouble(binding.tilPrice.getText()),
-            image = _comicsImagePath?.let { Uri.parse(it).toString() }
+            image = _comicsImagePath?.let { Uri.parse(it).toString() },
+            // TODO: version =
         )
     }
 
     private fun setLayoutWithSavedInstanceState(savedInstanceState: Bundle) {
         binding.comics.txtComicsName.text = savedInstanceState.getString(NAME)
+        binding.comics.txtReissue.apply {
+            val version = savedInstanceState.getInt(VERSION, 0)
+            visibility = if (version > 0) View.VISIBLE else View.GONE
+            text = version.formatVersion(context)
+        }
         binding.comics.txtComicsPublisher.text = savedInstanceState.getString(PUBLISHER)
         binding.comics.txtComicsAuthors.text = savedInstanceState.getString(AUTHORS)
         binding.comics.txtComicsNotes.text = savedInstanceState.getString(NOTES)
@@ -203,6 +211,10 @@ class ComicsEditFragmentHelper(
 
     private fun setLayoutWithSavedInstanceStateWithComics(comics: Comics) {
         binding.comics.txtComicsName.text = comics.name
+        binding.comics.txtReissue.apply {
+            visibility = if (comics.version > 0) View.VISIBLE else View.GONE
+            text = comics.formatVersion(context)
+        }
         binding.comics.txtComicsPublisher.text = comics.publisher
         binding.comics.txtComicsAuthors.text = comics.authors
         binding.comics.txtComicsNotes.text = comics.notes
