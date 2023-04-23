@@ -53,6 +53,26 @@ fun showErrorDialog(
     }
 
 context (Fragment)
+fun showYesNoDialog(
+    title: String,
+    message: String,
+    onYes: () -> Unit,
+    onNo: () -> Unit,
+): Dialog = AlertDialog.Builder(activity)
+    .setTitle(title)
+    .setMessage(message)
+    .setPositiveButton(R.string.yes) { _, _ ->
+        onYes()
+    }
+    .setNegativeButton(R.string.no) { _, _ ->
+        onNo()
+    }
+    .create()
+    .also {
+        it.show()
+    }
+
+context (Fragment)
 fun showConfirmDialog(
     title: String,
     message: String,

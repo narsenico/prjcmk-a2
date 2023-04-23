@@ -1,6 +1,8 @@
 package it.amonshore.comikkua.ui.comics
 
 import android.app.Application
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.lifecycle.*
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.containsAll
@@ -22,6 +24,7 @@ sealed class UiComicsSelectorEvent {
     data class AvailableComicsLoaded(val count: Int) : UiComicsSelectorEvent()
     object AvailableComicsError : UiComicsSelectorEvent()
     object AvailableComicsLoading : UiComicsSelectorEvent()
+    object NeedRefreshAvailableComics : UiComicsSelectorEvent()
 }
 
 class ComicsSelectorViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,6 +41,17 @@ class ComicsSelectorViewModel(application: Application) : AndroidViewModel(appli
         set(value) {
             _filterFlow.value = value
         }
+
+    init {
+        val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
+        connectivityManager.activeNetwork?.let { currentNetwork ->
+            connectivityManager.getNetworkCapabilities(currentNetwork)?.let {
+                if (it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    _events.postValue(UiComicsSelectorEvent.NeedRefreshAvailableComics)
+                }
+            }
+        }
+    }
 
     @OptIn(FlowPreview::class)
     private val comicsFlow = _cmkWebRepository.getNotFollowedComics()

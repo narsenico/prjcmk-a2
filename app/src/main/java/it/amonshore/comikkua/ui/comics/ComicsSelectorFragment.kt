@@ -21,6 +21,7 @@ import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.FragmentComicsSelectorBinding
 import it.amonshore.comikkua.ui.OnNavigationFragmentListener
 import it.amonshore.comikkua.ui.comics.adapter.AvailableComicsAdapter
+import it.amonshore.comikkua.ui.showYesNoDialog
 
 //private const val BUNDLE_COMICS_RECYCLER_LAYOUT = "bundle.comics_selector.recycler.layout"
 //private const val BUNDLE_COMICS_LAST_QUERY = "bundle.comics_selector.last.query"
@@ -60,6 +61,7 @@ class ComicsSelectorFragment : Fragment() {
                 is UiComicsSelectorEvent.AvailableComicsLoading -> onAvailableComicsLoading()
                 is UiComicsSelectorEvent.AvailableComicsLoaded -> onAvailableComicsLoaded(result.count)
                 is UiComicsSelectorEvent.AvailableComicsError -> onAvailableComicsError()
+                is UiComicsSelectorEvent.NeedRefreshAvailableComics -> onNeedRefreshAvailableComics()
             }
         }
 
@@ -183,5 +185,14 @@ class ComicsSelectorFragment : Fragment() {
             R.string.refresh_available_comics_error,
             Toast.LENGTH_SHORT
         ).show()
+    }
+
+    private fun onNeedRefreshAvailableComics() {
+        showYesNoDialog(
+            title = getString(R.string.title_comics_selector),
+            message = getString(R.string.need_refresh_available_comics_message),
+            onYes = ::loadAvailableComics,
+            onNo = { }
+        )
     }
 }
