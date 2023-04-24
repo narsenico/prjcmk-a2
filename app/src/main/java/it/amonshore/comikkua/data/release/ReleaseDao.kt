@@ -150,4 +150,7 @@ interface ReleaseDao {
     )
     @Transaction
     fun getComicsReleasesByComicsIdFLow(comicsId: Long): Flow<List<ComicsRelease>>
+
+    @Query("SELECT MAX(lastUpdate) FROM tReleases")
+    suspend fun getLastUpdate(): Long?
 }

@@ -25,6 +25,10 @@ private val longFormatter by lazy {
     DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
 }
 
+private val shortWithTimeFormatter by lazy {
+    DateTimeFormatter.ofPattern("EEE dd MMM, HH:mm")
+}
+
 fun LocalDate.atFirstDayOfWeek(): LocalDate {
     val delta = dayOfWeek.value - 1
     return if (delta > 0) {
@@ -80,6 +84,11 @@ fun LocalDate.asUtcMilliseconds(): Long {
 fun Long.asLocalDate(): LocalDate {
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.of("UTC"))
         .toLocalDate()
+}
+
+fun ZonedDateTime.toHumanReadable(context: Context): String {
+    // TODO
+    return format(shortWithTimeFormatter)
 }
 
 sealed class Period(@IntRange(from = 0) val count: Long) {

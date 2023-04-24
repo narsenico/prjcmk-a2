@@ -211,4 +211,10 @@
     <string name="second_reprint">2nd reprint</string>
     <string name="third_reprint">3rd reprint</string>
     <string name="nth_reprint">%dth reprint</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_stats">Statistics</string>
+    <string name="menu_open_stats">View statistics</string>
+    <string name="stats_comics_count">Comics count</string>
+    <string name="stats_last_update">Last update</string>
 </resources>

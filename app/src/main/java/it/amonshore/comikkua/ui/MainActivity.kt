@@ -91,6 +91,11 @@ class MainActivity : AppCompatActivity(),
                 true
             }
 
+            R.id.openStats -> {
+                _navController.navigate(R.id.action_global_statsFragment)
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

@@ -15,4 +15,11 @@
         android:title="@string/menu_open_comics_selector"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/openStats"
+        android:icon="@drawable/ic_add"
+        android:orderInCategory="100"
+        android:title="@string/menu_open_stats"
+        app:showAsAction="never" />
+
 </menu>

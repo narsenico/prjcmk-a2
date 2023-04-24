@@ -14,7 +14,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.UUID
 
 private const val ONE_DAY: Long = 86_400_000L
@@ -65,6 +68,12 @@ class ReleaseRepository(context: Context) {
 
     fun getComicsReleasesByTag(tag: String): Flow<List<ComicsRelease>> =
         _releaseDao.getComicsReleasesByTagFlow(tag)
+
+    suspend fun getLastUpdate(): ZonedDateTime? {
+        return _releaseDao.getLastUpdate()?.let {
+            ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+        }
+    }
 
     suspend fun getRelease(id: Long) = _releaseDao.getRelease(id)
 
