@@ -217,4 +217,5 @@
     <string name="menu_open_stats">View statistics</string>
     <string name="stats_comics_count">Comics count</string>
     <string name="stats_last_update">Last update</string>
+    <string name="delete_all">Delete all</string>
 </resources>

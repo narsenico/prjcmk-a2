@@ -154,6 +154,7 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     implementation 'androidx.activity:activity-compose:1.7.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.6.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1'
     implementation 'androidx.compose.runtime:runtime-livedata'
     implementation "com.google.accompanist:accompanist-themeadapter-material3:0.31.0-alpha"
