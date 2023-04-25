@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,7 +61,9 @@ class StatsFragment : Fragment() {
                         comicsCount = uiState.comicsCount,
                         lastUpdate = uiState.lastUpdate,
                         isLoading = uiState.isLoading,
-                        onDeleteAllCLick = viewModel::deleteAll
+                        hasError = uiState.hasError,
+                        onDeleteAllCLick = viewModel::deleteAll,
+                        onImportFromOldDatabaseClick = viewModel::importFromPreviousVersion
                     )
                 }
             }
@@ -75,7 +76,9 @@ fun StatsScreen(
     comicsCount: Int,
     lastUpdate: ZonedDateTime?,
     isLoading: Boolean = false,
+    hasError: Boolean = false,
     onDeleteAllCLick: () -> Unit,
+    onImportFromOldDatabaseClick: () -> Unit,
 ) {
     val context = LocalContext.current
     var showConfirmDialog by rememberSaveable {
@@ -96,11 +99,20 @@ fun StatsScreen(
             value = lastUpdate?.toHumanReadable(context) ?: ""
         )
         Divider()
-        Button(
-            onClick = { showConfirmDialog = true },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+        TextButton(
+            enabled = !isLoading,
+            onClick = { showConfirmDialog = true }
         ) {
             Text(stringResource(id = R.string.delete_all))
+        }
+        TextButton(
+            enabled = !isLoading,
+            onClick = onImportFromOldDatabaseClick
+        ) {
+            Text(stringResource(id = R.string.import_old_database))
+        }
+        if (hasError) {
+            Text("error")
         }
     }
 
@@ -212,7 +224,9 @@ fun StatsScreenPreview() {
         StatsScreen(
             comicsCount = 100,
             lastUpdate = ZonedDateTime.now(),
-            onDeleteAllCLick = { }
+            hasError = true,
+            onDeleteAllCLick = { },
+            onImportFromOldDatabaseClick = { }
         )
     }
 }
