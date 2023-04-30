@@ -57,18 +57,27 @@ class StatsViewModel(private val application: Application) : AndroidViewModel(ap
                 initialValue = StatsCounterState()
             )
 
-    fun deleteAll() = viewModelScope.launch {
-        _isLoading.value = true
-        _error.value = null
-        try {
-            _comicsRepository.deleteAll(deleteImages = true)
-        } catch (ex: Exception) {
-            LogHelper.e("Error deleting comics and images", ex)
-            _error.value = application.getString(R.string.comics_delete_error)
-        } finally {
-            _isLoading.value = false
-        }
-    }
+    val importFromPreviousVersionState: StateFlow<StatsWorkerState> =
+        _workManager.getWorkInfosForUniqueWorkLiveData(ImportFromOldDatabaseWorker.WORK_NAME)
+            .asFlow()
+            .distinctUntilChanged()
+            .flatMapConcat { it.toImportFromPreviousVersionState(application).asFlow() }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = StatsWorkerState.None
+            )
+
+    val exportBackupState: StateFlow<StatsWorkerState> =
+        _workManager.getWorkInfosForUniqueWorkLiveData(BackupWorker.WORK_NAME)
+            .asFlow()
+            .distinctUntilChanged()
+            .flatMapConcat { it.toExportBackupState(application).asFlow() }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = StatsWorkerState.None
+            )
 
     fun importFromPreviousVersion() {
         val request = OneTimeWorkRequest.from(ImportFromOldDatabaseWorker::class.java)
@@ -90,28 +99,17 @@ class StatsViewModel(private val application: Application) : AndroidViewModel(ap
         )
     }
 
-    fun getImportFromPreviousVersionState(): StateFlow<StatsWorkerState> {
-        return _workManager.getWorkInfosForUniqueWorkLiveData(ImportFromOldDatabaseWorker.WORK_NAME)
-            .asFlow()
-            .distinctUntilChanged()
-            .flatMapConcat { it.toImportFromPreviousVersionState(application).asFlow() }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = StatsWorkerState.None
-            )
-    }
-
-    fun getExportBackupState(): StateFlow<StatsWorkerState> {
-        return _workManager.getWorkInfosForUniqueWorkLiveData(BackupWorker.WORK_NAME)
-            .asFlow()
-            .distinctUntilChanged()
-            .flatMapConcat { it.toExportBackupState(application).asFlow() }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = StatsWorkerState.None
-            )
+    fun deleteAll() = viewModelScope.launch {
+        _isLoading.value = true
+        _error.value = null
+        try {
+            _comicsRepository.deleteAll(deleteImages = true)
+        } catch (ex: Exception) {
+            LogHelper.e("Error deleting comics and images", ex)
+            _error.value = application.getString(R.string.comics_delete_error)
+        } finally {
+            _isLoading.value = false
+        }
     }
 }
 

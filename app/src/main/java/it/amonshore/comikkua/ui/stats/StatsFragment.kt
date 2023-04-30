@@ -64,10 +64,10 @@ class StatsFragment : Fragment() {
                 val counterState by viewModel.counterState
                     .collectAsStateWithLifecycle()
 
-                val importState by viewModel.getImportFromPreviousVersionState()
+                val importState by viewModel.importFromPreviousVersionState
                     .collectAsStateWithLifecycle()
 
-                val exportBackupState by viewModel.getExportBackupState()
+                val exportBackupState by viewModel.exportBackupState
                     .collectAsStateWithLifecycle()
 
                 Mdc3Theme {
