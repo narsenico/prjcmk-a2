@@ -1,5 +1,3 @@
-@file:OptIn(FlowPreview::class, FlowPreview::class)
-
 package it.amonshore.comikkua.ui.stats
 
 import android.app.Application
@@ -32,7 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.ZonedDateTime
 
-
+@OptIn(FlowPreview::class)
 class StatsViewModel(private val application: Application) : AndroidViewModel(application) {
 
     private val _comicsRepository = ComicsRepository(application)
