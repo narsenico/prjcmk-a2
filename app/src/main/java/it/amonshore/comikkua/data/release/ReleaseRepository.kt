@@ -13,6 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
@@ -72,6 +73,17 @@ class ReleaseRepository(context: Context) {
     suspend fun getLastUpdate(): ZonedDateTime? {
         return _releaseDao.getLastUpdate()?.let {
             ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+        }
+    }
+
+    fun getLastUpdateFlow(): Flow<ZonedDateTime?> {
+        return _releaseDao.getLastUpdateFlow().map { lastUpdate ->
+            lastUpdate?.let {
+                ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli(it),
+                    ZoneId.systemDefault()
+                )
+            }
         }
     }
 

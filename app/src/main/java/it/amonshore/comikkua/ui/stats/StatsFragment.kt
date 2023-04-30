@@ -8,12 +8,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,7 +45,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import it.amonshore.comikkua.R
-import it.amonshore.comikkua.toHumanReadable
+import it.amonshore.comikkua.ui.toHumanReadable
+import java.time.LocalDate
 import java.time.ZonedDateTime
 
 class StatsFragment : Fragment() {
@@ -54,17 +61,32 @@ class StatsFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val counterState by viewModel.counterState
+                    .collectAsStateWithLifecycle()
+
+                val importState by viewModel.getImportFromPreviousVersionState()
+                    .collectAsStateWithLifecycle()
+
+                val exportBackupState by viewModel.getExportBackupState()
+                    .collectAsStateWithLifecycle()
 
                 Mdc3Theme {
-                    StatsScreen(
-                        comicsCount = uiState.comicsCount,
-                        lastUpdate = uiState.lastUpdate,
-                        isLoading = uiState.isLoading,
-                        hasError = uiState.hasError,
-                        onDeleteAllCLick = viewModel::deleteAll,
-                        onImportFromOldDatabaseClick = viewModel::importFromPreviousVersion
-                    )
+                    Column(Modifier.fillMaxSize()) {
+                        CounterCard(
+                            state = counterState,
+                            onDeleteAllCLick = viewModel::deleteAll,
+                        )
+                        WorkerCard(
+                            text = stringResource(id = R.string.import_old_database),
+                            state = importState,
+                            onRequestExecution = viewModel::importFromPreviousVersion
+                        )
+                        WorkerCard(
+                            text = stringResource(id = R.string.export_backup),
+                            state = exportBackupState,
+                            onRequestExecution = viewModel::exportBackup
+                        )
+                    }
                 }
             }
         }
@@ -72,47 +94,46 @@ class StatsFragment : Fragment() {
 }
 
 @Composable
-fun StatsScreen(
-    comicsCount: Int,
-    lastUpdate: ZonedDateTime?,
-    isLoading: Boolean = false,
-    hasError: Boolean = false,
+fun CounterCard(
+    state: StatsCounterState,
     onDeleteAllCLick: () -> Unit,
-    onImportFromOldDatabaseClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     var showConfirmDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
-    Column(Modifier.fillMaxSize()) {
-        if (isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-        StatsCounterRow(
-            label = stringResource(id = R.string.stats_comics_count),
-            value = comicsCount.toString()
-        )
-        Divider()
-        StatsCounterRow(
-            label = stringResource(id = R.string.stats_last_update),
-            value = lastUpdate?.toHumanReadable(context) ?: ""
-        )
-        Divider()
-        TextButton(
-            enabled = !isLoading,
-            onClick = { showConfirmDialog = true }
-        ) {
-            Text(stringResource(id = R.string.delete_all))
-        }
-        TextButton(
-            enabled = !isLoading,
-            onClick = onImportFromOldDatabaseClick
-        ) {
-            Text(stringResource(id = R.string.import_old_database))
-        }
-        if (hasError) {
-            Text("error")
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column {
+            if (state.isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+            StatsCounterRow(
+                label = stringResource(id = R.string.stats_comics_count),
+                value = state.comicsCount.toString()
+            )
+            Divider()
+            StatsCounterRow(
+                label = stringResource(id = R.string.stats_last_update),
+                value = toHumanReadable(state.lastUpdate)
+            )
+            Divider()
+            TextButton(
+                enabled = !state.isLoading,
+                onClick = { showConfirmDialog = true }
+            ) {
+                Text(stringResource(id = R.string.delete_all))
+            }
+            if (!state.error.isNullOrEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    text = state.error
+                )
+            }
         }
     }
 
@@ -131,6 +152,58 @@ fun StatsScreen(
 }
 
 @Composable
+fun WorkerCard(
+    text: String,
+    state: StatsWorkerState,
+    onRequestExecution: () -> Unit,
+) {
+    val enabled = state !is StatsWorkerState.Running
+    val message = when (state) {
+        is StatsWorkerState.Running -> stringResource(id = R.string.running)
+        is StatsWorkerState.Completed -> state.message
+        is StatsWorkerState.Failed -> state.message
+        else -> ""
+    }
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    enabled = enabled,
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                    onClick = onRequestExecution
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "work is running",
+                    )
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    style = MaterialTheme.typography.bodySmall,
+                    text = message
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun StatsCounterRow(
     label: String,
     value: String
@@ -138,7 +211,7 @@ fun StatsCounterRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
         Text(
             modifier = Modifier.weight(weight = 1F, fill = true),
@@ -219,23 +292,64 @@ fun ConfirmDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun StatsScreenPreview() {
+fun StatsCardPreview() {
+    val counterState = StatsCounterState(
+        comicsCount = 10,
+        lastUpdate = ZonedDateTime.now(),
+        isLoading = false,
+        error = stringResource(id = R.string.comics_delete_error)
+    )
+
     Mdc3Theme {
-        StatsScreen(
-            comicsCount = 100,
-            lastUpdate = ZonedDateTime.now(),
-            hasError = true,
+        CounterCard(
+            state = counterState,
             onDeleteAllCLick = { },
-            onImportFromOldDatabaseClick = { }
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun StatsCounterRowPreview() {
+fun WorkerCardRunningPreview() {
     Mdc3Theme {
-        StatsCounterRow(label = "Counter", value = "100")
+        WorkerCard(
+            text = stringResource(id = R.string.import_old_database),
+            state = StatsWorkerState.Running,
+            onRequestExecution = { }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkerCardCompletedPreview() {
+    val title = stringResource(id = R.string.import_old_database)
+    val message = stringResource(
+        id = R.string.import_old_database_success_with_date,
+        10, 5, LocalDate.now()
+    )
+
+    Mdc3Theme {
+        WorkerCard(
+            text = title,
+            state = StatsWorkerState.Completed(message),
+            onRequestExecution = { }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkerCardFailedPreview() {
+    val title = stringResource(id = R.string.import_old_database)
+    val message = stringResource(id = R.string.import_old_database_error)
+
+    Mdc3Theme {
+        WorkerCard(
+            text = title,
+            state = StatsWorkerState.Failed(message),
+            onRequestExecution = { }
+        )
     }
 }
 
@@ -244,11 +358,14 @@ fun StatsCounterRowPreview() {
 fun ConfirmDialogPreview() {
     Mdc3Theme {
         ConfirmDialog(
-            title = "Confirm",
-            message = "Enter CONFIRM to confirm",
-            confirmPhrase = "CONFIRM",
-            onConfirm = {},
-            onDismiss = {}
+            title = stringResource(id = R.string.confirm_title),
+            message = stringResource(
+                id = R.string.confirm_delete_comics_with_confirm_phrase,
+                "DELETE"
+            ),
+            confirmPhrase = "DELETE",
+            onConfirm = { },
+            onDismiss = { }
         )
     }
 }

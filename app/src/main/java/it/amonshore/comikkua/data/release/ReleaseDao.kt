@@ -153,4 +153,7 @@ interface ReleaseDao {
 
     @Query("SELECT MAX(lastUpdate) FROM tReleases")
     suspend fun getLastUpdate(): Long?
+
+    @Query("SELECT MAX(lastUpdate) FROM tReleases")
+    fun getLastUpdateFlow(): Flow<Long?>
 }

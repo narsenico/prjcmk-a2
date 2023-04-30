@@ -9,6 +9,9 @@ interface ComicsDao {
     @Query("SELECT COUNT(*) FROM tComics")
     suspend fun count(): Int
 
+    @Query("SELECT COUNT(*) FROM tComics")
+    fun countFlow(): Flow<Int>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comics: Comics)
 

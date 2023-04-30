@@ -110,6 +110,8 @@
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
+    <string name="today_with_time">Today at %1$tr</string>
+    <string name="tomorrow_with_time">Tomorrow at %1$tr</string>
 
     <string name="today_releases_channel_name">Today releases</string>
     <string name="today_releases_channel_description">Releases</string>
@@ -219,4 +221,7 @@
     <string name="stats_last_update">Last update</string>
     <string name="delete_all">Delete all</string>
     <string name="import_old_database">Import data from previous version</string>
+    <string name="running">Running</string>
+    <string name="export_backup">Export backup</string>
+    <string name="backup_completed">Backup completed</string>
 </resources>

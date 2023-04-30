@@ -11,6 +11,8 @@ class ComicsRepository(private val context: Context) {
 
     suspend fun count() = _comicsDao.count()
 
+    fun countFlow() = _comicsDao.countFlow()
+
     suspend fun insert(comics: Comics) {
         _comicsDao.insert(comics)
     }

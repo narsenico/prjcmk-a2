@@ -87,8 +87,11 @@ fun Long.asLocalDate(): LocalDate {
 }
 
 fun ZonedDateTime.toHumanReadable(context: Context): String {
-    // TODO
-    return format(shortWithTimeFormatter)
+    return when (toLocalDate()) {
+        LocalDate.now() -> context.getString(R.string.today_with_time, this)
+        LocalDate.now().plusDays(1) -> context.getString(R.string.tomorrow_with_time, this)
+        else -> format(shortWithTimeFormatter)
+    }
 }
 
 sealed class Period(@IntRange(from = 0) val count: Long) {
@@ -131,7 +134,7 @@ sealed class Period(@IntRange(from = 0) val count: Long) {
     }
 }
 
-fun Period.toKey(): String? = when(this) {
+fun Period.toKey(): String? = when (this) {
     is Period.Weekly -> "W$count"
     is Period.Monthly -> "M$count"
     is Period.Yearly -> "Y$count"
