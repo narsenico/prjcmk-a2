@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.ui.toHumanReadable
 import java.time.LocalDate
@@ -73,6 +75,7 @@ class StatsFragment : Fragment() {
                 Mdc3Theme {
                     Column(Modifier.fillMaxSize()) {
                         CounterCard(
+                            version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                             state = counterState,
                             onDeleteAllCLick = viewModel::deleteAll,
                         )
@@ -95,6 +98,7 @@ class StatsFragment : Fragment() {
 
 @Composable
 fun CounterCard(
+    version: String,
     state: StatsCounterState,
     onDeleteAllCLick: () -> Unit,
 ) {
@@ -107,10 +111,18 @@ fun CounterCard(
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Column {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             if (state.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
+            StatsCounterRow(
+                label = stringResource(id = R.string.version),
+                value = version
+            )
+            Divider()
             StatsCounterRow(
                 label = stringResource(id = R.string.stats_comics_count),
                 value = state.comicsCount.toString()
@@ -211,7 +223,6 @@ fun StatsCounterRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
     ) {
         Text(
             modifier = Modifier.weight(weight = 1F, fill = true),
@@ -292,7 +303,7 @@ fun ConfirmDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun StatsCardPreview() {
+fun CounterCardPreview() {
     val counterState = StatsCounterState(
         comicsCount = 10,
         lastUpdate = ZonedDateTime.now(),
@@ -302,6 +313,7 @@ fun StatsCardPreview() {
 
     Mdc3Theme {
         CounterCard(
+            version = "1.0-hello 123",
             state = counterState,
             onDeleteAllCLick = { },
         )

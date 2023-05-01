@@ -224,4 +224,5 @@
     <string name="running">Running</string>
     <string name="export_backup">Export backup</string>
     <string name="backup_completed">Backup completed</string>
+    <string name="version">Version</string>
 </resources>
