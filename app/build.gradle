@@ -5,6 +5,10 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 33
     defaultConfig {
@@ -21,10 +25,23 @@ android {
             }
         }
     }
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        staging {
+            initWith release
+            applicationIdSuffix ".staging"
         }
     }
     buildFeatures {
@@ -43,7 +60,7 @@ android {
             dimension "develop"
             applicationId "it.amonshore.comikkua.tryme"
             versionName "1.0-tryme"
-            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://192.168.1.151:5000/\"")
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://MBP-Daidokoro:5000/\"")
         }
     }
     compileOptions {
