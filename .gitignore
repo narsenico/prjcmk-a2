@@ -11,3 +11,6 @@ ktlint
 todo.txt
 /tmp/**/*
 /app/**/google-services.json
+/keystore.properties
+/app/**/*.apk
+output-metadata.json
