@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="secure_base_urls">
+        <item>http://MBP-Daidokoro:5000/</item>
+        <item>http://MBP-Daidokoro:5001/</item>
+    </string-array>
+</resources>

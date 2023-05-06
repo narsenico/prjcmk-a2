@@ -12,6 +12,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import it.amonshore.comikkua.LogHelper
+import it.amonshore.comikkua.ResultEx
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -19,8 +20,12 @@ import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.data.release.ReleaseRepository
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebRepository
+import it.amonshore.comikkua.flatMap
+import it.amonshore.comikkua.onFailure
+import it.amonshore.comikkua.services.SecureFileDownloader
 import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.toReleaseDate
+import it.amonshore.comikkua.ui.isValidImageFileName
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +39,8 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDate
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -55,14 +62,18 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                 else -> LogHelper.e("Job failed", cause)
             }
         }
-
-        val oldDatabasePath = getOldDatabasePath()
-            ?: return@context Result.failure(workDataOf("reason" to "source-not-found"))
-
         if (_comicsRepository.count() > 0) {
             LogHelper.w("import failed: current db not empty")
             return@context Result.failure(workDataOf("reason" to "not-empty"))
         }
+
+        tryDownloadSource().onFailure {
+            LogHelper.e("import failed: error downloading source", it)
+            return@context Result.failure(workDataOf("reason" to "source-download-error"))
+        }
+
+        val oldDatabasePath = getOldDatabasePath()
+            ?: return@context Result.failure(workDataOf("reason" to "source-not-found"))
 
         try {
             _cmkWebRepository.refreshAvailableComics()
@@ -115,6 +126,44 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
             )
         }
     }
+
+    private suspend fun tryDownloadSource(): ResultEx<Unit, Exception> {
+        val sourceUrl = inputData.getString("source_url") ?: return ResultEx.Success()
+        val destinationFile =
+            run { File.createTempFile("prev", ".tmp", applicationContext.noBackupFilesDir) }
+
+        return SecureFileDownloader.getInstance(applicationContext)
+            .downloadFile(
+                url = sourceUrl,
+                contentType = "application/zip, application/octet-stream",
+                destination = destinationFile
+            ).flatMap {
+                extractSourceFromZip(destinationFile)
+            }.also {
+                destinationFile.delete()
+            }
+    }
+
+    private fun extractSourceFromZip(file: File): ResultEx<Unit, Exception> = try {
+        ZipInputStream(file.inputStream()).use { stream ->
+            stream.sequence().forEach { entry ->
+                LogHelper.d { "extract ${entry.name}" }
+                if (entry.isOldDatabase()) {
+                    stream.copyTo(applicationContext.getDatabasePath(entry.name).outputStream())
+                } else if (entry.isImageFile()) {
+                    stream.copyTo(File(applicationContext.filesDir, entry.name).outputStream())
+                }
+            }
+        }
+
+        ResultEx.Success()
+    } catch (ex: Exception) {
+        ResultEx.Failure(ex)
+    }
+
+    private fun ZipInputStream.sequence() = generateSequence { nextEntry }
+    private fun ZipEntry.isOldDatabase() = !isDirectory && name.startsWith(OLD_DATABASE_NAME)
+    private fun ZipEntry.isImageFile() = !isDirectory && isValidImageFileName(name)
 
     private fun getOldDatabasePath(): String? {
         val file = applicationContext.getDatabasePath(OLD_DATABASE_NAME)

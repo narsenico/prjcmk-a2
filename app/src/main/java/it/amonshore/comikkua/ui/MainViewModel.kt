@@ -5,14 +5,26 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
-import androidx.work.*
-import it.amonshore.comikkua.*
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import it.amonshore.comikkua.BuildConfig
+import it.amonshore.comikkua.KEY_AUTO_UPDATE_ENABLED
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.release.ReleaseRepository
+import it.amonshore.comikkua.next
+import it.amonshore.comikkua.workers.ImportFromOldDatabaseWorker
 import it.amonshore.comikkua.workers.ReleasesNotificationWorker
 import it.amonshore.comikkua.workers.UpdateReleasesWorker
 import kotlinx.coroutines.launch
@@ -68,6 +80,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         LogHelper.d { "Deleting all elements marked as removed with tag=$tag" }
         _releaseRepository.deleteRemoved(tag)
         _comicsRepository.deleteRemoved(tag)
+    }
+
+    fun handleUri(uri: Uri) {
+        LogHelper.d { "Received uri=$uri" }
+
+        when (uri.path) {
+            "/dlprev" -> uri.getQueryParameter("url")?.run(::importFromOldDatabase)
+            else -> LogHelper.w("Cannot handle uri=$uri")
+        }
+    }
+
+    private fun importFromOldDatabase(sourceUrl: String) {
+        val request = OneTimeWorkRequest.Builder(ImportFromOldDatabaseWorker::class.java)
+            .setInputData(workDataOf("source_url" to sourceUrl))
+            .build()
+
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            ImportFromOldDatabaseWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
     }
 
     fun setupWorkers() {

@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -21,6 +22,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.ActivityMainBinding
 import java.time.Duration
+import android.net.Uri
 
 class MainActivity : AppCompatActivity(),
     OnNavigationFragmentListener,
@@ -72,6 +74,8 @@ class MainActivity : AppCompatActivity(),
                 Toast.LENGTH_LONG
             ).show()
         }
+
+        handleIntent(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -152,6 +156,18 @@ class MainActivity : AppCompatActivity(),
             View.GONE
         } else {
             View.VISIBLE
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(appLinkIntent: Intent) {
+        appLinkIntent.data?.run {
+            _viewModel.handleUri(this)
         }
     }
 
