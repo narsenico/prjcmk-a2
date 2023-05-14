@@ -13,10 +13,11 @@
 - [x] Non funziona l'annullo di ImportFromOldDatabaseWorker
 - [x] Preferibilmente scaricare i comics all'apertura di ComicsSelectorFragment (altrimenti perde l'utilità di mostrare l'ultima release) 
 - [ ] Considerare ristampa
-
 - [x] L'import da vecchio db deve indicare quanti comics sono importati come sourced (così da caricare su cmkweb tutti i comics mancanti in modo da avere su app alla fine tutti sourced)
+- [x] POSSIBILE BACO CON LE DATE: importando il DB da neon non corrispondono le release
+- [ ] Intent filter per aggiungere una release (vedi nota)
 
-- [x] POSSIBILE BACO CON LE DATE: importando il DB da neon non corrispondono le release 
+- [ ] !!! Nuova funzionalità di import con selezione zip contenente database (vecchia versione) e immagini (non voglio toccare l'app in uso ma solo importarne i dati)
 
 - [ ] CmkWeb: sourceId meglio che derivi dal comics stesso (hash del nome?) e non creato random (uuid) perché ricreando il DB verrebbero persi i collegamti con i dati salvati nell'app
 
@@ -43,3 +44,7 @@ Soluzione? Forzare cancellazione prima di uscire dal fragment?
 Non sono più sicuro di poter migrare dal db della variante "neon" a "tryme" (questa di sviluppo).
 Soluzione veloce è creare un NUOVO database, come nome diverso (quindi non più "comikku_database") e copiare tramite routine
 i dati dal vecchio DB.
+
+## Intent filter
+[Doc](https://developer.android.com/training/app-links/deep-linking)
+Permettere l'inserimento di una release tramite link con uri del tipo cmk://it.amonshore.comikkua/release/add?number=&xxx&date=xxx&... 
