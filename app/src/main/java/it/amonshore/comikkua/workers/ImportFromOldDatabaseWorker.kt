@@ -62,6 +62,7 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                 else -> LogHelper.e("Job failed", cause)
             }
         }
+
         if (_comicsRepository.count() > 0) {
             LogHelper.w("import failed: current db not empty")
             return@context Result.failure(workDataOf("reason" to "not-empty"))
