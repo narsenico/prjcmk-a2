@@ -32,6 +32,7 @@ import it.amonshore.comikkua.ui.createActionModeCallback
 import it.amonshore.comikkua.ui.share
 import it.amonshore.comikkua.ui.shareOnAmazon
 import it.amonshore.comikkua.ui.shareOnGoogle
+import it.amonshore.comikkua.ui.shareOnMangaYo
 import it.amonshore.comikkua.ui.shareOnPopStore
 import it.amonshore.comikkua.ui.shareOnStarShop
 import it.amonshore.comikkua.ui.showBottomSheetDialog
@@ -207,6 +208,10 @@ class ComicsFragment : Fragment() {
 
                     R.id.search_popstore -> {
                         requireActivity().shareOnPopStore(comics.comics)
+                    }
+
+                    R.id.search_mangayo -> {
+                        requireActivity().shareOnMangaYo(comics.comics)
                     }
 
                     R.id.search_google -> {

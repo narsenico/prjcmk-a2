@@ -20,6 +20,7 @@
     <string name="menu_search_amazon">Search on Amazon</string>
     <string name="menu_search_animeclick">Search on AnimeClick</string>
     <string name="menu_search_popstore">Search on PopStore</string>
+    <string name="menu_search_mangayo">Search on MangaYo!</string>
     <string name="menu_delete_all">Remove all</string>
     <string name="menu_create">Create new</string>
     <string name="menu_purchase">Purchase</string>

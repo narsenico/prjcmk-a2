@@ -32,6 +32,7 @@ import it.amonshore.comikkua.ui.releases.adapter.ReleaseAdapter
 import it.amonshore.comikkua.ui.share
 import it.amonshore.comikkua.ui.shareOnAmazon
 import it.amonshore.comikkua.ui.shareOnGoogle
+import it.amonshore.comikkua.ui.shareOnMangaYo
 import it.amonshore.comikkua.ui.shareOnPopStore
 import it.amonshore.comikkua.ui.shareOnStarShop
 import it.amonshore.comikkua.ui.shareRelease
@@ -242,6 +243,10 @@ class ReleasesFragment : Fragment() {
 
                     R.id.search_popstore -> {
                         requireActivity().shareOnPopStore(release)
+                    }
+
+                    R.id.search_mangayo -> {
+                        requireActivity().shareOnMangaYo(release)
                     }
 
                     R.id.search_google -> {

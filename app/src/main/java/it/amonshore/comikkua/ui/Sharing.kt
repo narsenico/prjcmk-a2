@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.release.ComicsRelease
@@ -67,71 +68,80 @@ fun Activity.share(releases: List<ComicsRelease>) {
 }
 
 fun Activity.shareOnGoogle(comics: Comics) {
-    shareOn(this, comics, "https://www.google.com/search?q=%s&ie=UTF-8")
+    openUrl(this, Uri.parse("https://www.google.com/search?q=${comics.encoded()}&ie=UTF-8"))
 }
 
 fun Activity.shareOnGoogle(release: ComicsRelease) {
-    shareOn(this, release, "https://www.google.com/search?q=%s&ie=UTF-8")
+    openUrl(this, Uri.parse("https://www.google.com/search?q=${release.encoded()}&ie=UTF-8"))
 }
 
 fun Activity.shareOnStarShop(comics: Comics) {
-    shareOn(
+    openUrl(
         this,
-        comics,
-        "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and"
+        Uri.parse("https://www.starshop.it/?mot_q=${comics.encoded()}")
     )
 }
 
 fun Activity.shareOnStarShop(release: ComicsRelease) {
-    shareOn(
+    openUrl(
         this,
-        release,
-        "https://www.starshop.it/#/dffullscreen/query=%s&query_name=match_and"
+        Uri.parse("https://www.starshop.it/?mot_q=${release.comics.name.uriEncode()}+${release.release.number}")
     )
 }
 
 fun Activity.shareOnAmazon(comics: Comics) {
-    shareOn(this, comics, "https://www.amazon.it/s?k=%s&_encoding=UTF8")
+    openUrl(this, Uri.parse("https://www.amazon.it/s?k=${comics.encoded()}&_encoding=UTF8"))
 }
 
 fun Activity.shareOnAmazon(release: ComicsRelease) {
-    shareOn(this, release, "https://www.amazon.it/s?k=%s&_encoding=UTF8")
+    openUrl(this, Uri.parse("https://www.amazon.it/s?k=${release.encoded()}&_encoding=UTF8"))
 }
 
 fun Activity.shareOnPopStore(comics: Comics) {
-    shareOn(this, comics, "https://popstore.it/cerca?controller=search&search_query=%s")
+    openUrl(
+        this,
+        Uri.parse("https://popstore.it/module/clerk/search?controller=search&orderby=position&orderway=desc&search-cat-select=0&search_query=${comics.encoded()}&submit_search=&fc=module&module=clerk")
+    )
 }
 
 fun Activity.shareOnPopStore(release: ComicsRelease) {
-    shareOn(this, release, "https://popstore.it/cerca?controller=search&search_query=%s")
+    openUrl(
+        this,
+        Uri.parse(
+            "https://popstore.it/module/clerk/search?controller=search&orderby=position&orderway=desc&search-cat-select=0&search_query=${release.encoded(3)}&submit_search=&fc=module&module=clerk"
+        )
+    )
 }
 
-private fun shareOn(activity: Activity, comics: Comics, format: String) {
-    val encoded =
-        arrayOf(comics.publisher, comics.name)
-            .joinToString(" ")
-            .uriEncode()
-    val searchUrl = String.format(format, encoded)
-
-    val intent = Intent().apply {
-        action = Intent.ACTION_VIEW
-        data = Uri.parse(searchUrl)
-    }
-    activity.startActivity(intent)
+fun Activity.shareOnMangaYo(comics: Comics) {
+    openUrl(
+        this,
+        Uri.parse("https://mangayo.it/?mot_q=${comics.encoded()}")
+    )
 }
 
-private fun shareOn(activity: Activity, release: ComicsRelease, format: String) {
-    val encoded = arrayOf(
-        release.comics.publisher,
-        release.comics.name,
-        release.release.number.toString()
-    ).joinToString(" ").uriEncode()
-    val searchUrl = String.format(format, encoded)
+fun Activity.shareOnMangaYo(release: ComicsRelease) {
+    openUrl(
+        this,
+        Uri.parse("https://mangayo.it/?mot_q=${release.encoded()}")
+    )
+}
 
+private fun Comics.encoded() = name.uriEncode()
+private fun ComicsRelease.encoded(releaseLength :Int = 0) = if (release.number == 0) {
+    comics.name.uriEncode()
+} else if (releaseLength == 0) {
+    "${comics.name} ${release.number}".uriEncode()
+} else {
+    "${comics.name} ${release.number.toString().padStart(releaseLength, '0')}".uriEncode()
+}
+
+private fun openUrl(activity: Activity, uri: Uri) {
     val intent = Intent().apply {
         action = Intent.ACTION_VIEW
-        data = Uri.parse(searchUrl)
+        data = uri
     }
+    LogHelper.d { "open url $uri" }
     activity.startActivity(intent)
 }
 
