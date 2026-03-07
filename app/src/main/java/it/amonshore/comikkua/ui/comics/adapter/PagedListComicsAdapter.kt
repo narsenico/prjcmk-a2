@@ -123,22 +123,26 @@ private fun createSelectionTracker(
     ).build()
 
     selectionTracker.addObserver(object : SelectionTracker.SelectionObserver<Long>() {
+        private var _lastSelectionSize = 0
+
         override fun onSelectionChanged() {
-            if (selectionTracker.hasSelection()) {
-                onSelectionChange(selectionTracker.selection.size())
-            } else {
-                onSelectionChange(0)
+            val currentSelection = selectionTracker.selection
+            if (currentSelection.size() == _lastSelectionSize) {
+                return
             }
+
+            _lastSelectionSize = currentSelection.size()
+            onSelectionChange(_lastSelectionSize)
         }
 
-        override fun onSelectionRestored() {
-            if (selectionTracker.hasSelection()) {
-                onSelectionChange(selectionTracker.selection.size())
-            } else {
-                onSelectionChange(0)
-            }
-            super.onSelectionRestored()
-        }
+//        override fun onSelectionRestored() {
+//            if (selectionTracker.hasSelection()) {
+//                onSelectionChange(selectionTracker.selection.size())
+//            } else {
+//                onSelectionChange(0)
+//            }
+//            super.onSelectionRestored()
+//        }
     })
 
     return selectionTracker
