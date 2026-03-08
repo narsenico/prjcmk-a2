@@ -91,7 +91,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
         mediator.addSource(liveData) {
             mediator.value = it
-            if (it.state.isFinished) {
+            if (it == null || it.state.isFinished) {
                 mediator.removeSource(liveData)
             }
         }
