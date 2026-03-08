@@ -2,8 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'androidx.navigation.safeargs'
-    id 'kotlin-kapt'             // Necessario per il Data Binding
-    id 'com.google.devtools.ksp' // Necessario per Room 2.8.4
+    id 'com.google.devtools.ksp'
     id 'androidx.room'
 }
 
@@ -25,7 +24,7 @@ android {
         }
     }
     buildFeatures {
-        dataBinding = true
+        viewBinding = true
         buildConfig = true
     }
     flavorDimensions "develop"
@@ -58,12 +57,6 @@ android {
         }
         sourceSets.release {
             kotlin.srcDir("build/generated/ksp/release/kotlin")
-        }
-    }
-    kapt {
-        arguments {
-            // Aiuta Glide a generare il codice più velocemente isolando i processi
-            arg("glide.incremental", "true")
         }
     }
     namespace 'it.amonshore.comikkua'

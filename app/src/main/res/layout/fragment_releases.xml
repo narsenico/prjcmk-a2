@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipe_refresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.releases.ReleasesFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/swipe_refresh"
-        tools:context=".ui.releases.ReleasesFragment">
+        tools:listitem="@layout/listitem_release" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/listitem_release" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-</layout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
