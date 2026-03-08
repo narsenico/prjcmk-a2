@@ -1,16 +1,15 @@
 package it.amonshore.comikkua.ui.comics
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.core.widget.doAfterTextChanged
 import com.bumptech.glide.RequestManager
 import com.google.android.material.textfield.TextInputLayout
-import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
@@ -101,7 +100,8 @@ class ComicsEditFragmentHelper(
         binding.tilName.editText!!.isEnabled = !comics.comics.isSourced
         binding.tilPublisher.editText!!.isEnabled = !comics.comics.isSourced
 
-        binding.comics.imgSourced.visibility = if (comics.comics.isSourced) View.VISIBLE else View.GONE
+        binding.comics.imgSourced.visibility =
+            if (comics.comics.isSourced) View.VISIBLE else View.GONE
 
         if (savedInstanceState != null) {
             setLayoutWithSavedInstanceState(savedInstanceState)
@@ -135,7 +135,10 @@ class ComicsEditFragmentHelper(
         outState.putString(AUTHORS, binding.tilAuthors.getText())
         outState.putString(NOTES, binding.tilNotes.getText())
         outState.putString(PRICE, binding.tilPrice.getText())
-        outState.putString(PERIODICITY, _periodicityList.getKey(binding.tilPeriodicity.selection))
+        outState.putString(
+            PERIODICITY,
+            _periodicityList.getKey(binding.tilPeriodicity.selectedItemPosition)
+        )
         outState.putString(COMICS_IMAGE, _comicsImagePath)
     }
 
@@ -178,9 +181,9 @@ class ComicsEditFragmentHelper(
             series = binding.tilSeries.getText(),
             authors = binding.tilAuthors.getText(),
             notes = binding.tilNotes.getText(),
-            periodicity = _periodicityList.getKey(binding.tilPeriodicity.selection),
+            periodicity = _periodicityList.getKey(binding.tilPeriodicity.selectedItemPosition),
             price = parseToDouble(binding.tilPrice.getText()),
-            image = _comicsImagePath?.let { Uri.parse(it).toString() },
+            image = _comicsImagePath?.toUri()?.toString(),
             // TODO: version =
         )
     }
@@ -201,8 +204,9 @@ class ComicsEditFragmentHelper(
         binding.tilAuthors.setText(savedInstanceState.getString(AUTHORS))
         binding.tilPrice.setText(savedInstanceState.getString(PRICE))
         binding.tilNotes.setText(savedInstanceState.getString(NOTES))
-        binding.tilPeriodicity.selection =
+        binding.tilPeriodicity.setSelection(
             _periodicityList.indexByKey(savedInstanceState.getString(PERIODICITY))
+        )
         updateComicsImageAndInitial(
             savedInstanceState.getString(COMICS_IMAGE),
             savedInstanceState.getString(NAME)
@@ -224,7 +228,7 @@ class ComicsEditFragmentHelper(
         binding.tilAuthors.setText(comics.authors)
         binding.tilPrice.setText(parseToString(comics.price))
         binding.tilNotes.setText(comics.notes)
-        binding.tilPeriodicity.selection = _periodicityList.indexByKey(comics.periodicity)
+        binding.tilPeriodicity.setSelection(_periodicityList.indexByKey(comics.periodicity))
         updateComicsImageAndInitial(comics.image, comics.name)
     }
 

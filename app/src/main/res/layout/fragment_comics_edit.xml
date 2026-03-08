@@ -160,7 +160,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.tiper.MaterialSpinner
+                <androidx.appcompat.widget.AppCompatSpinner
                     android:id="@+id/til_periodicity"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"

@@ -2,7 +2,8 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'androidx.navigation.safeargs'
-    id 'com.google.devtools.ksp'
+    id 'kotlin-kapt'
+    id 'androidx.room'
 }
 
 android {
@@ -15,11 +16,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
-        javaCompileOptions {
-            ksp {
-                arg("room.schemaLocation", "$projectDir/schemas".toString())
-            }
-        }
     }
     buildTypes {
         release {
@@ -29,6 +25,7 @@ android {
     }
     buildFeatures {
         dataBinding = true
+        buildConfig = true
     }
     flavorDimensions "develop"
     productFlavors {
@@ -50,10 +47,31 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '17'
-        freeCompilerArgs = ["-Xcontext-receivers"]
+        jvmTarget = JavaVersion.VERSION_17.toString()
+        freeCompilerArgs = ["-Xcontext-receivers", "-Xskip-metadata-version-check"]
+    }
+    kotlin {
+        jvmToolchain { JavaVersion.VERSION_17 }
     }
     namespace 'it.amonshore.comikkua'
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion "2.0.21"
+            }
+            // Forza anche la libreria specifica dei metadati che sta causando il crash
+            if (details.requested.name == 'kotlinx-metadata-jvm') {
+                details.useVersion "0.9.0" // Versione compatibile con Kotlin 2.0
+            }
+        }
+    }
+}
+
+room {
+    schemaDirectory "$projectDir/schemas"
 }
 
 dependencies {
@@ -82,7 +100,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.0' // FIXME: la 1.4 richiede android 35
     implementation 'androidx.recyclerview:recyclerview-selection:1.2.0'
-    implementation 'com.github.tiper:MaterialSpinner:1.4.0'
+//    implementation 'com.github.tiper:MaterialSpinner:1.4.0' // INFO: rimosso perché jitpack down
     implementation 'com.vanniktech:android-image-cropper:4.5.0'
 
     // Navigation
@@ -90,12 +108,12 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     // Room components
-    def roomVersion = '2.5.2' // FIXME: con versioni più recenti va in errore (forse colpa di kotlin?)
-    implementation "androidx.room:room-runtime:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
-    implementation "androidx.room:room-paging:$roomVersion"
-    ksp "androidx.room:room-compiler:$roomVersion"
-    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    def roomVersion = '2.6.1' // FIXME: con versioni più recenti va in errore (forse colpa di kotlin?)
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    implementation "androidx.room:room-paging:$room_version"
+    androidTestImplementation "androidx.room:room-testing:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
     // Lifecycle components
     def archLifecycleVersion = '2.7.0' // FIXME: con versioni più recenti va in errore
@@ -118,11 +136,12 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:$workVersion"
 
     // Glide
-    def glideVersion = '4.11.0'
+    def glideVersion = '4.16.0'
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation "com.github.bumptech.glide:recyclerview-integration:$glideVersion"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
-    implementation 'com.github.wasabeef:glide-transformations:4.2.0'
+//    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+//    implementation 'com.github.wasabeef:glide-transformations:4.2.0' // INFO: rimosso perché jitpack down
 
     // Retrofit
     def retrofitVersion = '2.9.0'

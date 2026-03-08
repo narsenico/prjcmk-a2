@@ -38,7 +38,7 @@ fun createDrawableRequestListener(): RequestListener<Drawable> = object : Reques
     override fun onLoadFailed(
         e: GlideException?,
         model: Any?,
-        target: Target<Drawable>?,
+        target: Target<Drawable?>,
         isFirstResource: Boolean
     ): Boolean {
         LogHelper.e("GLIDE LOAD FAILED with url=$model", e)
@@ -47,10 +47,10 @@ fun createDrawableRequestListener(): RequestListener<Drawable> = object : Reques
     }
 
     override fun onResourceReady(
-        resource: Drawable?,
-        model: Any?,
+        resource: Drawable,
+        model: Any,
         target: Target<Drawable>?,
-        dataSource: DataSource?,
+        dataSource: DataSource,
         isFirstResource: Boolean
     ): Boolean {
         // everything worked out, so probably nothing to do
@@ -69,12 +69,12 @@ class ImageHelperKt private constructor(
 
     init {
         val backgroundColorDrawable = ColorDrawable(backgroundColor)
-        val colorFilterTransformation =
-            ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
+//        val colorFilterTransformation =
+//            ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
 
         squareOptions = RequestOptions()
             .override(defaultSize)
-            .transform(colorFilterTransformation)
+//            .transform(colorFilterTransformation)
             .placeholder(backgroundColorDrawable)
             .error(backgroundColorDrawable)
 
