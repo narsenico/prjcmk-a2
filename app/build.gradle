@@ -56,20 +56,6 @@ android {
     namespace 'it.amonshore.comikkua'
 }
 
-configurations.all {
-    resolutionStrategy {
-        eachDependency { details ->
-            if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion "2.0.21"
-            }
-            // Forza anche la libreria specifica dei metadati che sta causando il crash
-            if (details.requested.name == 'kotlinx-metadata-jvm') {
-                details.useVersion "0.9.0" // Versione compatibile con Kotlin 2.0
-            }
-        }
-    }
-}
-
 room {
     schemaDirectory "$projectDir/schemas"
 }
@@ -108,7 +94,6 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     // Room components
-    def roomVersion = '2.6.1' // FIXME: con versioni più recenti va in errore (forse colpa di kotlin?)
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     implementation "androidx.room:room-paging:$room_version"
