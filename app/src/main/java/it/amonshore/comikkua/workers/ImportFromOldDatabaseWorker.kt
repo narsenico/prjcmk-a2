@@ -56,15 +56,24 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
             }
         }
 
-        val oldDatabasePath = getOldDatabasePath()
-            ?: return@context Result.failure(workDataOf("reason" to "source-not-found"))
-
         if (_comicsRepository.count() > 0) {
             LogHelper.w("import failed: current db not empty")
             return@context Result.failure(workDataOf("reason" to "not-empty"))
         }
 
+        val oldDbUri = inputData.getString("OLD_DB_URI")?.toUri() ?: return@context Result.failure(
+            workDataOf("reason" to "source-database-empty")
+        )
+        LogHelper.w("importing old database from $oldDbUri")
+
         try {
+            val oldDatabaseFile = copyDatabaseFile(oldDbUri)
+            LogHelper.d("copied old database file in $oldDatabaseFile")
+
+            if (!oldDatabaseFile.exists()) {
+                return@context Result.failure(workDataOf("reason" to "source-not-found"))
+            }
+
             _cmkWebRepository.refreshAvailableComics()
                 .recover { err ->
                     LogHelper.e("refresh available comics failed", err)
@@ -78,7 +87,7 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
 //                    }
 //                }
 
-            return@context import(oldDatabasePath)
+            return@context import(oldDatabaseFile.path)
         } catch (ex: java.net.ConnectException) {
             LogHelper.e("Error importing old database data", ex)
             return@context Result.failure(workDataOf("reason" to "connection-error"))
@@ -86,6 +95,18 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
             LogHelper.e("Error importing old database data", ex)
             return@context Result.failure(workDataOf("reason" to "error"))
         }
+    }
+
+    private fun copyDatabaseFile(source: Uri) : File {
+        val destination = applicationContext.getDatabasePath(OLD_DATABASE_NAME)
+
+        applicationContext.contentResolver.openInputStream(source)?.use { input ->
+            destination.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return destination
     }
 
     private suspend fun import(oldDatabasePath: String): Result {
@@ -118,11 +139,6 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                 )
             )
         }
-    }
-
-    private fun getOldDatabasePath(): String? {
-        val file = applicationContext.getDatabasePath(OLD_DATABASE_NAME)
-        return if (file.exists()) file.path else null
     }
 
     private fun openOldDatabase(path: String): SQLiteDatabase =

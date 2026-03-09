@@ -2,6 +2,7 @@ package it.amonshore.comikkua.ui.settings
 
 import android.app.Dialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
@@ -19,6 +21,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.work.Data
 import androidx.work.WorkInfo
+import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.toLocalDate
 import it.amonshore.comikkua.ui.showCancellableDialog
@@ -30,6 +33,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private val _viewModel: SettingsViewModel by viewModels()
     private var _dialog: Dialog? = null
+
+    private val selectOldDBLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let { handleOldDatabaseImport(it) }
+        }
 
     override fun onCreatePreferences(
         savedInstanceState: Bundle?,
@@ -85,7 +93,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.importOldDatabase -> {
-                        importOldDatabase()
+                        selectOldDBLauncher.launch(
+                            arrayOf(
+                                "application/octet-stream",
+                                "application/x-sqlite3",
+                                "application/vnd.sqlite3"
+                            )
+                        )
                         true
                     }
 
@@ -115,8 +129,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
     }
 
-    private fun importOldDatabase() {
-        _viewModel.startOldDatabaseImport()
+    private fun handleOldDatabaseImport(uri: Uri) {
+        LogHelper.d { "Importing old database from $uri" }
+        _viewModel.startOldDatabaseImport(uri)
         _dialog = showCancellableDialog(
             title = getString(R.string.backup_title),
             message = getString(R.string.importing_old_database),
@@ -201,7 +216,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun Data.getImportOldDatabaseErrorMessage() = when (getString("reason")) {
         "connection-error" -> R.string.import_old_database_connection_error
         "not-empty" -> R.string.import_old_database_not_empty_error
-        "source-not-found" -> R.string.import_old_database_source_not_found_error
+        "source-not-found", "source-database-empty" -> R.string.import_old_database_source_not_found_error
         else -> R.string.import_old_database_error
     }.let { getString(it) }
 }

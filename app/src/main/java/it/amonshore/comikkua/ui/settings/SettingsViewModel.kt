@@ -1,6 +1,7 @@
 package it.amonshore.comikkua.ui.settings
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -8,8 +9,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.workers.BackupWorker
@@ -70,8 +73,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         _workManager.cancelUniqueWork(BackupWorker.WORK_NAME)
     }
 
-    fun startOldDatabaseImport() {
-        val request = OneTimeWorkRequest.from(ImportFromOldDatabaseWorker::class.java)
+    fun startOldDatabaseImport(uri: Uri) {
+        val request = OneTimeWorkRequestBuilder<ImportFromOldDatabaseWorker>()
+            .setInputData(workDataOf("OLD_DB_URI" to uri.toString()))
+            .build()
 
         _workManager.enqueueUniqueWork(
             ImportFromOldDatabaseWorker.WORK_NAME,
