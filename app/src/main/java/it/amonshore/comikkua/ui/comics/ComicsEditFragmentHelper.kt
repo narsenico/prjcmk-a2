@@ -48,10 +48,12 @@ class ComicsEditFragmentHelper(
     val rootView = binding.root
 
     init {
-        binding.tilPeriodicity.adapter = ArrayAdapter(
-            context,
-            android.R.layout.simple_spinner_item,
-            _periodicityList
+        binding.tilPeriodicity.autocomplete().setAdapter(
+            ArrayAdapter(
+                context,
+                android.R.layout.simple_spinner_dropdown_item,
+                _periodicityList
+            )
         )
 
         binding.tilName.editText!!.doAfterTextChanged {
@@ -137,7 +139,7 @@ class ComicsEditFragmentHelper(
         outState.putString(PRICE, binding.tilPrice.getText())
         outState.putString(
             PERIODICITY,
-            _periodicityList.getKey(binding.tilPeriodicity.selectedItemPosition)
+            _periodicityList.getByLabel(binding.tilPeriodicity.getText())?.period?.toKey() ?: ""
         )
         outState.putString(COMICS_IMAGE, _comicsImagePath)
     }
@@ -181,7 +183,8 @@ class ComicsEditFragmentHelper(
             series = binding.tilSeries.getText(),
             authors = binding.tilAuthors.getText(),
             notes = binding.tilNotes.getText(),
-            periodicity = _periodicityList.getKey(binding.tilPeriodicity.selectedItemPosition),
+            periodicity = _periodicityList.getByLabel(binding.tilPeriodicity.getText())?.period?.toKey()
+                ?: "",
             price = parseToDouble(binding.tilPrice.getText()),
             image = _comicsImagePath?.toUri()?.toString(),
             // TODO: version =
@@ -204,8 +207,12 @@ class ComicsEditFragmentHelper(
         binding.tilAuthors.setText(savedInstanceState.getString(AUTHORS))
         binding.tilPrice.setText(savedInstanceState.getString(PRICE))
         binding.tilNotes.setText(savedInstanceState.getString(NOTES))
-        binding.tilPeriodicity.setSelection(
-            _periodicityList.indexByKey(savedInstanceState.getString(PERIODICITY))
+        binding.tilPeriodicity.setTextNoFiltered(
+            _periodicityList.getByKey(
+                savedInstanceState.getString(
+                    PERIODICITY
+                )
+            )?.label ?: ""
         )
         updateComicsImageAndInitial(
             savedInstanceState.getString(COMICS_IMAGE),
@@ -228,7 +235,7 @@ class ComicsEditFragmentHelper(
         binding.tilAuthors.setText(comics.authors)
         binding.tilPrice.setText(parseToString(comics.price))
         binding.tilNotes.setText(comics.notes)
-        binding.tilPeriodicity.setSelection(_periodicityList.indexByKey(comics.periodicity))
+        binding.tilPeriodicity.setTextNoFiltered(_periodicityList.getByKey(comics.periodicity)?.label ?: "")
         updateComicsImageAndInitial(comics.image, comics.name)
     }
 
@@ -252,14 +259,23 @@ class ComicsEditFragmentHelper(
     private fun TextInputLayout.setText(text: String?) =
         editText!!.setText(text)
 
+    private fun TextInputLayout.setTextNoFiltered(text: String?) =
+        (editText!! as AutoCompleteTextView).setText(text, false)
+
     private fun TextInputLayout.getText() =
         editText!!.text.toString().trim()
 
-    private fun List<Periodicity>.indexByKey(key: String?) =
-        if (key == null) -1 else withIndex().find { it.value.period.toKey() == key }?.index ?: 0
-
-    private fun List<Periodicity>.getKey(position: Int) =
-        if (position > 0) get(position).period.toKey() else null
-
     private fun String?.getInitial() = if (isNullOrBlank()) "" else substring(0, 1)
+
+    private fun List<Periodicity>.getByKey(key: String?) = if (key.isNullOrBlank()) {
+        null
+    } else {
+        this.firstOrNull() { it.period.toKey() == key }
+    }
+
+    private fun List<Periodicity>.getByLabel(label: String?) = if (label.isNullOrBlank()) {
+        null
+    } else {
+        this.firstOrNull() { it.label == label }
+    }
 }
