@@ -2,10 +2,10 @@ package it.amonshore.comikkua.ui
 
 import android.content.Context
 import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import androidx.annotation.ColorInt
+import androidx.core.graphics.drawable.toDrawable
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
@@ -68,13 +68,13 @@ class ImageHelperKt private constructor(
     val circleOptions: RequestOptions
 
     init {
-        val backgroundColorDrawable = ColorDrawable(backgroundColor)
-//        val colorFilterTransformation =
-//            ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
+        val backgroundColorDrawable = backgroundColor.toDrawable()
+        val colorFilterTransformation =
+            ColorBitmapTransformation(releaseImageTintColor, PorterDuff.Mode.MULTIPLY)
 
         squareOptions = RequestOptions()
             .override(defaultSize)
-//            .transform(colorFilterTransformation)
+            .transform(colorFilterTransformation)
             .placeholder(backgroundColorDrawable)
             .error(backgroundColorDrawable)
 

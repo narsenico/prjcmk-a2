@@ -12,7 +12,7 @@ android {
         applicationId "it.amonshore.comikkua"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 6
+        versionCode 7
         versionName "1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
@@ -57,6 +57,11 @@ android {
         }
         sourceSets.release {
             kotlin.srcDir("build/generated/ksp/release/kotlin")
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "comikku-${variant.versionCode}-${variant.versionName}-${variant.name}.apk"
         }
     }
     namespace 'it.amonshore.comikkua'
@@ -130,10 +135,6 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation "com.github.bumptech.glide:recyclerview-integration:$glideVersion"
     ksp "com.github.bumptech.glide:compiler:$glideVersion"
-    // FIXME: non voglio più usare librerie prse da jitpack
-    //  perché spesso è down e non si riesce più a compilaare
-    //  ma devo sostituire o riscrivere questa libreria
-//    implementation 'com.github.wasabeef:glide-transformations:4.2.0'
 
     // Retrofit
     def retrofitVersion = '3.0.0'
