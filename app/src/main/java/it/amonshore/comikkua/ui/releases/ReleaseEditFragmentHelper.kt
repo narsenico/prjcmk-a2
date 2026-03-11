@@ -165,6 +165,7 @@ class ReleaseEditFragmentHelper(
     }
 
     private fun prepareDatePicker(releaseDate: LocalDate?) {
+        _selectedDate = releaseDate
         val startSelection = if (releaseDate == null) {
             binding.release.txtReleaseDate.text = ""
             binding.tilDate.editText!!.setText("")
