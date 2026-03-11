@@ -12,7 +12,7 @@ android {
         applicationId "it.amonshore.comikkua"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 8
+        versionCode 9
         versionName "1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
@@ -109,6 +109,9 @@ dependencies {
     implementation "androidx.room:room-paging:$room_version"
     androidTestImplementation "androidx.room:room-testing:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
+
+    // DataStore
+    implementation "androidx.datastore:datastore-preferences:1.2.1"
 
     // Lifecycle components
     def archLifecycleVersion = '2.10.0'
