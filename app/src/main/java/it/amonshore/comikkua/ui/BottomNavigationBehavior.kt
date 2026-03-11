@@ -3,13 +3,11 @@ package it.amonshore.comikkua.ui
 import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
-import android.view.Gravity
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import kotlin.math.max
 import kotlin.math.min
 
@@ -81,33 +79,6 @@ class BottomNavigationBehavior<V>(
         val isVisible = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom == 0
         animateBarVisibility(child, isVisible)
         return super.onApplyWindowInsets(coordinatorLayout, child, insets)
-    }
-
-    override fun layoutDependsOn(
-        parent: CoordinatorLayout,
-        child: V,
-        dependency: View
-    ): Boolean {
-        if (dependency is SnackbarLayout) {
-            updateSnackbar(child, dependency)
-        }
-
-        return super.layoutDependsOn(parent, child, dependency)
-    }
-
-    private fun updateSnackbar(
-        child: View,
-        snackbarLayout: View
-    ) {
-        val params = snackbarLayout.layoutParams
-        if (params is CoordinatorLayout.LayoutParams) {
-            with(params) {
-                anchorId = child.id
-                anchorGravity = Gravity.CENTER_HORIZONTAL
-                gravity = Gravity.CENTER_HORIZONTAL
-            }
-            snackbarLayout.layoutParams = params
-        }
     }
 
     private fun animateBarVisibility(child: View, isVisible: Boolean) {

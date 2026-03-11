@@ -22,6 +22,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.databinding.ActivityMainBinding
 import java.time.Duration
+import androidx.core.view.isVisible
 
 class MainActivity : AppCompatActivity(),
     OnNavigationFragmentListener,
@@ -170,7 +171,14 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun prepareUndoSnackbar(message: String, tag: String, timeout: Duration): Snackbar {
-        return Snackbar.make(binding.bottomNav, message, timeout.toSnackbarTimeout())
+        return Snackbar.make(binding.root, message, timeout.toSnackbarTimeout())
+            .apply {
+                if (binding.bottomNav.isVisible) {
+                    anchorView = binding.bottomNav
+                } else {
+                    anchorView = null
+                }
+            }
             .setAction(android.R.string.cancel) {
                 LogHelper.d { "handleUndo undo with tag=$tag" }
                 _viewModel.undoRemove(tag)
