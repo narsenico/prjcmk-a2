@@ -39,7 +39,26 @@ e quindi rimangono elementi sporchi (cioè con removed=1) nel DB
 
 Soluzione? Forzare cancellazione prima di uscire dal fragment?
 
+### Bug rimozione comics
+> Risolto rendendo nullabile il risultato della query `ComicsDat.getComicsWithReleasesFlow()` 
+
+Come riprodurlo:
+- aprire il dettaglio di un comics
+- uscire e tornare alla lista comics
+- eliminare il comics
+
+Andrà in crash con questo errore  
+```
+java.lang.IllegalStateException: The query result was empty, but expected a single row to return a NON-NULL object of type 'it.amonshore.comikkua.`data`.comics.ComicsWithReleases'.
+```
+
+Sembra che rimanga _vivo_ l'observer su `ComicsDetailFragment` e che vada in errore perché
+sente il cambiamento - visto che ho rimosso il comics - ma vada in errore perché non trova più il record
+su DB (e lui se ne aspetta uno, come indicato nell'errore).
+
 ### Sto perdendo il controllo del DB
+> Risolto con nuovo DB.
+
 Non sono più sicuro di poter migrare dal db della variante "neon" a "tryme" (questa di sviluppo).
 Soluzione veloce è creare un NUOVO database, come nome diverso (quindi non più "comikku_database") e copiare tramite routine
 i dati dal vecchio DB.

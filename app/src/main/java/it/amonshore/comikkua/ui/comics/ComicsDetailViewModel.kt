@@ -14,6 +14,7 @@ import it.amonshore.comikkua.data.release.toReleaseViewModelItems
 import it.amonshore.comikkua.ui.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterNotNull
 import java.util.*
 
 sealed class UiComicsDetailEvent {
@@ -33,6 +34,7 @@ class ComicsDetailViewModel(application: Application) : AndroidViewModel(applica
 
     fun getComicsWithReleases(comicsId: Long) =
         _comicsRepository.getComicsWithReleasesFlow(comicsId)
+            .filterNotNull()
             .asLiveData()
 
     fun getReleaseViewModelItems(comicsId: Long) =

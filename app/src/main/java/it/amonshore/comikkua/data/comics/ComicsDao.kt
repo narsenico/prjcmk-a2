@@ -43,7 +43,7 @@ interface ComicsDao {
 
     @Query("SELECT * FROM tComics WHERE id = :id AND removed = 0 AND selected = 1")
     @Transaction
-    fun getComicsWithReleasesFlow(id: Long): Flow<ComicsWithReleases>
+    fun getComicsWithReleasesFlow(id: Long): Flow<ComicsWithReleases?>
 
     @Query("SELECT * FROM tComics WHERE removed = 0 AND selected = 1 ORDER BY name COLLATE NOCASE ASC")
     @Transaction
