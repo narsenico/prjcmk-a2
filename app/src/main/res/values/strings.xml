@@ -101,6 +101,7 @@
     <string name="release_next">Next: #%d</string>
     <string name="release_next_dated">Next: #%d (%s)</string>
     <string name="release_missing">Missing: %d</string>
+    <string name="release_last_update">Updated %s</string>
 
     <string name="comics_name_empty_error">Name cannot be empty</string>
     <string name="comics_name_notunique_error">Name already used</string>

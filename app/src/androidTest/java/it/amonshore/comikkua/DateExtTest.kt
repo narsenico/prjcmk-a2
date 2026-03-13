@@ -10,6 +10,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Month
 import java.util.Locale
 
@@ -94,6 +95,19 @@ class DateExtTest {
 
         // Act
         val str = date.toHumanReadableLong(_context)
+
+        // Assert
+        assertThat(str, `is`(expected))
+    }
+
+    @Test
+    fun date_time_to_human_readable_string_long() {
+        // Arrange
+        val dateTime = LocalDateTime.of(2023, Month.APRIL, 15, 10, 45, 30)
+        val expected = "Saturday, April 15, 2023 at 10:45:30"
+
+        // Act
+        val str = dateTime.toHumanReadableLong(_context)
 
         // Assert
         assertThat(str, `is`(expected))

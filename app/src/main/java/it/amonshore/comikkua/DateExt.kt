@@ -25,6 +25,10 @@ private val longFormatter by lazy {
     DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
 }
 
+private val longWithTimeFormatter by lazy {
+    DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.SHORT)
+}
+
 fun LocalDate.atFirstDayOfWeek(): LocalDate {
     val delta = dayOfWeek.value - 1
     return if (delta > 0) {
@@ -64,8 +68,16 @@ fun LocalDate.toHumanReadable(
     else -> format(formatter)
 }
 
+fun ZonedDateTime.toHumanReadable(
+    _context: Context,
+    formatter: DateTimeFormatter = shortFormatter
+): String = format(formatter)
+
 fun LocalDate.toHumanReadableLong(context: Context): String =
     toHumanReadable(context, longFormatter)
+
+fun ZonedDateTime.toHumanReadableLong(context: Context): String =
+    toHumanReadable(context, longWithTimeFormatter)
 
 fun LocalDate.asUtc(): ZonedDateTime {
     return LocalDateTime
@@ -80,6 +92,10 @@ fun LocalDate.asUtcMilliseconds(): Long {
 fun Long.asLocalDate(): LocalDate {
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.of("UTC"))
         .toLocalDate()
+}
+
+fun Long.asZonedDateTime(): ZonedDateTime {
+    return ZonedDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
 }
 
 sealed class Period(@IntRange(from = 0) val count: Long) {
@@ -122,7 +138,7 @@ sealed class Period(@IntRange(from = 0) val count: Long) {
     }
 }
 
-fun Period.toKey(): String? = when(this) {
+fun Period.toKey(): String? = when (this) {
     is Period.Weekly -> "W$count"
     is Period.Monthly -> "M$count"
     is Period.Yearly -> "Y$count"

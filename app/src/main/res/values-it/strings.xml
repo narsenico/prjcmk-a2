@@ -55,6 +55,7 @@
     <string name="release_purchased">Acquistato</string>
     <string name="release_ordered">Ordinato</string>
     <string name="release_notes">Note</string>
+    <string name="release_last_update">Aggiornata %s</string>
 
     <string-array name="comics_periodicity_entries">
         <item>Irregolare</item>

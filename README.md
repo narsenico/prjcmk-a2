@@ -4,15 +4,16 @@
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle release
 - [x] Sostituire Firestore con cmkweb per l'aggiornamento delle testate
 - [x] Non si riesce a togliere la data di una release una volta impostata
-- [x] Non vengono cancellati definitivamente gli ementi con removed=1 alla navigazione (vedi nota)
+- [x] Non vengono cancellati definitivamente gli elementi con removed=1 alla navigazione (vedi nota)
 - [x] Auto complete degli autori non funziona
 - [ ] Rivedere IReleaseViewModelItem (vedi nota)
 - [x] Comics con sourceId non modificabili (almeno i campi che arrivano da CmkWeb)
-- [x] Evienziare in edit comics se sono sourced o meno
+- [x] Evidenziare in edit comics se sono sourced o meno
 - [ ] Creare backup in cartella esterna all'app (download?)
 - [x] Non funziona l'annullo di ImportFromOldDatabaseWorker
 - [x] Preferibilmente scaricare i comics all'apertura di ComicsSelectorFragment (altrimenti perde l'utilità di mostrare l'ultima release) 
 - [ ] Considerare ristampa
+- [x] Mostrare ultimo aggiornamento release
 
 - [x] L'import da vecchio db deve indicare quanti comics sono importati come sourced (così da caricare su cmkweb tutti i comics mancanti in modo da avere su app alla fine tutti sourced)
 

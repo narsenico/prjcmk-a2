@@ -16,6 +16,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.asLocalDate
 import it.amonshore.comikkua.asUtcMilliseconds
+import it.amonshore.comikkua.asZonedDateTime
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.release.Release
 import it.amonshore.comikkua.databinding.FragmentReleaseEditBinding
@@ -140,6 +141,14 @@ class ReleaseEditFragmentHelper(
             prepareDatePicker(_release.date)
         }
         updatePurchased(binding.chkPurchased.isChecked)
+        binding.txtLastUpdate.apply {
+            if (release.lastUpdate == 0L) {
+                visibility = View.GONE
+            } else {
+                text = context.getString(R.string.release_last_update, release.lastUpdate.asZonedDateTime().toHumanReadableLong(context))
+                visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun updatePurchased(isChecked: Boolean) {

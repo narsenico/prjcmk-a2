@@ -109,7 +109,7 @@ fun ComicsRelease.info() = arrayOf(comics.publisher, comics.authors).joinToStrin
 operator fun ComicsRelease.component1(): Comics = comics
 operator fun ComicsRelease.component2(): Release = release
 
-fun Comics.formatVersion(context: Context): String  = version.formatVersion(context)
+fun Comics.formatVersion(context: Context): String = version.formatVersion(context)
 
 fun AvailableComics.formatVersion(context: Context): String = version.formatVersion(context)
 
