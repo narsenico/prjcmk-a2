@@ -177,7 +177,6 @@ class ComicsEditFragment : Fragment() {
                     append (" (", context.getString(R.string.nth_reprint, ac.version), ")")
                 }
             }
-            "${ac.name} - ${ac.publisher}"
         }.toTypedArray()
 
         var checkedItem = if (helper.getComics().isSourced) {
