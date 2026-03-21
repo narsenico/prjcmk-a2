@@ -1,6 +1,5 @@
 package it.amonshore.comikkua.ui.comics
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.view.LayoutInflater
@@ -9,6 +8,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -24,6 +25,7 @@ import com.canhub.cropper.CropImageView
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.data.web.AvailableComics
+import it.amonshore.comikkua.databinding.DialogChooseComicsToFollowBinding
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 
 private val cropOptions = CropImageContractOptions(
@@ -165,7 +167,7 @@ class ComicsEditFragment : Fragment() {
         LogHelper.d { "${comics.size} comics to follow found" }
 
         val titles = comics.map { ac -> "${ac.name} - ${ac.publisher}" }.toTypedArray()
-        val checkedItem = if (helper.getComics().isSourced) {
+        var checkedItem = if (helper.getComics().isSourced) {
             helper.getComics().sourceId.let {
                 comics.indexOfFirst { ac -> ac.sourceId == it }
             }
@@ -173,16 +175,26 @@ class ComicsEditFragment : Fragment() {
             -1
         }
 
+        val context = requireContext()
+        val binding = DialogChooseComicsToFollowBinding.inflate(LayoutInflater.from(context))
+        binding.list.apply {
+            adapter =
+                ArrayAdapter(context, android.R.layout.select_dialog_singlechoice, titles)
+            choiceMode = ListView.CHOICE_MODE_SINGLE
+            setItemChecked(checkedItem, true)
+        }
+        binding.list.setOnItemClickListener { _, _, index, _ ->
+            checkedItem = index
+        }
+
         AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-            .setTitle(R.string.title_choose_comcis_to_follow)
-            // TODO: aggiungere messaggio esplicativo su cosa comporta seguire un fumetto
-            .setSingleChoiceItems(titles, checkedItem) { _, which: Int ->
-                comics.getOrNull(which)?.let {
+            .setView(binding.root)
+            .setPositiveButton(R.string.comics_follow) { _, _ ->
+                comics.getOrNull(checkedItem)?.let {
                     helper.setSourceId(it.sourceId)
                 }
             }
-            .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton(R.string.comics_unfollow) { _ ,_ ->
+            .setNeutralButton(R.string.comics_unfollow) { _, _ ->
                 helper.setSourceId(null)
             }
             .show()
