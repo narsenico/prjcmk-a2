@@ -67,6 +67,7 @@
     <string name="comics_periodicity">Periodicity</string>
     <string name="comics_notes">Notes</string>
     <string name="comics_follow">Follow</string>
+    <string name="comics_unfollow">Unfollow</string>
     <string name="comics_following">Following</string>
 
     <string name="release_numbers">Number</string>
@@ -213,4 +214,8 @@
     <string name="second_reprint">2nd reprint</string>
     <string name="third_reprint">3rd reprint</string>
     <string name="nth_reprint">%dth reprint</string>
+    <string name="menu_follow_comics">Follow</string>
+    <string name="comics_nothing_to_follow">No comics found to follow</string>
+    <string name="title_choose_comcis">Choose comics to follow</string>
+    <string name="title_choose_comcis_to_follow">Choose comics to follow</string>
 </resources>

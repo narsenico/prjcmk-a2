@@ -28,4 +28,10 @@
 
     </item>
 
+    <item
+        android:id="@+id/followComics"
+        android:icon="@drawable/ic_sourced"
+        android:title="@string/menu_follow_comics"
+        app:showAsAction="never" />
+
 </menu>

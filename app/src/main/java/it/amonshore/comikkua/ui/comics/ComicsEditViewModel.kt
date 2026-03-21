@@ -13,6 +13,8 @@ import it.amonshore.comikkua.ResultEx
 import it.amonshore.comikkua.data.comics.Comics
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
+import it.amonshore.comikkua.data.web.AvailableComics
+import it.amonshore.comikkua.data.web.CmkWebRepository
 import it.amonshore.comikkua.flatMap
 import it.amonshore.comikkua.onFailure
 import it.amonshore.comikkua.onSuccess
@@ -29,16 +31,19 @@ enum class UiComicsEditResultErrorType {
     NameAlreadyUsed,
     InvalidId,
     ImageError,
+    NothingToFollow,
 }
 
 sealed class UiComicsEditResult {
     object Saved : UiComicsEditResult()
+    data class ComicsToFollowFound(val comics: List<AvailableComics>) : UiComicsEditResult()
     data class SaveError(val errorType: UiComicsEditResultErrorType) : UiComicsEditResult()
 }
 
 class ComicsEditViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _comicsRepository = ComicsRepository(application)
+    private val _cmkWebRepository = CmkWebRepository(application)
     private val _result = MutableLiveData<UiComicsEditResult>()
 
     val result: LiveData<UiComicsEditResult> = _result
@@ -70,6 +75,21 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
             .onFailure {
                 _result.postValue(UiComicsEditResult.SaveError(it))
             }
+    }
+
+    fun searchComicsToFollow(comics: Comics) = viewModelScope.launch {
+        if (comics.name.isEmpty()) {
+            _result.postValue(UiComicsEditResult.SaveError(UiComicsEditResultErrorType.NothingToFollow))
+        } else {
+            _cmkWebRepository.findBestAvailableComics(comics.name, comics.publisher)
+                .let { bestAvailableComics ->
+                    if (bestAvailableComics.isEmpty()) {
+                        _result.postValue(UiComicsEditResult.SaveError(UiComicsEditResultErrorType.NothingToFollow))
+                    } else {
+                        _result.postValue(UiComicsEditResult.ComicsToFollowFound(bestAvailableComics))
+                    }
+                }
+        }
     }
 
     private suspend fun isComicsValid(comics: Comics): ResultEx<Unit, UiComicsEditResultErrorType> {

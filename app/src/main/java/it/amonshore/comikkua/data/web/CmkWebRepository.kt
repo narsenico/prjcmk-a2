@@ -1,13 +1,8 @@
 package it.amonshore.comikkua.data.web
 
 import android.content.Context
-import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.services.CmkWebService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
 class CmkWebRepository(context: Context) {
@@ -69,4 +64,14 @@ class CmkWebRepository(context: Context) {
     fun getNotFollowedComics() = _cmkWebDao.getNotFollowedComicsFLow()
 
     suspend fun getAvailableComicsList() = _cmkWebDao.getAvailableComicsList()
+
+    suspend fun findBestAvailableComics(name: String, publisher: String): List<AvailableComics> =
+        _cmkWebDao.getAvailableComicsList()
+            .filter { ac ->
+                ac.name.equals(name, ignoreCase = true) &&
+                        if (publisher.isEmpty()) true else ac.publisher.equals(
+                            publisher,
+                            ignoreCase = true
+                        )
+            }
 }

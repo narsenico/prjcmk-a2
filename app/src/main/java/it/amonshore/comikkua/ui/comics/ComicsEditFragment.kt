@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui.comics
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -21,6 +23,7 @@ import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
+import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.databinding.FragmentComicsEditBinding
 
 private val cropOptions = CropImageContractOptions(
@@ -93,6 +96,7 @@ class ComicsEditFragment : Fragment() {
             when (result) {
                 is UiComicsEditResult.Saved -> onSaved()
                 is UiComicsEditResult.SaveError -> helper.setError(result.errorType)
+                is UiComicsEditResult.ComicsToFollowFound -> onComicsToFollowFound(result.comics)
             }
         }
 
@@ -141,6 +145,11 @@ class ComicsEditFragment : Fragment() {
                         true
                     }
 
+                    R.id.followComics -> {
+                        _viewModel.searchComicsToFollow(helper.getComics())
+                        true
+                    }
+
                     else -> false
                 }
             }
@@ -150,6 +159,33 @@ class ComicsEditFragment : Fragment() {
     private fun onSaved() {
         Navigation.findNavController(binding.root)
             .navigateUp()
+    }
+
+    private fun onComicsToFollowFound(comics: List<AvailableComics>) {
+        LogHelper.d { "${comics.size} comics to follow found" }
+
+        val titles = comics.map { ac -> "${ac.name} - ${ac.publisher}" }.toTypedArray()
+        val checkedItem = if (helper.getComics().isSourced) {
+            helper.getComics().sourceId.let {
+                comics.indexOfFirst { ac -> ac.sourceId == it }
+            }
+        } else {
+            -1
+        }
+
+        AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+            .setTitle(R.string.title_choose_comcis_to_follow)
+            // TODO: aggiungere messaggio esplicativo su cosa comporta seguire un fumetto
+            .setSingleChoiceItems(titles, checkedItem) { _, which: Int ->
+                comics.getOrNull(which)?.let {
+                    helper.setSourceId(it.sourceId)
+                }
+            }
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.comics_unfollow) { _ ,_ ->
+                helper.setSourceId(null)
+            }
+            .show()
     }
 
 //    private fun requestPermissionCallback(isGranted: Boolean) {

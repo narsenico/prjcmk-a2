@@ -32,6 +32,7 @@ private const val SERIES = "series"
 private const val PRICE = "price"
 private const val PERIODICITY = "periodicity"
 private const val COMICS_IMAGE = "comics_image"
+private const val SOURCE_ID = "source_id"
 
 class ComicsEditFragmentHelper(
     val context: Context,
@@ -44,6 +45,7 @@ class ComicsEditFragmentHelper(
 
     private var _comics: Comics? = null
     private var _comicsImagePath: String? = null
+    private var _sourceId: String? = null
 
     val rootView = binding.root
 
@@ -130,6 +132,10 @@ class ComicsEditFragmentHelper(
         updateComicsImageAndInitial(comicsImagePath, binding.tilName.getText())
     }
 
+    fun setSourceId(sourceId: String?) {
+        updateSourceId(sourceId)
+    }
+
     fun saveInstanceState(outState: Bundle) {
         outState.putString(NAME, binding.tilName.getText())
         outState.putString(PUBLISHER, binding.tilPublisher.getText())
@@ -142,6 +148,7 @@ class ComicsEditFragmentHelper(
             _periodicityList.getByLabel(binding.tilPeriodicity.getText())?.period?.toKey() ?: ""
         )
         outState.putString(COMICS_IMAGE, _comicsImagePath)
+        outState.putString(SOURCE_ID, _sourceId)
     }
 
     fun setError(errorType: UiComicsEditResultErrorType) {
@@ -172,6 +179,14 @@ class ComicsEditFragmentHelper(
                     Toast.LENGTH_LONG
                 ).show()
             }
+
+            UiComicsEditResultErrorType.NothingToFollow -> {
+                Toast.makeText(
+                    binding.root.context,
+                    R.string.comics_nothing_to_follow,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -187,6 +202,7 @@ class ComicsEditFragmentHelper(
                 ?: "",
             price = parseToDouble(binding.tilPrice.getText()),
             image = _comicsImagePath?.toUri()?.toString(),
+            sourceId = _sourceId
             // TODO: version =
         )
     }
@@ -218,6 +234,7 @@ class ComicsEditFragmentHelper(
             savedInstanceState.getString(COMICS_IMAGE),
             savedInstanceState.getString(NAME)
         )
+        updateSourceId(savedInstanceState.getString(SOURCE_ID))
     }
 
     private fun setLayoutWithSavedInstanceStateWithComics(comics: Comics) {
@@ -235,8 +252,11 @@ class ComicsEditFragmentHelper(
         binding.tilAuthors.setText(comics.authors)
         binding.tilPrice.setText(parseToString(comics.price))
         binding.tilNotes.setText(comics.notes)
-        binding.tilPeriodicity.setTextNoFiltered(_periodicityList.getByKey(comics.periodicity)?.label ?: "")
+        binding.tilPeriodicity.setTextNoFiltered(
+            _periodicityList.getByKey(comics.periodicity)?.label ?: ""
+        )
         updateComicsImageAndInitial(comics.image, comics.name)
+        updateSourceId(comics.sourceId)
     }
 
     private fun updateComicsImageAndInitial(comicsImagePath: String?, name: String?) {
@@ -251,6 +271,12 @@ class ComicsEditFragmentHelper(
             binding.comics.txtComicsInitial.setBackgroundResource(R.drawable.background_comics_initial_noborder)
             null
         }
+    }
+
+    private fun updateSourceId(sourceId: String?) {
+        _sourceId = sourceId
+        binding.comics.imgSourced.visibility =
+            if (_sourceId.isNullOrEmpty()) View.GONE else View.VISIBLE
     }
 
     private fun TextInputLayout.autocomplete(): AutoCompleteTextView =
