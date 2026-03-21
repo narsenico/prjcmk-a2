@@ -3,6 +3,7 @@ package it.amonshore.comikkua.data.web
 import android.content.Context
 import it.amonshore.comikkua.data.ComikkuDatabase
 import it.amonshore.comikkua.services.CmkWebService
+import it.amonshore.comikkua.services.WebComics
 import kotlinx.coroutines.yield
 
 class CmkWebRepository(context: Context) {
@@ -65,13 +66,22 @@ class CmkWebRepository(context: Context) {
 
     suspend fun getAvailableComicsList() = _cmkWebDao.getAvailableComicsList()
 
-    suspend fun findBestAvailableComics(name: String, publisher: String): List<AvailableComics> =
-        _cmkWebDao.getAvailableComicsList()
-            .filter { ac ->
-                ac.name.equals(name, ignoreCase = true) &&
-                        if (publisher.isEmpty()) true else ac.publisher.equals(
-                            publisher,
-                            ignoreCase = true
-                        )
-            }
+    suspend fun findBestAvailableComics(
+        name: String,
+        publisher: String
+    ): Result<List<AvailableComics>> {
+        return runCatching {
+            return Result.success(
+                _service.findComics(name, publisher, limit = 5).map { it.toAvailableComics() })
+        }
+    }
+
+    private fun WebComics.toAvailableComics() = AvailableComics(
+        sourceId = sourceId,
+        name = name,
+        publisher = publisher,
+        version = version,
+        lastNumber = null,
+        lastReleaseDate = null
+    )
 }

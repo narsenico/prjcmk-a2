@@ -32,12 +32,13 @@ enum class UiComicsEditResultErrorType {
     InvalidId,
     ImageError,
     NothingToFollow,
+    SearchComicsToFollowError
 }
 
 sealed class UiComicsEditResult {
     object Saved : UiComicsEditResult()
     data class ComicsToFollowFound(val comics: List<AvailableComics>) : UiComicsEditResult()
-    data class SaveError(val errorType: UiComicsEditResultErrorType) : UiComicsEditResult()
+    data class Error(val errorType: UiComicsEditResultErrorType) : UiComicsEditResult()
 }
 
 class ComicsEditViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,21 +74,33 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
                 _result.postValue(UiComicsEditResult.Saved)
             }
             .onFailure {
-                _result.postValue(UiComicsEditResult.SaveError(it))
+                _result.postValue(UiComicsEditResult.Error(it))
             }
     }
 
     fun searchComicsToFollow(comics: Comics) = viewModelScope.launch {
         if (comics.name.isEmpty()) {
-            _result.postValue(UiComicsEditResult.SaveError(UiComicsEditResultErrorType.NothingToFollow))
+            _result.postValue(UiComicsEditResult.Error(UiComicsEditResultErrorType.NothingToFollow))
         } else {
             _cmkWebRepository.findBestAvailableComics(comics.name, comics.publisher)
-                .let { bestAvailableComics ->
+                .onSuccess { bestAvailableComics ->
                     if (bestAvailableComics.isEmpty()) {
-                        _result.postValue(UiComicsEditResult.SaveError(UiComicsEditResultErrorType.NothingToFollow))
+                        _result.postValue(
+                            UiComicsEditResult.Error(
+                                UiComicsEditResultErrorType.NothingToFollow
+                            )
+                        )
                     } else {
-                        _result.postValue(UiComicsEditResult.ComicsToFollowFound(bestAvailableComics))
+                        _result.postValue(
+                            UiComicsEditResult.ComicsToFollowFound(
+                                bestAvailableComics.distinctBy { it.sourceId }
+                            )
+                        )
                     }
+                }
+                .onFailure { err ->
+                    LogHelper.e("Error searching comics to follow for comics=${comics}", err)
+                    _result.postValue(UiComicsEditResult.Error(UiComicsEditResultErrorType.SearchComicsToFollowError))
                 }
         }
     }

@@ -187,6 +187,14 @@ class ComicsEditFragmentHelper(
                     Toast.LENGTH_LONG
                 ).show()
             }
+
+            UiComicsEditResultErrorType.SearchComicsToFollowError -> {
+                Toast.makeText(
+                    binding.root.context,
+                    R.string.search_comics_to_follow_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

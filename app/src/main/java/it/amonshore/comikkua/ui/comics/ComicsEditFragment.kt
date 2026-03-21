@@ -97,7 +97,7 @@ class ComicsEditFragment : Fragment() {
         _viewModel.result.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is UiComicsEditResult.Saved -> onSaved()
-                is UiComicsEditResult.SaveError -> helper.setError(result.errorType)
+                is UiComicsEditResult.Error -> helper.setError(result.errorType)
                 is UiComicsEditResult.ComicsToFollowFound -> onComicsToFollowFound(result.comics)
             }
         }
@@ -166,7 +166,20 @@ class ComicsEditFragment : Fragment() {
     private fun onComicsToFollowFound(comics: List<AvailableComics>) {
         LogHelper.d { "${comics.size} comics to follow found" }
 
-        val titles = comics.map { ac -> "${ac.name} - ${ac.publisher}" }.toTypedArray()
+        val context = requireContext()
+
+        val titles = comics.map { ac ->
+            buildString {
+                append(ac.name)
+                append(" - ")
+                append(ac.publisher)
+                if (ac.version > 0) {
+                    append (" (", context.getString(R.string.nth_reprint, ac.version), ")")
+                }
+            }
+            "${ac.name} - ${ac.publisher}"
+        }.toTypedArray()
+
         var checkedItem = if (helper.getComics().isSourced) {
             helper.getComics().sourceId.let {
                 comics.indexOfFirst { ac -> ac.sourceId == it }
@@ -175,7 +188,6 @@ class ComicsEditFragment : Fragment() {
             -1
         }
 
-        val context = requireContext()
         val binding = DialogChooseComicsToFollowBinding.inflate(LayoutInflater.from(context))
         binding.list.apply {
             adapter =

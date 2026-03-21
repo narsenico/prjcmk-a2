@@ -25,6 +25,13 @@ interface CmkWebService {
         @Query("pageLength") pageLength: Int = 10
     ): GetAvailableComicsResult
 
+    @GET("v1/api/findcomics")
+    suspend fun findComics(
+        @Query("title") name: String,
+        @Query("editor") publisher: String,
+        @Query("limit") limit: Int = 0,
+    ): List<WebComics>
+
     companion object {
         fun create(): CmkWebService {
             val logger = HttpLoggingInterceptor()
