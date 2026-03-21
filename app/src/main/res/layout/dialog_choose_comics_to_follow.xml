@@ -15,7 +15,7 @@
         android:background="@color/colorDialogBackground"
         android:contentDescription="@string/confirm_content_description"
         android:id="@+id/image"
-        android:src="@drawable/ic_new_update"
+        android:src="@drawable/ic_choose"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -43,6 +43,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:listitem="@android:layout/select_dialog_singlechoice"/>
+        tools:listitem="@layout/select_dialog_singlechoice"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

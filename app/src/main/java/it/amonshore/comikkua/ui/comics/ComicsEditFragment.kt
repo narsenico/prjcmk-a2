@@ -191,7 +191,7 @@ class ComicsEditFragment : Fragment() {
         val binding = DialogChooseComicsToFollowBinding.inflate(LayoutInflater.from(context))
         binding.list.apply {
             adapter =
-                ArrayAdapter(context, android.R.layout.select_dialog_singlechoice, titles)
+                ArrayAdapter(context, R.layout.select_dialog_singlechoice, titles)
             choiceMode = ListView.CHOICE_MODE_SINGLE
             setItemChecked(checkedItem, true)
         }
