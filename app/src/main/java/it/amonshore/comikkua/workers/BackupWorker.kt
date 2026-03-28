@@ -7,10 +7,7 @@ import android.provider.MediaStore
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.google.gson.ExclusionStrategy
-import com.google.gson.FieldAttributes
 import com.google.gson.GsonBuilder
-import it.amonshore.comikkua.BackupExclude
 import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
@@ -28,15 +25,9 @@ class BackupWorker(appContext: Context, workerParams: WorkerParameters) :
             val repository = ComicsRepository(applicationContext)
             val gson = GsonBuilder()
                 .serializeNulls()
-                .setExclusionStrategies(object : ExclusionStrategy {
-                    override fun shouldSkipField(f: FieldAttributes?): Boolean =
-                        f?.getAnnotation(BackupExclude::class.java) != null
-
-                    override fun shouldSkipClass(clazz: Class<*>?): Boolean = false
-                })
                 .create()
 
-            val data = repository.getAllComicsWithReleases()
+            val data = repository.getAllComicsWithReleases().map { it.toDto() }
             val now = LocalDateTime.now().toFileNamePart()
             val fileName = "comikku_v${BuildConfig.VERSION_CODE}_$now.bck.json"
             writeBackupToDownloadsFolder(applicationContext, fileName) {
