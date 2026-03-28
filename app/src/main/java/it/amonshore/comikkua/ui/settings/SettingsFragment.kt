@@ -39,6 +39,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             uri?.let { handleOldDatabaseImport(it) }
         }
 
+    private val selectBackupToRestoreLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let { handleRestoreBackup(it) }
+        }
+
     override fun onCreatePreferences(
         savedInstanceState: Bundle?,
         rootKey: String?
@@ -71,7 +76,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         _viewModel.backupStatus.observe(viewLifecycleOwner, ::onBackupStatusChanged)
-
+        _viewModel.restoreStatus.observe(viewLifecycleOwner, ::onRestoreStatusChanged)
         _viewModel.importOldDatabaseStatus.observe(viewLifecycleOwner, ::onImportOldDatabaseStatus)
 
         return root
@@ -108,6 +113,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         true
                     }
 
+                    R.id.restoreBackup -> {
+                        selectBackupToRestoreLauncher.launch(
+                            arrayOf("application/json")
+                        )
+                        true
+                    }
+
                     R.id.clearDatabase -> {
                         clearDatabase()
                         true
@@ -126,6 +138,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             title = getString(R.string.backup_title),
             message = getString(R.string.exporting_backup),
             onCancel = _viewModel::cancelBackupExport
+        )
+    }
+
+    private fun handleRestoreBackup(uri: Uri) {
+        LogHelper.d { "Restoring backup from $uri" }
+        _viewModel.startRestoreBackup(uri)
+        _dialog = showCancellableDialog(
+            title = getString(R.string.backup_title),
+            message = getString(R.string.restoring_backup),
+            onCancel = _viewModel::cancelRestoreBackup
         )
     }
 
@@ -182,6 +204,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private fun onRestoreStatusChanged(workInfo: WorkInfo) {
+        when (workInfo.state) {
+            WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> {
+                _dialog?.dismiss()
+                showMessageDialog(
+                    title = getString(R.string.backup_title),
+                    message = workInfo.outputData.getRestoreSuccessMessage()
+                )
+            }
+
+            WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
+                _dialog?.dismiss()
+                showErrorDialog(
+                    title = getString(R.string.error),
+                    message = workInfo.outputData.getRestoreErrorMessage()
+                )
+            }
+
+            else -> {}
+        }
+    }
+
     private fun onImportOldDatabaseStatus(workInfo: WorkInfo) {
         when (workInfo.state) {
             WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> {
@@ -212,6 +256,28 @@ class SettingsFragment : PreferenceFragmentCompat() {
             getString(R.string.backup_done, backupName)
         }
     }
+
+    private fun Data.getRestoreSuccessMessage(): String {
+        val total = getInt("total", 0)
+        val notSourced = total - getInt("sourced", 0)
+        val oldestLastReleaseDate = getString("oldest_last_release")?.toLocalDate()
+        return if (oldestLastReleaseDate == null) {
+            getString(R.string.restore_success, total, notSourced)
+        } else {
+            getString(
+                R.string.restore_success_with_date,
+                total,
+                notSourced,
+                oldestLastReleaseDate
+            )
+        }
+    }
+
+    private fun Data.getRestoreErrorMessage() = when (getString("reason")) {
+        "not-empty" -> R.string.restore_not_empty_error
+        "backup-uri-empty" -> R.string.restore_not_found_error
+        else -> R.string.restore_error
+    }.let { getString(it) }
 
     private fun Data.getImportOldDatabaseSuccessMessage(): String {
         val total = getInt("total", 0)

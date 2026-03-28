@@ -17,6 +17,7 @@ import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.workers.BackupWorker
 import it.amonshore.comikkua.workers.ImportFromOldDatabaseWorker
+import it.amonshore.comikkua.workers.RestoreWorker
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -31,10 +32,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _workManager = WorkManager.getInstance(application)
     private val _result = MutableLiveData<UiSettingsResult>()
     private val _backupStatus = MediatorLiveData<WorkInfo>()
+    private val _restoreStatus = MediatorLiveData<WorkInfo>()
     private val _importOldDatabaseStatus = MediatorLiveData<WorkInfo>()
 
     val result: LiveData<UiSettingsResult> = _result
     val backupStatus: LiveData<WorkInfo> = _backupStatus
+    val restoreStatus: LiveData<WorkInfo> = _restoreStatus
     val importOldDatabaseStatus: LiveData<WorkInfo> = _importOldDatabaseStatus
 
 //    fun deleteAllComicsWithoutImages() = viewModelScope.launch {
@@ -71,6 +74,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun cancelBackupExport() {
         _workManager.cancelUniqueWork(BackupWorker.WORK_NAME)
+    }
+
+    fun startRestoreBackup(uri: Uri) {
+        val request = OneTimeWorkRequestBuilder<RestoreWorker>()
+            .setInputData(workDataOf("BACKUP_URI" to uri.toString()))
+            .build()
+
+        _workManager.enqueueUniqueWork(
+            RestoreWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+
+        _workManager.applyWorkInfoByIdLiveData(request.id, _importOldDatabaseStatus)
+    }
+
+    fun cancelRestoreBackup() {
+        _workManager.cancelUniqueWork(RestoreWorker.WORK_NAME)
     }
 
     fun startOldDatabaseImport(uri: Uri) {

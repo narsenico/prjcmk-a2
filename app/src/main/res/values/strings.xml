@@ -191,6 +191,7 @@
     <string name="backup_done">Backup done (%s)</string>
     <string name="backup_error">There was an error creating backup</string>
     <string name="import_old_database_error">There was an error importing data</string>
+    <string name="restore_error">There was an error restoing backup</string>
     <string name="confirm_delete_comics_with_confirm_phrase">Please type %s to confirm deleting all data</string>
     <string name="confirm_title">Confirm</string>
     <string name="backup_title">Backup</string>
@@ -200,12 +201,16 @@
     <string name="error">Error</string>
     <string name="import_old_database_success">%1$d comics imported from previous version, %2$d of which not linked.</string>
     <string name="import_old_database_success_with_date">%1$d comics imported from previous version, %2$d of which not linked.\n\nConsider updating CmkWeb with releases from %3$tB %3$tY and import again.</string>
+    <string name="restore_success">%1$d comics restored from backup, %2$d of which not linked.</string>
+    <string name="restore_success_with_date">%1$d comics restored from backup, %2$d of which not linked.\n\nConsider updating CmkWeb with releases from %3$tB %3$tY and import again.</string>
     <string name="menu_open_comics_selector">Select comics to follow</string>
     <string name="yes">Yes</string>
     <string name="no">No\n</string>
     <string name="need_refresh_available_comics_message">Download new available comics?</string>
     <string name="import_old_database_not_empty_error">Import failed: current database must be empty</string>
     <string name="import_old_database_source_not_found_error">Import failed: old database not found</string>
+    <string name="restore_not_empty_error">Restore failed: current database must be empty</string>
+    <string name="restore_not_found_error">Restore failed: backup not found</string>
     <string name="name_with_first_reprint">%s - 1st reprint</string>
     <string name="name_with_second_reprint">%s - 2nd reprint</string>
     <string name="name_with_third_reprint">%s - 3rd reprint</string>
@@ -219,4 +224,6 @@
     <string name="comics_nothing_to_follow">No comics found to follow</string>
     <string name="choose_comics_to_follow">Follow a comic to receive updates on new releases.</string>
     <string name="search_comics_to_follow_error">Cannot search for comics to follow due to an unexpected error</string>
+    <string name="menu_restore_backup">Restore backup</string>
+    <string name="restoring_backup">Restoring backup...</string>
 </resources>

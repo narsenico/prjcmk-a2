@@ -24,6 +24,13 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/restoreBackup"
+        android:icon="@drawable/ic_import"
+        android:orderInCategory="200"
+        android:title="@string/menu_restore_backup"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/clearDatabase"
         android:icon="@drawable/ic_clear"
         android:orderInCategory="200"
