@@ -33,13 +33,13 @@ android {
             dimension "develop"
             applicationId "it.amonshore.comikkua.neon"
             versionName "1.0-neon"
-            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://localhost:5000/\"") // TODO: da impostare
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://MBP-Daidokoro:5000/\"")
         }
         tryme {
             dimension "develop"
             applicationId "it.amonshore.comikkua.tryme"
             versionName "1.0-tryme"
-            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://192.168.1.151:5000/\"")
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://MBP-Daidokoro:5000/\"")
         }
     }
     compileOptions {
