@@ -162,7 +162,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun onBackupStatusChanged(workInfo: WorkInfo) {
         when (workInfo.state) {
-            WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> _dialog?.dismiss()
+            WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> {
+                _dialog?.dismiss()
+                showMessageDialog(
+                    title = getString(R.string.backup_title),
+                    message = workInfo.outputData.getBackupSuccessMessage()
+                )
+            }
+
             WorkInfo.State.FAILED, WorkInfo.State.BLOCKED -> {
                 _dialog?.dismiss()
                 showErrorDialog(
@@ -194,6 +201,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
             else -> {}
+        }
+    }
+
+    private fun Data.getBackupSuccessMessage(): String {
+        val backupName = getString("backup_name")
+        return if (backupName == null) {
+            getString(R.string.backup_done, "unknown")
+        } else {
+            getString(R.string.backup_done, backupName)
         }
     }
 

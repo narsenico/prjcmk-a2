@@ -29,6 +29,10 @@ private val longWithTimeFormatter by lazy {
     DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.SHORT)
 }
 
+private val fileNamePartFormatter by lazy {
+    DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
+}
+
 fun LocalDate.atFirstDayOfWeek(): LocalDate {
     val delta = dayOfWeek.value - 1
     return if (delta > 0) {
@@ -49,6 +53,8 @@ fun String.fromISO8601Date(): ZonedDateTime? {
         null
     }
 }
+
+fun LocalDateTime.toFileNamePart(): String = format(fileNamePartFormatter)
 
 fun LocalDateTime.next(time: LocalTime): LocalDateTime {
     val thisTime = toLocalTime()

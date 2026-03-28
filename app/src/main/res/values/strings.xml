@@ -188,6 +188,7 @@
     <string name="confirm_content_description">confirmation layout image</string>
     <string name="comics_delete_error">There was an error while deleting data</string>
     <string name="comics_deleted">All data deleted</string>
+    <string name="backup_done">Backup done (%s)</string>
     <string name="backup_error">There was an error creating backup</string>
     <string name="import_old_database_error">There was an error importing data</string>
     <string name="confirm_delete_comics_with_confirm_phrase">Please type %s to confirm deleting all data</string>
