@@ -74,18 +74,18 @@ class ImportFromOldDatabaseWorker(appContext: Context, workerParams: WorkerParam
                 return@context Result.failure(workDataOf("reason" to "source-not-found"))
             }
 
-            _cmkWebRepository.refreshAvailableComics()
-                .recover { err ->
-                    LogHelper.e("refresh available comics failed", err)
-                    0
-                }
-                .getOrThrow()
-//                .run {
-//                    if (this == 0) {
-//                        LogHelper.w("import failed: available comics not found")
-//                        return@context Result.failure(workDataOf("reason" to "available-comics-empty"))
-//                    }
+//            _cmkWebRepository.refreshAvailableComics()
+//                .recover { err ->
+//                    LogHelper.e("refresh available comics failed", err)
+//                    0
 //                }
+//                .getOrThrow()
+////                .run {
+////                    if (this == 0) {
+////                        LogHelper.w("import failed: available comics not found")
+////                        return@context Result.failure(workDataOf("reason" to "available-comics-empty"))
+////                    }
+////                }
 
             return@context import(oldDatabaseFile.path)
         } catch (ex: java.net.ConnectException) {
