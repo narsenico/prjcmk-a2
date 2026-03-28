@@ -28,7 +28,7 @@ interface CmkWebService {
     @GET("v1/api/findcomics")
     suspend fun findComics(
         @Query("title") name: String,
-        @Query("editor") publisher: String,
+        @Query("editor") publisher: String? = null,
         @Query("limit") limit: Int = 0,
     ): List<WebComics>
 

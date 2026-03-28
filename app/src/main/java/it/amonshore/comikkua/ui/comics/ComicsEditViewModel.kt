@@ -82,7 +82,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
         if (comics.name.isEmpty()) {
             _result.postValue(UiComicsEditResult.Error(UiComicsEditResultErrorType.NothingToFollow))
         } else {
-            _cmkWebRepository.findBestAvailableComics(comics.name, comics.publisher)
+            _cmkWebRepository.findBestAvailableComics(comics.name)
                 .onSuccess { bestAvailableComics ->
                     if (bestAvailableComics.isEmpty()) {
                         _result.postValue(

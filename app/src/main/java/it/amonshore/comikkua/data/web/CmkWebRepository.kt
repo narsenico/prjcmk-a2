@@ -67,12 +67,11 @@ class CmkWebRepository(context: Context) {
     suspend fun getAvailableComicsList() = _cmkWebDao.getAvailableComicsList()
 
     suspend fun findBestAvailableComics(
-        name: String,
-        publisher: String
+        name: String
     ): Result<List<AvailableComics>> {
         return runCatching {
             return Result.success(
-                _service.findComics(name, publisher, limit = 5).map { it.toAvailableComics() })
+                _service.findComics(name, limit = 5).map { it.toAvailableComics() })
         }
     }
 
