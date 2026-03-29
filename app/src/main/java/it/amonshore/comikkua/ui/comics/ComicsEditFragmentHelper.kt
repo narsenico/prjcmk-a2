@@ -195,6 +195,22 @@ class ComicsEditFragmentHelper(
                     Toast.LENGTH_LONG
                 ).show()
             }
+
+            UiComicsEditResultErrorType.DownloadComicsImageError -> {
+                Toast.makeText(
+                    binding.root.context,
+                    R.string.download_comics_image_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            UiComicsEditResultErrorType.ComicsImageNotFound -> {
+                Toast.makeText(
+                    binding.root.context,
+                    R.string.comics_image_not_found,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

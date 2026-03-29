@@ -4,12 +4,15 @@ import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebComicsRelease
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface CmkWebService {
 
@@ -31,6 +34,12 @@ interface CmkWebService {
         @Query("editor") publisher: String? = null,
         @Query("limit") limit: Int = 0,
     ): List<WebComics>
+
+    @Streaming
+    @GET("v1/api/comics/{ref_id}/image")
+    suspend fun downloadImageComics(
+        @Path("ref_id") refId: String,
+    ): Response<ResponseBody>
 
     companion object {
         fun create(): CmkWebService {

@@ -224,6 +224,9 @@
     <string name="comics_nothing_to_follow">No comics found to follow</string>
     <string name="choose_comics_to_follow">Follow a comic to receive updates on new releases.</string>
     <string name="search_comics_to_follow_error">Cannot search for comics to follow due to an unexpected error</string>
+    <string name="download_comics_image_error">Cannot download comics image due to an unexpected error</string>
+    <string name="comics_image_not_found">Cannot download comics image: not found</string>
     <string name="menu_restore_backup">Restore backup</string>
     <string name="restoring_backup">Restoring backup...</string>
+    <string name="menu_comics_set_image_via_web">Set image (CmkWeb)</string>
 </resources>

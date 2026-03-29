@@ -1,5 +1,6 @@
 package it.amonshore.comikkua.ui.comics
 
+import android.net.Uri
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.view.LayoutInflater
@@ -99,6 +100,7 @@ class ComicsEditFragment : Fragment() {
                 is UiComicsEditResult.Saved -> onSaved()
                 is UiComicsEditResult.Error -> helper.setError(result.errorType)
                 is UiComicsEditResult.ComicsToFollowFound -> onComicsToFollowFound(result.comics)
+                is UiComicsEditResult.ComicsImageDownloaded -> onComicsImageDownloaded(result.imageUri)
             }
         }
 
@@ -142,6 +144,11 @@ class ComicsEditFragment : Fragment() {
                         true
                     }
 
+                    R.id.changeImageViaWeb -> {
+                        _viewModel.downloadComicsImage(helper.getComics())
+                        true
+                    }
+
                     R.id.removeImage -> {
                         helper.setComicsImagePath(null)
                         true
@@ -174,7 +181,7 @@ class ComicsEditFragment : Fragment() {
                 append(" - ")
                 append(ac.publisher)
                 if (ac.version > 0) {
-                    append (" (", context.getString(R.string.nth_reprint, ac.version), ")")
+                    append(" (", context.getString(R.string.nth_reprint, ac.version), ")")
                 }
             }
         }.toTypedArray()
@@ -203,12 +210,18 @@ class ComicsEditFragment : Fragment() {
             .setPositiveButton(R.string.comics_follow) { _, _ ->
                 comics.getOrNull(checkedItem)?.let {
                     helper.setSourceId(it.sourceId)
+                    _viewModel.downloadComicsImage(helper.getComics())
                 }
             }
             .setNeutralButton(R.string.comics_unfollow) { _, _ ->
                 helper.setSourceId(null)
             }
             .show()
+    }
+
+    private fun onComicsImageDownloaded(uri: Uri) {
+        LogHelper.d { "Image downloaded $uri" }
+        _cropImageLauncher.launch(cropOptions.copy(uri = uri))
     }
 
 //    private fun requestPermissionCallback(isGranted: Boolean) {

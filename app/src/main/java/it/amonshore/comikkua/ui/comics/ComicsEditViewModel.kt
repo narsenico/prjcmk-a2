@@ -3,6 +3,7 @@ package it.amonshore.comikkua.ui.comics
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,7 @@ import it.amonshore.comikkua.data.comics.ComicsRepository
 import it.amonshore.comikkua.data.comics.ComicsWithReleases
 import it.amonshore.comikkua.data.web.AvailableComics
 import it.amonshore.comikkua.data.web.CmkWebRepository
+import it.amonshore.comikkua.data.web.DownloadComicsImageResult
 import it.amonshore.comikkua.flatMap
 import it.amonshore.comikkua.onFailure
 import it.amonshore.comikkua.onSuccess
@@ -22,6 +24,7 @@ import it.amonshore.comikkua.orFail
 import it.amonshore.comikkua.toFailure
 import it.amonshore.comikkua.ui.isValidImageFileName
 import it.amonshore.comikkua.ui.newImageFileName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -32,12 +35,15 @@ enum class UiComicsEditResultErrorType {
     InvalidId,
     ImageError,
     NothingToFollow,
-    SearchComicsToFollowError
+    SearchComicsToFollowError,
+    DownloadComicsImageError,
+    ComicsImageNotFound
 }
 
 sealed class UiComicsEditResult {
     object Saved : UiComicsEditResult()
     data class ComicsToFollowFound(val comics: List<AvailableComics>) : UiComicsEditResult()
+    data class ComicsImageDownloaded(val imageUri: Uri) : UiComicsEditResult()
     data class Error(val errorType: UiComicsEditResultErrorType) : UiComicsEditResult()
 }
 
@@ -105,6 +111,24 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun downloadComicsImage(comics: Comics) = viewModelScope.launch(Dispatchers.IO) {
+        val result =
+            if (comics.isSourced) _cmkWebRepository.downloadComicsImageBySourceId(comics.sourceId!!)
+            else DownloadComicsImageResult.NotFound
+        when (result) {
+            is DownloadComicsImageResult.Success ->
+                _result.postValue(UiComicsEditResult.ComicsImageDownloaded(result.uri))
+
+            is DownloadComicsImageResult.Error -> {
+                LogHelper.e("Error downloading image for comics=${comics}", result.error)
+                _result.postValue(UiComicsEditResult.Error(UiComicsEditResultErrorType.DownloadComicsImageError))
+            }
+
+            is DownloadComicsImageResult.NotFound ->
+                _result.postValue(UiComicsEditResult.Error(UiComicsEditResultErrorType.ComicsImageNotFound))
+        }
+    }
+
     private suspend fun isComicsValid(comics: Comics): ResultEx<Unit, UiComicsEditResultErrorType> {
         if (comics.id == Comics.NO_COMICS_ID) {
             return UiComicsEditResultErrorType.InvalidId.toFailure()
@@ -130,7 +154,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
 
         return try {
             val context: Context = getApplication()
-            val tempImageFile = File(Uri.parse(comics.image).path!!)
+            val tempImageFile = File(comics.image.toUri().path!!)
             val newImageFile = File(context.filesDir, comics.newImageFileName())
             tempImageFile.renameTo(newImageFile)
                 .orFail { UiComicsEditResultErrorType.ImageError }
@@ -144,7 +168,7 @@ class ComicsEditViewModel(application: Application) : AndroidViewModel(applicati
     private fun deleteDirtyComicsImages(comics: Comics): ResultEx<Comics, UiComicsEditResultErrorType> =
         try {
             val context: Context = getApplication()
-            val currentImagePath = comics.image?.let { Uri.parse(it).path }
+            val currentImagePath = comics.image?.toUri()?.path
             context.filesDir.listFiles { _, name ->
                 comics.isValidImageFileName(name)
             }?.filter { file ->

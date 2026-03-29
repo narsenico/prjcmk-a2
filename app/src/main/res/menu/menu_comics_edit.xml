@@ -21,6 +21,11 @@
                 android:title="@string/menu_comics_set_image" />
 
             <item
+                android:id="@+id/changeImageViaWeb"
+                android:icon="@drawable/ic_edit"
+                android:title="@string/menu_comics_set_image_via_web" />
+
+            <item
                 android:id="@+id/removeImage"
                 android:icon="@drawable/ic_delete"
                 android:title="@string/menu_comics_remove_image" />
