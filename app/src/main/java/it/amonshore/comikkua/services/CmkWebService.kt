@@ -35,6 +35,13 @@ interface CmkWebService {
         @Query("limit") limit: Int = 0,
     ): List<WebComics>
 
+    @GET("v1/api/findcomicsfuzzy")
+    suspend fun findComicsByFuzzy(
+        @Query("title") name: String,
+        @Query("limit") limit: Int = 0,
+        @Query("minScore") minScore: Float = 0.2F,
+    ): List<WebComics>
+
     @Streaming
     @GET("v1/api/comics/{ref_id}/image")
     suspend fun downloadImageComics(

@@ -53,7 +53,7 @@ class CmkWebRepository(context: Context) {
     ): Result<List<AvailableComics>> {
         return runCatching {
             return Result.success(
-                _service.findComics(name, limit = 5).map { it.toAvailableComics() })
+                _service.findComicsByFuzzy(name, minScore = 0.2F, limit = 5).map { it.toAvailableComics() })
         }
     }
 
