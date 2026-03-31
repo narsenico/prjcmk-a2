@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
 
     <PreferenceCategory app:title="@string/settings_general_header">
 
@@ -21,6 +21,22 @@
             app:icon="@drawable/ic_notifications"
             app:key="notifications"
             app:title="@string/settings_notifications_settings" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_about">
+
+        <Preference
+            app:key="about_app_version"
+            app:title="@string/settings_about_app_version"
+            tools:summary="0.1 (1)"
+            app:selectable="false"  />
+
+        <Preference
+            app:key="about_app_cmkweb_base_url"
+            app:title="@string/settings_about_app_cmkweb_base_url"
+            tools:summary="http://example.com"
+            app:selectable="false" />
 
     </PreferenceCategory>
 

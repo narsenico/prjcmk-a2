@@ -21,6 +21,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.work.Data
 import androidx.work.WorkInfo
+import it.amonshore.comikkua.BuildConfig
 import it.amonshore.comikkua.LogHelper
 import it.amonshore.comikkua.R
 import it.amonshore.comikkua.toLocalDate
@@ -59,6 +60,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
         }
+
+        findPreference<Preference>("about_app_version")?.summary = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+        findPreference<Preference>("about_app_cmkweb_base_url")?.summary = BuildConfig.CMKWEB_SERVICE_BASE_URL
     }
 
     override fun onCreateView(

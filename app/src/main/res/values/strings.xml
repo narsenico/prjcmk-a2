@@ -229,4 +229,7 @@
     <string name="menu_restore_backup">Restore backup</string>
     <string name="restoring_backup">Restoring backup...</string>
     <string name="menu_comics_set_image_via_web">Set image (CmkWeb)</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_app_version">Version</string>
+    <string name="settings_about_app_cmkweb_base_url">CmkWeb Service Base Url</string>
 </resources>
