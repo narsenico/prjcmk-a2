@@ -2,7 +2,6 @@ package it.amonshore.comikkua.ui.comics
 
 import android.content.Context
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -245,32 +244,40 @@ class ComicsFragment : Fragment() {
                 val searchItem = menu.findItem(R.id.searchComics)
                 val searchView = searchItem.actionView as SearchView
 
-                // onQueryTextSubmit non viene scatenato su query vuota, quindi non posso caricare tutti i dati
-
-                // TODO: al cambio di configurazione (es orientamento) la query viene persa
-                //  è il viewModel che deve tenere memorizzata l'ultima query,
-                //  qua al massimo devo apri la SearchView e inizializzarla con l'ultima query da viewModel se non vuota
-                if (!TextUtils.isEmpty(_viewModel.lastFilter)) {
-                    // lo faccio prima di aver impostato i listener così non scateno più nulla
+                val currentFilter = _viewModel.filter.value
+                if (currentFilter.isNotEmpty()) {
                     searchItem.expandActionView()
-                    searchView.setQuery(_viewModel.lastFilter, false)
+                    searchView.setQuery(currentFilter, false)
                     searchView.clearFocus()
-
-                    // TODO: non funziona sulla navigazione (es apro il dettaglio di un comics filtrato),
-                    //  perché viene chiusa la searchView e scatenato onQueryTextChange con testo vuoto
-                    //  che mi serve così perché quando volutamente la chiudo voglio che il filtro venga pulito
                 }
 
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String): Boolean {
+                        searchView.clearFocus()
                         return true
                     }
 
-                    override fun onQueryTextChange(newText: String): Boolean {
-                        _viewModel.filter = newText // TODO: ok ma aggiungere debounce
+                    override fun onQueryTextChange(query: String): Boolean {
+                        if (query.isEmpty() && !searchView.hasFocus()) return true
+                        _viewModel.onFilterChanged(query)
                         return true
                     }
                 })
+
+                // fix per effetto indesiderato quando torno indietro dal dettaglio del comics con un filtro applicato
+                // se premo sulla X della search bar è quasi impossibile reimmettere un altro filtro (o toglierlo)
+                // quindi gestisco a mano la X in modo che pulisca il filtro e chiuda la search bar
+                searchView.findViewById<View>(androidx.appcompat.R.id.search_close_btn)
+                    ?.setOnClickListener {
+                        _viewModel.onFilterChanged("")
+                        searchView.clearFocus()
+                        searchItem.collapseActionView()
+                    }
+
+                // FIXME: non va bene! le icone X e cerca tendono a scomparire quando torno indietro dal dettaglio
+                //  anche se nel layout imposto app:showAsAction="always"
+                //  forse per questo viene consigliato di usare una search bar direttamente nel fragment
+                //  invece che nella toolbar
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
