@@ -119,7 +119,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycleVersion"
 
     // Paging
-    def pagingVersion = '3.4.1'
+    def pagingVersion = '3.4.2'
     implementation "androidx.paging:paging-runtime-ktx:$pagingVersion"
     testImplementation "androidx.paging:paging-common-ktx:$pagingVersion"
 
@@ -128,7 +128,7 @@ dependencies {
     implementation "com.google.android.material:material:$materialVersion"
 
     // WorkManager
-    def workVersion = '2.11.1'
+    def workVersion = '2.11.2'
     implementation "androidx.work:work-runtime:$workVersion"
     implementation "androidx.work:work-runtime-ktx:$workVersion"
     androidTestImplementation "androidx.work:work-testing:$workVersion"
