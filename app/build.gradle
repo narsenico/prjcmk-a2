@@ -12,8 +12,8 @@ android {
         applicationId "it.amonshore.comikkua"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 17
-        versionName "1.5"
+        versionCode 18
+        versionName "1.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
     }
@@ -33,7 +33,7 @@ android {
             dimension "develop"
             applicationId "it.amonshore.comikkua.neon"
             versionNameSuffix "-neon"
-            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://raspberrypi/\"")
+            buildConfigField("String", "CMKWEB_SERVICE_BASE_URL", "\"http://raspberrypi/cmk/\"")
         }
         tryme {
             dimension "develop"
